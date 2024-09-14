@@ -22,7 +22,16 @@ function createWindow(): void {
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
-    return { action: 'deny' }
+    return {
+      action: 'allow',
+      overrideBrowserWindowOptions: {
+        show: false,
+        backgroundColor: 'black',
+        webPreferences: {
+          preload: 'my-child-window-preload-script.js'
+        }
+      }
+    }
   })
 
   // HMR for renderer base on electron-vite cli.
