@@ -8,10 +8,12 @@ export interface ProblemCollectionMetadata {
 }
 
 export interface ProblemSetMetadata {
+  name: string
   releaseTime: string
   problems: ProblemMetadata[]
 }
 
 export interface ProblemMetadata {
-  name: string
+  name?: string | undefined
+  description?: string | undefined
 }

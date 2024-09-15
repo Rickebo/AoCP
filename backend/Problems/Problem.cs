@@ -5,7 +5,8 @@ namespace Backend.Problems;
 
 public abstract class Problem
 {
-    public abstract string Name { get; }
+    public virtual string? Name { get; } = null;
+    public virtual string? Description { get; } = null;
 
-    public ProblemMetadata GetMetadata() => new(Name);
+    public ProblemMetadata GetMetadata() => new(Name, Description);
 }

@@ -1,3 +1,3 @@
 ﻿namespace Backend.Problems.Metadata;
 
-public record ProblemMetadata(string Name);
+public record ProblemMetadata(string? Name, string? Description);

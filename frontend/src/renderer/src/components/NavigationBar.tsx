@@ -1,9 +1,13 @@
 ﻿import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
 import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
-import { Metadata } from '../data/metadata'
+import { Metadata, ProblemSetMetadata } from '../data/metadata'
 
-const NavigationBar: FC = () => {
+export interface NavigationBarProps {
+  setProblemSet: (problemSet: ProblemSetMetadata) => void
+}
+
+const NavigationBar: FC<NavigationBarProps> = (props) => {
   const metadataService = useMetadataService()
   const [metadata, setMetadata] = useState({} as Metadata)
   const [loaded, setLoaded] = useState<boolean>(false)
@@ -34,8 +38,9 @@ const NavigationBar: FC = () => {
                 {(collection ?? []).problemSets.map((problemSet) => (
                   <NavDropdown.Item
                     key={`${year}/${problemSet.releaseTime}`}
+                    onClick={() => props.setProblemSet(problemSet)}
                   >
-                    Day {new Date(problemSet.releaseTime).getDay()}
+                    Day {new Date(problemSet.releaseTime).getDate()} - {problemSet.name}
                   </NavDropdown.Item>
                 ))}
               </NavDropdown>
