@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from 'react'
 import { Metadata, ProblemSetMetadata } from '../data/metadata'
 
 export interface NavigationBarProps {
-  setProblemSet: (problemSet: ProblemSetMetadata) => void
+  setProblemSet: (year: number, problemSet: ProblemSetMetadata) => void
 }
 
 const NavigationBar: FC<NavigationBarProps> = (props) => {
@@ -38,7 +38,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
                 {(collection ?? []).problemSets.map((problemSet) => (
                   <NavDropdown.Item
                     key={`${year}/${problemSet.releaseTime}`}
-                    onClick={() => props.setProblemSet(problemSet)}
+                    onClick={() => props.setProblemSet(Number(year), problemSet)}
                   >
                     Day {new Date(problemSet.releaseTime).getDate()} - {problemSet.name}
                   </NavDropdown.Item>
