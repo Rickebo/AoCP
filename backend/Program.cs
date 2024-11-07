@@ -7,12 +7,23 @@ builder.Services
     .AddAocPlatform()
     .AddControllers();
 
+var corsName = "allow_all";
+builder.Services.AddCors(
+    options =>
+    {
+        options.AddPolicy(
+            name: corsName,
+            policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+        );
+    }
+);
+
 var app = builder.Build();
 
-app.UseCors("allow_all");
+app.UseCors(corsName);
 
 app.UseHttpsRedirection();
 
 app.MapControllers();
 
-app.Run();  
+app.Run();

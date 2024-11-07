@@ -9,4 +9,6 @@ public abstract class Problem
     public virtual string? Description { get; } = null;
 
     public ProblemMetadata GetMetadata() => new(Name, Description);
+
+    public abstract string Solve(string input);
 }
