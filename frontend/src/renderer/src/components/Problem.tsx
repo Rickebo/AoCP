@@ -10,7 +10,6 @@ export interface ProblemProps {
 const Problem: FC<ProblemProps> = (props) => {
   return (
     <Container className="">
-      <h5>{props.metadata.name}</h5>
       {/* <p>{props.metadata.description}</p> */}
       <ProblemDescription metadata={props.metadata} />
     </Container>

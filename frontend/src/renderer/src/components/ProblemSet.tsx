@@ -1,5 +1,5 @@
 import { ProblemSetMetadata } from '@renderer/data/metadata'
-import { FC, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import Problem from './Problem'
 import ProblemInput from './ProblemInput'
 import { ProblemMetadata } from '../data/metadata'
@@ -7,6 +7,8 @@ import { ProblemId } from '../services/ProblemService'
 import { useProblemService } from '../hooks'
 import ProblemSolution from './ProblemSolution'
 import { Accordion } from 'react-bootstrap'
+import ProblemSocket from '../services/ProblemSocket'
+import { FinishedProblemUpdate, ProblemUpdate } from '../data/ProblemUpdate'
 
 export interface ProblemSetProps {
   year: number
@@ -16,6 +18,22 @@ export interface ProblemSetProps {
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const problemService = useProblemService()
   const [solutions, setSolutions] = useState<Record<string, string>>({})
+  const [socket, setSocket] = useState<ProblemSocket | undefined>()
+
+  const handleMessage = useCallback((message: MessageEvent) => {
+    const data = JSON.parse(message.data) as ProblemUpdate
+    if (data.type == 'finished') {
+      const finishedData = data as FinishedProblemUpdate
+      if (finishedData.solution == null) return
+
+      setSolutions((solutions) => {
+        return {
+          ...solutions,
+          [data.id.problemName]: finishedData.solution!
+        }
+      })
+    }
+  }, [])
 
   const solve = async (problem: ProblemMetadata, input: string): Promise<void> => {
     if (problem.name == null) throw new Error('Cannot solve unnamed problem.')
@@ -26,13 +44,11 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
       problemName: problem.name
     }
 
-    const solution = await problemService.solve(id, input)
-
-    setSolutions((current) => {
-      const newSolutions = { ...current }
-      newSolutions[problem.name!] = solution.successful ? solution.solution : solution.error
-      return newSolutions
-    })
+    problemService.solve(id, input)
+      .then((socket) => {
+        setSocket(socket)
+        socket.addHandler(handleMessage)
+      })
   }
 
   const solveAll = (input: string): void => {

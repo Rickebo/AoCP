@@ -1,4 +1,6 @@
-﻿export interface ProblemOutput {
+﻿import ProblemSocket from './ProblemSocket'
+
+export interface ProblemOutput {
   successful: boolean
   solution: string
   error: string
@@ -17,21 +19,17 @@ export default class ProblemService {
     this.api = api
   }
 
-  public async solve(problemId: ProblemId, input: string): Promise<ProblemOutput> {
+  public async solve(problemId: ProblemId, input: string): Promise<ProblemSocket> {
     const yearPart = problemId.year.toString()
     const setPart = encodeURIComponent(problemId.setName)
     const problemPart = encodeURIComponent(problemId.problemName)
 
-    const response = await fetch(`${this.api}/problem/solve/${yearPart}/${setPart}/${problemPart}`, {
-      method: 'POST',
-      body: input
+    const ws = new WebSocket(`${this.api}/problem/solve/${yearPart}/${setPart}/${problemPart}`)
+
+    ws.addEventListener('open', () => {
+      ws.send(input)
     })
 
-    if (!response.ok) {
-      throw new Error(`Failed to solve problem: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    return data as ProblemOutput
+    return new ProblemSocket(ws)
   }
 }
