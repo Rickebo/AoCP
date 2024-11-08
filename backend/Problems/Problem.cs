@@ -10,5 +10,5 @@ public abstract class Problem
 
     public ProblemMetadata GetMetadata() => new(Name, Description);
 
-    public abstract string Solve(string input);
+    public abstract IAsyncEnumerable<ProblemUpdate> Solve(string input);
 }

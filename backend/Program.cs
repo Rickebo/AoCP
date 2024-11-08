@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Backend;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,7 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddConnections()
     .AddAocPlatform()
-    .AddControllers();
+    .AddControllers()
+    .AddJsonOptions(
+        options =>
+        {
+            options.JsonSerializerOptions.PropertyNamingPolicy =
+                JsonNamingPolicy.CamelCase;
+        }
+    );
 
 var corsName = "allow_all";
 builder.Services.AddCors(
@@ -21,6 +29,7 @@ builder.Services.AddCors(
 var app = builder.Build();
 
 app.UseCors(corsName);
+app.UseWebSockets();
 
 app.UseHttpsRedirection();
 
