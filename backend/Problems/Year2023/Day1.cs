@@ -1,4 +1,6 @@
-﻿namespace Backend.Problems.Year2023;
+﻿using Backend.Problems.Updates;
+
+namespace Backend.Problems.Year2023;
 
 public class Day1 : ProblemSet
 {
@@ -22,20 +24,27 @@ public class Day1 : ProblemSet
 
         public override async IAsyncEnumerable<ProblemUpdate> Solve(string input)
         {
-            var result = input
-                .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries)
-                .Select(
-                    line =>
-                        (int)char.GetNumericValue(line.First(char.IsDigit)) * 10 +
-                        (int)char.GetNumericValue(line.Last(char.IsDigit))
-                )
-                .Sum()
-                .ToString();
-            
+            var sum = 0;
+            foreach (var line in input.Split(
+                         ["\r\n", "\r", "\n"],
+                         StringSplitOptions.RemoveEmptyEntries
+                     ))
+            {
+                var count = (int)char.GetNumericValue(line.First(char.IsDigit)) * 10 +
+                            (int)char.GetNumericValue(line.Last(char.IsDigit));
+
+                yield return new TextProblemUpdate()
+                {
+                    Lines = [$"{line} = {count}"]
+                };
+
+                sum += count;
+            }
+
             yield return new FinishedProblemUpdate()
             {
                 Successful = true,
-                Solution = result
+                Solution = sum.ToString()
             };
         }
     }

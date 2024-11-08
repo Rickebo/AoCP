@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Backend.Problems;
+using Backend.Problems.Updates;
 using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -113,8 +114,6 @@ public class ProblemController(ProblemService problemService) : ControllerBase
                     Successful = false
                 }
             );
-            
-            HttpContext.Response.StatusCode = (int)HttpStatusCode.BadRequest;
         }
     }
 
