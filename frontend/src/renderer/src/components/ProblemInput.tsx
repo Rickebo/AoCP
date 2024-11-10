@@ -16,6 +16,11 @@ const ProblemInput: FC<ProblemInputProps> = (props) => {
         placeholder="Your problem input..."
         onChange={(e) => setInput(e.currentTarget.value)}
         multiple
+        style={{
+          fontFamily: 'Source Code Pro, monospace',
+          fontWeight: 300
+
+        }}
       />
       <div className="vr" />
       <Button onClick={() => props.onSolve(input)}>
