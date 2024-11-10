@@ -1,6 +1,6 @@
 import { ProblemMetadata } from '@renderer/data/metadata'
 import { FC } from 'react'
-import { Container } from 'react-bootstrap'
+import { Accordion } from 'react-bootstrap'
 import ProblemDescription from './ProblemDescription'
 
 export interface ProblemProps {
@@ -9,10 +9,19 @@ export interface ProblemProps {
 
 const Problem: FC<ProblemProps> = (props) => {
   return (
-    <Container className="">
+    <div className="">
       {/* <p>{props.metadata.description}</p> */}
-      <ProblemDescription metadata={props.metadata} />
-    </Container>
+      <Accordion defaultActiveKey="description">
+        <Accordion.Item eventKey="description">
+          <Accordion.Header>
+            Problem description
+          </Accordion.Header>
+          <Accordion.Body>
+            <ProblemDescription metadata={props.metadata} />
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
+    </div>
   )
 }
 

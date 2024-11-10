@@ -15,6 +15,10 @@ export interface OngoingProblemUpdate extends ProblemUpdate {
 
 }
 
+export interface StartProblemUpdate extends OngoingProblemUpdate {
+
+}
+
 export interface TextProblemUpdate extends OngoingProblemUpdate {
   text: string
   lines: string[]

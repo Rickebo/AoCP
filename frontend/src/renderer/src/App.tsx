@@ -1,14 +1,13 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-import { Container } from 'react-bootstrap'
 import Layout from './Layout'
 
 document.documentElement.dataset.bsTheme = 'dark'
 
 function App(): JSX.Element {
   return (
-    <Container className="position-absolute inset">
+    <div className="overflow-hidden h-100">
       <Layout />
-    </Container>
+    </div>
   )
 }
 

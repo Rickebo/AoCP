@@ -8,7 +8,7 @@ const Layout: FC = () => {
   const [selectedProblemSet, setSelectedProblemSet] = useState<ProblemSetMetadata | undefined>(undefined)
 
   return (
-    <div className="m-1">
+    <div className="m-1 h-100">
       <NavigationBar
         setProblemSet={(year, set) => {
           setYear(year)
@@ -16,9 +16,11 @@ const Layout: FC = () => {
         }}
       />
 
-      {year == null || selectedProblemSet == null ? null : (
-        <ProblemSet year={year} set={selectedProblemSet} />
-      )}
+      <div className="p-2 d-flex-column flex-grow-1 overflow-hidden">
+        {year == null || selectedProblemSet == null ? null : (
+          <ProblemSet year={year} set={selectedProblemSet} />
+        )}
+      </div>
     </div>
 
   )
