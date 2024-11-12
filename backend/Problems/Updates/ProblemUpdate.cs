@@ -5,6 +5,7 @@ namespace Backend.Problems.Updates;
 [JsonDerivedType(typeof(OngoingProblemUpdate))]
 [JsonDerivedType(typeof(FinishedProblemUpdate))]
 [JsonDerivedType(typeof(TextProblemUpdate))]
+[JsonDerivedType(typeof(StartProblemUpdate))]
 public abstract class ProblemUpdate
 {
     public abstract string Type { get; }

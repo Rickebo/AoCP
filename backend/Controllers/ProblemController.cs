@@ -91,14 +91,17 @@ public class ProblemController(ProblemService problemService) : ControllerBase
             return;
         }
 
+        await Transmit(socket, new StartProblemUpdate
+        {
+            Id = id
+        });
+        
         try
         {
-            ProblemUpdate? lastUpdate = null;
             await foreach (
                 var update in problem.Solve(input).WithCancellation(CancellationToken.None)
             )
             {
-                lastUpdate = update;
                 update.Id = id;
                 await Transmit(socket, update);
             }
