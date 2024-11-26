@@ -40,6 +40,25 @@ public class Day10 : ProblemSet
 
         public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
         {
+            var rnd = Random.Shared;
+            for (var i = 0; i < 100; i++)
+            {
+                Thread.Sleep(500);
+                var x = rnd.Next(100);
+                var y = rnd.Next(100);
+
+                yield return new GridUpdate
+                {
+                    Rows = new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        [y.ToString()] = new()
+                        {
+                            [x.ToString()] = "#FFFFFF"
+                        }
+                    }
+                };
+            }
+            
             var result = Graph
                 .Parse(input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None))
                 .CountWithinLoop()

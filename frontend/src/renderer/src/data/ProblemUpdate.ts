@@ -11,15 +11,16 @@ export interface FinishedProblemUpdate extends ProblemUpdate {
   error: string | undefined
 }
 
-export interface OngoingProblemUpdate extends ProblemUpdate {
+export interface OngoingProblemUpdate extends ProblemUpdate {}
 
-}
-
-export interface StartProblemUpdate extends OngoingProblemUpdate {
-
-}
+export interface StartProblemUpdate extends OngoingProblemUpdate {}
 
 export interface TextProblemUpdate extends OngoingProblemUpdate {
   text: string
   lines: string[]
+}
+
+export interface GridUpdate extends OngoingProblemUpdate {
+  clear: boolean
+  rows: Record<string, Record<string, string>>
 }

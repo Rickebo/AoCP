@@ -26,7 +26,7 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return {
-      action: 'allow',
+      action: 'deny',
       overrideBrowserWindowOptions: {
         show: false,
         backgroundColor: 'black',
@@ -65,7 +65,7 @@ app.whenReady().then(() => {
 
   createWindow()
 
-  app.on('activate', function() {
+  app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) createWindow()

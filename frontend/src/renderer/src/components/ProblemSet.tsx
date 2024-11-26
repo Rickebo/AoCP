@@ -1,16 +1,13 @@
-import React, { CSSProperties, FC, useCallback, useState } from 'react'
+import { createRef, CSSProperties, FC, ReactNode, useEffect, useRef } from 'react'
 import Problem from './Problem'
 import ProblemInput from './ProblemInput'
-import { ProblemMetadata, ProblemSetMetadata } from '../data/metadata'
-import { ProblemId } from '../services/ProblemService'
-import { useProblemService } from '../hooks'
+import { ProblemSetMetadata } from '../data/metadata'
 import ProblemSolution from './ProblemSolution'
 import { Accordion, Tab, Tabs } from 'react-bootstrap'
-import classNames from 'classnames'
-import ProblemSocket from '../services/ProblemSocket'
-import { FinishedProblemUpdate, ProblemUpdate, TextProblemUpdate } from '../data/ProblemUpdate'
 import ProblemLog from './ProblemLog'
-import { BsArrowRight } from 'react-icons/bs'
+import { useConnectionManager } from '../ConnectionManager'
+import classNames from 'classnames'
+import Grid, { GridRef } from './Grid'
 
 export interface ProblemSetProps {
   year: number
@@ -22,8 +19,8 @@ export interface ProblemTitleProps {
   style?: CSSProperties | undefined
   textClassName?: string | undefined
   textStyle?: CSSProperties | undefined
-  parts: string[]
-  delimiter: React.ReactNode
+  parts: ReactNode[]
+  delimiter: ReactNode
 }
 
 const ProblemTitle: FC<ProblemTitleProps> = (props) => {
@@ -52,96 +49,46 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 }
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
-  const problemService = useProblemService()
-  const [, setSocket] = useState<ProblemSocket | undefined>()
+  const gridRef = useRef<GridRef>(null)
+  const mgr = useConnectionManager(props.year, props.set, gridRef)
 
-  const [solutions, setSolutions] = useState<Record<string, string>>({})
-  const [log, setLog] = useState<Record<string, string[] | undefined>>({})
-
-  const handleFinished = (update: FinishedProblemUpdate): void => {
-    if (update.solution == null) return
-
-    setSolutions((solutions) => {
-      return {
-        ...solutions,
-        [update.id.problemName]: update.solution!
-      }
-    })
-  }
-
-  const handleStart = (): void => {
-    setSolutions({})
-    setLog({})
-  }
-
-  const handlers: Record<string, (update: ProblemUpdate) => void> = {
-    text: (update) => handleLog(update as TextProblemUpdate),
-    finished: (update: ProblemUpdate) => handleFinished(update as FinishedProblemUpdate)
-  }
-
-  const handleLog = (update: TextProblemUpdate): void => {
-    setLog((current) => {
-      const newLog = current[update.id.problemName] ?? []
-
-      if (update.text != null) {
-        if (newLog.length == 0) {
-          newLog.push(update.text)
-        } else {
-          newLog[newLog.length - 1] += update.text
-        }
-      }
-
-      if (update.lines != null) {
-        newLog.push(...update.lines)
-      }
-
-      return {
-        ...current,
-        [update.id.problemName]: newLog
-      }
-    })
-  }
-
-  const handleMessage = useCallback((message: MessageEvent) => {
-    const data = JSON.parse(message.data) as ProblemUpdate
-    handlers[data.type]?.(data)
-  }, [])
-
-  const solve = async (problem: ProblemMetadata, input: string): Promise<void> => {
-    if (problem.name == null) throw new Error('Cannot solve unnamed problem.')
-
-    const id: ProblemId = {
-      year: props.year,
-      setName: props.set.name,
-      problemName: problem.name
-    }
-
-    problemService.solve(id, input).then((socket) => {
-      setSocket(socket)
-      socket.addHandler(handleMessage)
-    })
-  }
-
-  const solveAll = (input: string): void => {
-    handleStart()
-    for (const problem of props.set.problems) {
-      if (problem.name == null) continue
-      solve(problem, input)
-    }
+  const navigate = (url: string): void => {
+    window.open(url)
   }
 
   return (
     <div className="d-flex flex-column overflow-auto">
-      <ProblemTitle
-        delimiter={<BsArrowRight />}
-        parts={[props.year.toString(), props.set.name]}
-        textStyle={{
-          fontFamily: 'Source Code Pro, monospace',
-          fontWeight: 800
-        }}
-      />
+      <div className="mx-2">
+        <ProblemTitle
+          delimiter={'/'}
+          parts={[
+            <a
+              key="year"
+              href="#"
+              onClick={() => navigate(`https://adventofcode.com/${props.year}`)}
+            >
+              {props.year}
+            </a>,
+            <a
+              key="day"
+              href="#"
+              onClick={() =>
+                navigate(
+                  `https://adventofcode.com/${props.year}/day/${new Date(props.set.releaseTime).getDate()}`
+                )
+              }
+            >
+              {props.set.name}
+            </a>
+          ]}
+          textStyle={{
+            fontFamily: 'Source Code Pro, monospace',
+            fontWeight: 800
+          }}
+        />
 
-      <ProblemInput className="mb-3" onSolve={solveAll} />
+        <ProblemInput className="mb-3" onSolve={mgr.solveAll} />
+      </div>
 
       <Tabs>
         {props.set.problems.map((problem, i) => (
@@ -149,19 +96,30 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             <div className="mx-1 mt-2 overflow-auto">
               <Problem key={problem.name} metadata={problem} />
 
-              {problem.name == null || log[problem.name] == null ? null : (
+              {problem.name == null || mgr.log(problem.name) == null ? null : (
                 <Accordion className="mt-3">
                   <Accordion.Item eventKey="log" title="Log">
-                    <ProblemLog content={log[problem.name]!} />
+                    <Accordion.Header>Log</Accordion.Header>
+                    <Accordion.Body>
+                      <ProblemLog content={mgr.log(problem.name)!} />
+                    </Accordion.Body>
                   </Accordion.Item>
                 </Accordion>
               )}
 
-              {problem.name == null || solutions[problem.name] == null ? null : (
+              <Grid
+                ref={gridRef}
+                displayHeight={400}
+                displayWidth={400}
+                width={100}
+                height={100}
+              />
+
+              {problem.name == null || mgr.solution(problem.name) == null ? null : (
                 <ProblemSolution
                   key={problem.name}
                   problem={problem}
-                  solution={solutions[problem.name!]}
+                  solution={mgr.solution(problem.name!)}
                   className="mt-3"
                 />
               )}

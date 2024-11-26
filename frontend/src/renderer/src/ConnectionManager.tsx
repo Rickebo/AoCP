@@ -1,0 +1,127 @@
+import { MutableRefObject, useCallback, useEffect, useState } from 'react'
+import {
+  FinishedProblemUpdate,
+  GridUpdate,
+  ProblemUpdate,
+  TextProblemUpdate
+} from './data/ProblemUpdate'
+import ProblemSocket from './services/ProblemSocket'
+import { useProblemService } from './hooks'
+import ProblemService, { ProblemId } from './services/ProblemService'
+import { ProblemMetadata, ProblemSetMetadata } from './data/metadata'
+import { GridData, GridRef } from './components/Grid'
+
+export interface ProblemFeedbackHandler {
+  problemService: ProblemService
+  solution: (problemName: string) => string | undefined
+  log: (problemName: string) => string[] | undefined
+  solve: (problem: ProblemMetadata, input: string) => Promise<void>
+  solveAll: (input: string) => void
+}
+
+export function useConnectionManager(
+  year: number,
+  set: ProblemSetMetadata,
+  gridRef: MutableRefObject<GridRef>
+): ProblemFeedbackHandler {
+  const problemService = useProblemService()
+  const [solutions, setSolutions] = useState<Record<string, string>>({})
+  const [log, setLog] = useState<Record<string, string[] | undefined>>({})
+  const [, setSocket] = useState<ProblemSocket | undefined>()
+  const [gridQueue, setGridQueue] = useState<GridData[]>([])
+
+  useEffect(() => {
+    if (gridQueue.length < 1 || gridRef.current?.draw == null) return
+
+    for (const gridItem of gridQueue) {
+      gridRef.current.draw(gridItem)
+    }
+
+    setGridQueue([])
+  }, [gridQueue, gridRef.current])
+
+  const handleFinished = (update: FinishedProblemUpdate): void => {
+    if (update.solution == null) return
+
+    setSolutions((solutions) => {
+      return {
+        ...solutions,
+        [update.id.problemName]: update.solution!
+      }
+    })
+  }
+
+  const handleStart = (): void => {
+    setSolutions({})
+    setLog({})
+  }
+
+  const handleLog = (update: TextProblemUpdate): void => {
+    setLog((current) => {
+      const newLog = current[update.id.problemName] ?? []
+
+      if (update.text != null) {
+        if (newLog.length == 0) {
+          newLog.push(update.text)
+        } else {
+          newLog[newLog.length - 1] += update.text
+        }
+      }
+
+      if (update.lines != null) {
+        newLog.push(...update.lines)
+      }
+
+      return {
+        ...current,
+        [update.id.problemName]: newLog
+      }
+    })
+  }
+
+  const handleGrid = (update: GridUpdate): void => {
+    setGridQueue((current) => [...current, update.rows as GridData])
+  }
+
+  const handlers: Record<string, (update: ProblemUpdate) => void> = {
+    text: (update) => handleLog(update as TextProblemUpdate),
+    finished: (update: ProblemUpdate) => handleFinished(update as FinishedProblemUpdate),
+    grid: (update: GridUpdate) => handleGrid(update as GridUpdate)
+  }
+
+  const handleMessage = useCallback((message: MessageEvent) => {
+    const data = JSON.parse(message.data) as ProblemUpdate
+    handlers[data.type]?.(data)
+  }, [])
+
+  const solve = async (problem: ProblemMetadata, input: string): Promise<void> => {
+    if (problem.name == null) throw new Error('Cannot solve unnamed problem.')
+
+    const id: ProblemId = {
+      year: year,
+      setName: set.name,
+      problemName: problem.name
+    }
+
+    problemService.solve(id, input).then((socket) => {
+      setSocket(socket)
+      socket.addHandler(handleMessage)
+    })
+  }
+
+  const solveAll = (input: string): void => {
+    handleStart()
+    for (const problem of set.problems) {
+      if (problem.name == null) continue
+      solve(problem, input)
+    }
+  }
+
+  return {
+    problemService: problemService,
+    solution: (name: string): string | undefined => solutions[name],
+    log: (name: string): string[] | undefined => log[name],
+    solve: solve,
+    solveAll: solveAll
+  }
+}
