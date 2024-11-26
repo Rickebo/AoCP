@@ -1,13 +1,13 @@
 ﻿import { MetadataService } from './services/MetadataService'
 import ProblemService from './services/ProblemService'
-
-const baseUrl = 'http://localhost:20011'
+import { useBackend } from './context/BackendContext'
 
 export function useMetadataService(): MetadataService {
-  return new MetadataService(baseUrl)
+  const backend = useBackend()
+  return new MetadataService(backend.url)
 }
 
-
 export function useProblemService(): ProblemService {
-  return new ProblemService(baseUrl)
+  const backend = useBackend()
+  return new ProblemService(backend.url)
 }
