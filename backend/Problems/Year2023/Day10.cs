@@ -23,6 +23,11 @@ public class Day10 : ProblemSet
 
         public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
         {
+            yield return new GridUpdate()
+            {
+                Clear = true
+            };
+            
             var rnd = Random.Shared;
             for (var i = 0; i < 100; i++)
             {

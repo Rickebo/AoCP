@@ -5,16 +5,18 @@ export interface ProblemLogProps {
 }
 
 const ProblemLog: FC<ProblemLogProps> = (props) => {
-  const lastIndex = props.content.length - 1
+  const lastIndex = props.content?.length ?? 0 - 1
 
   return (
     <div className="bg-body-tertiary p-2 px-3 rounded">
-      <pre style={{
-        fontFamily: 'Source Code Pro',
-        fontWeight: 300
-      }}>
+      <pre
+        style={{
+          fontFamily: 'Source Code Pro',
+          fontWeight: 300
+        }}
+      >
         <code>
-          {props.content.map((line, i) => (
+          {props.content?.map((line, i) => (
             <span key={i}>
               {line}
               {i == lastIndex ? null : <br />}

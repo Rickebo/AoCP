@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useImperativeHandle, useRef } from 'react'
 
 export type GridData = Record<string, Record<string, string>>
 
@@ -15,13 +15,15 @@ export interface GridRef {
 }
 
 const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
-  const canvasRef = useRef<HTMLCanvasElement | undefined>(undefined)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   const draw = (data: GridData): void => {
-    const canvas = canvasRef.current
-    if (canvas == null) return
+    if (data == null) return
 
-    const context = canvas.getContext('2d')
+    const canvas = canvasRef.current
+    const context = canvas?.getContext('2d')
+
+    if (canvas == null || context == null) return
 
     const canvasWidth = context.canvas?.width ?? canvas?.width ?? 0
     const canvasHeight = context.canvas?.height ?? canvas?.height ?? 0
@@ -50,8 +52,8 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
   const clear = (): void => {
     if (canvasRef.current == null) return
     canvasRef.current
-      .getContext('2d')
-      .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+      ?.getContext('2d')
+      ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
   }
 
   useImperativeHandle(ref, (): GridRef => {

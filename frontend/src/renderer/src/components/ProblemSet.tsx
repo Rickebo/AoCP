@@ -3,11 +3,12 @@ import Problem from './Problem'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
 import ProblemSolution from './ProblemSolution'
-import { Accordion, Tab, Tabs } from 'react-bootstrap'
+import { Accordion, Col, Nav, Row, Stack, Tab, Tabs } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
+import ProblemDescription from './ProblemDescription'
 
 export interface ProblemSetProps {
   year: number
@@ -56,6 +57,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     window.open(url)
   }
 
+  const defaultKey = props.set.problems[0].name ?? undefined
+
   return (
     <div className="d-flex flex-column overflow-auto">
       <div className="mx-2">
@@ -90,45 +93,67 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
         <ProblemInput className="mb-3" onSolve={mgr.solveAll} />
       </div>
 
-      <Tabs>
-        {props.set.problems.map((problem, i) => (
-          <Tab key={problem.name} eventKey={problem.name ?? i.toString()} title={problem.name}>
-            <div className="mx-1 mt-2 overflow-auto">
-              <Problem key={problem.name} metadata={problem} />
-
-              {problem.name == null || mgr.log(problem.name) == null ? null : (
-                <Accordion className="mt-3">
-                  <Accordion.Item eventKey="log" title="Log">
-                    <Accordion.Header>Log</Accordion.Header>
-                    <Accordion.Body>
+      <Tab.Container id="problems" defaultActiveKey={defaultKey}>
+        <Stack direction="horizontal" className="mx-1">
+          <Nav variant="pills">
+            {props.set.problems.map((problem, i) => (
+              <Nav.Item key={problem.name}>
+                <Nav.Link eventKey={problem.name ?? i.toString()}>{problem.name}</Nav.Link>
+              </Nav.Item>
+            ))}
+          </Nav>
+        </Stack>
+        <Tab.Content>
+          {props.set.problems.map((problem, i) => (
+            <Tab.Pane
+              key={problem.name}
+              eventKey={problem.name ?? i.toString()}
+              title={problem.name}
+            >
+              <div className="mx-1 mt-2 overflow-auto">
+                <Tabs className="position-relative inset-0">
+                  <Tab
+                    key="desc"
+                    title="Description"
+                    className="d-flex flex-grow-1"
+                    eventKey="desc"
+                  >
+                    <ProblemDescription metadata={problem} />
+                  </Tab>
+                  {problem.name == null ? null : (
+                    <Tab key="grid" title="Grid" eventKey="grid">
+                      <Grid
+                        ref={(grid) => {
+                          grids.current[problem.name] = grid
+                        }}
+                        displayHeight={400}
+                        displayWidth={400}
+                        width={100}
+                        height={100}
+                      />
+                    </Tab>
+                  )}
+                  {problem.name == null ? null : (
+                    <Tab key="log" title="Log" eventKey="log">
                       <ProblemLog content={mgr.log(problem.name)!} />
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
-              )}
-
-              <Grid
-                ref={(grid) => {
-                  grids.current[problem.name] = grid
-                }}
-                displayHeight={400}
-                displayWidth={400}
-                width={100}
-                height={100}
-              />
-
-              {problem.name == null || mgr.solution(problem.name) == null ? null : (
-                <ProblemSolution
-                  key={problem.name}
-                  problem={problem}
-                  solution={mgr.solution(problem.name!)}
-                  className="mt-3"
-                />
-              )}
-            </div>
-          </Tab>
-        ))}
-      </Tabs>
+                    </Tab>
+                  )}
+                  {problem.name == null ? null : (
+                    <Tab key="solution" title="Solution" eventKey="solution">
+                      <ProblemSolution
+                        key={problem.name}
+                        problem={problem}
+                        solution={mgr.solution(problem.name!)}
+                        className="mt-3"
+                      />
+                    </Tab>
+                  )}
+                </Tabs>
+              </div>
+            </Tab.Pane>
+          ))}
+        </Tab.Content>
+      </Tab.Container>
     </div>
   )
 }
