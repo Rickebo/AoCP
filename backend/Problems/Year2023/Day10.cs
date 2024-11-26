@@ -23,11 +23,40 @@ public class Day10 : ProblemSet
 
         public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
         {
+            var graph = Graph.Parse(
+                input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
+            );
+
             yield return new GridUpdate()
             {
-                Clear = true
+                Width = graph.Grid.GetLength(1),
+                Height = graph.Grid.GetLength(0),
+                Clear = true,
+                Rows = Enumerable
+                    .Range(0, graph.Grid.GetLength(0))
+                    .ToDictionary(
+                        y => y.ToString(),
+                        y => Enumerable
+                            .Range(0, graph.Grid.GetLength(1))
+                            .ToDictionary(
+                                x => x.ToString(),
+                                x => graph.Grid[y, x] != '.' ? "#FFFFFF" : "#000000"
+                            )
+                    )
             };
-            
+
+
+            yield return new GridUpdate()
+            {
+                Rows = new Dictionary<string, Dictionary<string, string>>()
+                {
+                    ["0"] = new()
+                    {
+                        ["0"] = "S"
+                    }
+                }
+            };
+
             var rnd = Random.Shared;
             for (var i = 0; i < 100; i++)
             {
@@ -46,9 +75,8 @@ public class Day10 : ProblemSet
                     }
                 };
             }
-            
-            var result = Graph
-                .Parse(input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None))
+
+            var result = graph
                 .BreadthFirstSearch()
                 .ToString();
 
@@ -82,7 +110,7 @@ public class Day10 : ProblemSet
                     }
                 };
             }
-            
+
             var result = Graph
                 .Parse(input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None))
                 .CountWithinLoop()

@@ -31,7 +31,7 @@ export function useConnectionManager(
   const [gridQueue, setGridQueue] = useState<Record<string, GridData[]>>({})
 
   useEffect(() => {
-    if (gridQueue.length < 1) return
+    if (Object.entries(gridQueue).length < 1) return
     let update = false
     const clone = { ...gridQueue }
 
@@ -105,12 +105,14 @@ export function useConnectionManager(
     })
 
     if (update.clear) grids.current[update.id.problemName]?.clear()
+    if (update.width != null && update.height != null)
+      grids.current[update.id.problemName]?.setSize(update.width, update.height)
   }
 
   const handlers: Record<string, (update: ProblemUpdate) => void> = {
-    text: (update) => handleLog(update as TextProblemUpdate),
+    text: (update: ProblemUpdate) => handleLog(update as TextProblemUpdate),
     finished: (update: ProblemUpdate) => handleFinished(update as FinishedProblemUpdate),
-    grid: (update: GridUpdate) => handleGrid(update as GridUpdate)
+    grid: (update: ProblemUpdate) => handleGrid(update as GridUpdate)
   }
 
   const handleMessage = useCallback((message: MessageEvent) => {

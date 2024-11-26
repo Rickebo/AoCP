@@ -1,9 +1,8 @@
-import { createRef, CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
-import Problem from './Problem'
+import { CSSProperties, FC, ReactNode, useRef } from 'react'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
 import ProblemSolution from './ProblemSolution'
-import { Accordion, Col, Nav, Row, Stack, Tab, Tabs } from 'react-bootstrap'
+import { Nav, Stack, Tab } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
@@ -60,7 +59,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   const defaultKey = props.set.problems[0].name ?? undefined
 
   return (
-    <div className="d-flex flex-column overflow-auto">
+    <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>
       <div className="mx-2">
         <ProblemTitle
           delimiter={'/'}
@@ -103,52 +102,76 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             ))}
           </Nav>
         </Stack>
-        <Tab.Content>
+        <Tab.Content style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden'}}>
           {props.set.problems.map((problem, i) => (
             <Tab.Pane
               key={problem.name}
               eventKey={problem.name ?? i.toString()}
               title={problem.name}
+              className="h-100 w-100"
             >
-              <div className="mx-1 mt-2 overflow-auto">
-                <Tabs className="position-relative inset-0">
-                  <Tab
-                    key="desc"
-                    title="Description"
-                    className="d-flex flex-grow-1"
-                    eventKey="desc"
+              <div
+                className="d-flex-column flex-grow-1 h-100 w-100"
+                style={{
+                  display: 'flex',
+                  flex: '1 1 auto',
+                  flexFlow: 'column'
+                }}
+              >
+                <Tab.Container>
+                  <Nav variant="tabs">
+                    <Nav.Item>
+                      <Nav.Link eventKey="description">Description</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link eventKey="grid">Grid</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link eventKey="log">Log</Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link eventKey="solution">Solution</Nav.Link>
+                    </Nav.Item>
+                  </Nav>
+                  <Tab.Content
+                    style={{ display: 'flex', flex: '1 1 auto' }}
+                    className="h-100 w-100 overflow-auto"
                   >
-                    <ProblemDescription metadata={problem} />
-                  </Tab>
-                  {problem.name == null ? null : (
-                    <Tab key="grid" title="Grid" eventKey="grid">
-                      <Grid
-                        ref={(grid) => {
-                          grids.current[problem.name] = grid
-                        }}
-                        displayHeight={400}
-                        displayWidth={400}
-                        width={100}
-                        height={100}
-                      />
-                    </Tab>
-                  )}
-                  {problem.name == null ? null : (
-                    <Tab key="log" title="Log" eventKey="log">
-                      <ProblemLog content={mgr.log(problem.name)!} />
-                    </Tab>
-                  )}
-                  {problem.name == null ? null : (
-                    <Tab key="solution" title="Solution" eventKey="solution">
-                      <ProblemSolution
-                        key={problem.name}
-                        problem={problem}
-                        solution={mgr.solution(problem.name!)}
-                        className="mt-3"
-                      />
-                    </Tab>
-                  )}
-                </Tabs>
+                    <Tab.Pane eventKey="description">
+                      <ProblemDescription metadata={problem} />
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="grid" style={{
+                      flexGrow: '1'
+                    }}>
+                      <div className="w-100 h-100 d-flex">
+                        {problem.name == null ? null : (
+                          <Grid
+                            ref={(grid) => {
+                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                              // @ts-ignore
+                              grids.current[problem.name] = grid
+                            }}
+                          />
+                        )}
+                      </div>
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="log">
+                      {problem.name == null ? null : (
+                        <ProblemLog content={mgr.log(problem.name)!} />
+                      )}
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="solution">
+                      {problem.name == null ? null : (
+                        <ProblemSolution
+                          key={problem.name}
+                          problem={problem}
+                          solution={mgr.solution(problem.name!)}
+                          className="mt-3"
+                        />
+                      )}
+                    </Tab.Pane>
+                  </Tab.Content>
+                </Tab.Container>
               </div>
             </Tab.Pane>
           ))}

@@ -22,5 +22,7 @@ export interface TextProblemUpdate extends OngoingProblemUpdate {
 
 export interface GridUpdate extends OngoingProblemUpdate {
   clear: boolean
+  width: number
+  height: number
   rows: Record<string, Record<string, string>>
 }
