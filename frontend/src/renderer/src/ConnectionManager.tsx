@@ -22,23 +22,33 @@ export interface ProblemFeedbackHandler {
 export function useConnectionManager(
   year: number,
   set: ProblemSetMetadata,
-  gridRef: MutableRefObject<GridRef>
+  grids: MutableRefObject<Record<string, GridRef | null>>
 ): ProblemFeedbackHandler {
   const problemService = useProblemService()
   const [solutions, setSolutions] = useState<Record<string, string>>({})
   const [log, setLog] = useState<Record<string, string[] | undefined>>({})
   const [, setSocket] = useState<ProblemSocket | undefined>()
-  const [gridQueue, setGridQueue] = useState<GridData[]>([])
+  const [gridQueue, setGridQueue] = useState<Record<string, GridData[]>>({})
 
   useEffect(() => {
-    if (gridQueue.length < 1 || gridRef.current?.draw == null) return
+    if (gridQueue.length < 1) return
+    let update = false
+    const clone = { ...gridQueue }
 
-    for (const gridItem of gridQueue) {
-      gridRef.current.draw(gridItem)
+    for (const [name, queue] of Object.entries(clone)) {
+      const ref = grids.current[name]
+      if (ref?.draw == null || queue.length === 0) continue
+
+      for (const item of queue) ref.draw(item)
+
+      clone[name] = []
+      update = true
     }
 
-    setGridQueue([])
-  }, [gridQueue, gridRef.current])
+    if (update) {
+      setGridQueue(clone)
+    }
+  }, [gridQueue, grids.current])
 
   const handleFinished = (update: FinishedProblemUpdate): void => {
     if (update.solution == null) return
@@ -80,7 +90,21 @@ export function useConnectionManager(
   }
 
   const handleGrid = (update: GridUpdate): void => {
-    setGridQueue((current) => [...current, update.rows as GridData])
+    setGridQueue((current) => {
+      const problemName = update.id.problemName
+
+      const replacer = {
+        ...current
+      }
+
+      const queue = replacer[problemName] ?? []
+      queue.push(update.rows)
+      replacer[problemName] = queue
+
+      return replacer
+    })
+
+    if (update.clear) grids.current[update.id.problemName]?.clear()
   }
 
   const handlers: Record<string, (update: ProblemUpdate) => void> = {

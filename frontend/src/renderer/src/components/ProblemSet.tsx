@@ -1,4 +1,4 @@
-import { createRef, CSSProperties, FC, ReactNode, useEffect, useRef } from 'react'
+import { createRef, CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
 import Problem from './Problem'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
@@ -49,8 +49,8 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 }
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
-  const gridRef = useRef<GridRef>(null)
-  const mgr = useConnectionManager(props.year, props.set, gridRef)
+  const grids = useRef<Record<string, GridRef>>({})
+  const mgr = useConnectionManager(props.year, props.set, grids)
 
   const navigate = (url: string): void => {
     window.open(url)
@@ -108,7 +108,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
               )}
 
               <Grid
-                ref={gridRef}
+                ref={(grid) => {
+                  grids.current[problem.name] = grid
+                }}
                 displayHeight={400}
                 displayWidth={400}
                 width={100}

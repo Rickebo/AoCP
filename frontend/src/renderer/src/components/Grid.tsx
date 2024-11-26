@@ -49,7 +49,9 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
 
   const clear = (): void => {
     if (canvasRef.current == null) return
-    canvasRef.current.getContext('2d').clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+    canvasRef.current
+      .getContext('2d')
+      .clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
   }
 
   useImperativeHandle(ref, (): GridRef => {
