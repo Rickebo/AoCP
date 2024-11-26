@@ -1,19 +1,14 @@
-import { ProblemSetMetadata } from '@renderer/data/metadata'
 import React, { CSSProperties, FC, useCallback, useState } from 'react'
 import Problem from './Problem'
 import ProblemInput from './ProblemInput'
-import { ProblemMetadata } from '../data/metadata'
+import { ProblemMetadata, ProblemSetMetadata } from '../data/metadata'
 import { ProblemId } from '../services/ProblemService'
 import { useProblemService } from '../hooks'
 import ProblemSolution from './ProblemSolution'
 import { Accordion, Tab, Tabs } from 'react-bootstrap'
 import classNames from 'classnames'
 import ProblemSocket from '../services/ProblemSocket'
-import {
-  FinishedProblemUpdate,
-  ProblemUpdate,
-  TextProblemUpdate
-} from '../data/ProblemUpdate'
+import { FinishedProblemUpdate, ProblemUpdate, TextProblemUpdate } from '../data/ProblemUpdate'
 import ProblemLog from './ProblemLog'
 import { BsArrowRight } from 'react-icons/bs'
 
@@ -44,10 +39,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
             {part}
           </h3>
           {i == props.parts.length - 1 ? null : (
-            <h3
-              className={classNames('d-inline', props.textClassName)}
-              style={props.textStyle}
-            >
+            <h3 className={classNames('d-inline', props.textClassName)} style={props.textStyle}>
               &nbsp;
               {props.delimiter}
               &nbsp;
@@ -124,11 +116,10 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
       problemName: problem.name
     }
 
-    problemService.solve(id, input)
-      .then((socket) => {
-        setSocket(socket)
-        socket.addHandler(handleMessage)
-      })
+    problemService.solve(id, input).then((socket) => {
+      setSocket(socket)
+      socket.addHandler(handleMessage)
+    })
   }
 
   const solveAll = (input: string): void => {
@@ -140,13 +131,10 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   }
 
   return (
-    <div className="gap-3">
+    <div className="d-flex flex-column overflow-auto">
       <ProblemTitle
         delimiter={<BsArrowRight />}
-        parts={[
-          props.year.toString(),
-          props.set.name
-        ]}
+        parts={[props.year.toString(), props.set.name]}
         textStyle={{
           fontFamily: 'Source Code Pro, monospace',
           fontWeight: 800
@@ -157,9 +145,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
 
       <Tabs>
         {props.set.problems.map((problem, i) => (
-          <Tab key={problem.name} eventKey={problem.name ?? i.toString()}
-               title={problem.name}>
-            <div className="mt-2 overflow-auto">
+          <Tab key={problem.name} eventKey={problem.name ?? i.toString()} title={problem.name}>
+            <div className="mx-1 mt-2 overflow-auto">
               <Problem key={problem.name} metadata={problem} />
 
               {problem.name == null || log[problem.name] == null ? null : (

@@ -36,12 +36,14 @@ export const BackendProvider: React.FC<{ children: ReactNode }> = ({ children })
       state.update((current) => {
         const index = current.urls.indexOf(url)
         if (index >= 0) current.url = index
+        state.save(current)
       })
     },
     addUrl: (url: string) => {
       state.update((current) => {
         current.urls.push(url)
         if (current.url == null) current.url = current.urls.length - 1
+        state.save(current)
       })
     },
     removeUrl: (url: string) => {
@@ -53,6 +55,7 @@ export const BackendProvider: React.FC<{ children: ReactNode }> = ({ children })
         else if (current.url > index) current.url--
 
         current.urls.splice(index, 1)
+        state.save(current)
       })
     }
   }

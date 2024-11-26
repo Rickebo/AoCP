@@ -5,10 +5,12 @@ import ProblemSet from './components/ProblemSet'
 
 const Layout: FC = () => {
   const [year, setYear] = useState<number | undefined>()
-  const [selectedProblemSet, setSelectedProblemSet] = useState<ProblemSetMetadata | undefined>(undefined)
+  const [selectedProblemSet, setSelectedProblemSet] = useState<ProblemSetMetadata | undefined>(
+    undefined
+  )
 
   return (
-    <div className="m-1 h-100">
+    <div className="h-100 d-flex flex-column">
       <NavigationBar
         setProblemSet={(year, set) => {
           setYear(year)
@@ -16,13 +18,12 @@ const Layout: FC = () => {
         }}
       />
 
-      <div className="p-2 d-flex-column flex-grow-1 overflow-hidden">
+      <div className="d-flex flex-column flex-grow-1 overflow-hidden">
         {year == null || selectedProblemSet == null ? null : (
           <ProblemSet year={year} set={selectedProblemSet} />
         )}
       </div>
     </div>
-
   )
 }
 

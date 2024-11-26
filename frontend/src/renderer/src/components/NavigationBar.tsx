@@ -11,7 +11,7 @@
 } from 'react-bootstrap'
 import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
-import { Metadata, ProblemSetMetadata } from '../data/metadata'
+import { Metadata, ProblemCollectionMetadata, ProblemSetMetadata } from '../data/metadata'
 import { useBackend } from '../context/BackendContext'
 
 export interface NavigationBarProps {
@@ -27,11 +27,13 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
 
   useEffect(() => {
+    setMetadata({} as Metadata)
+    setLoaded(false)
     metadataService.getMetadata().then((data) => {
       setMetadata(data)
       setLoaded(true)
     })
-  }, [])
+  }, [backend.url])
 
   const openGithub = (): void => {
     window.open('https://github.com/Rickebo/AoCP')
@@ -49,7 +51,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
             <Nav.Link onClick={openGithub}>GitHub</Nav.Link>
             {Object.entries(collections).map(([year, collection]) => (
               <NavDropdown key={year} title={year}>
-                {(collection ?? []).problemSets.map((problemSet) => (
+                {(collection?.problemSets ?? []).map((problemSet) => (
                   <NavDropdown.Item
                     key={`${year}/${problemSet.releaseTime}`}
                     onClick={() => props.setProblemSet(Number(year), problemSet)}
