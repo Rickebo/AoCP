@@ -36,7 +36,11 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
             {part}
           </h3>
           {i == props.parts.length - 1 ? null : (
-            <h3 className={classNames('d-inline', props.textClassName)} style={props.textStyle}>
+            <h3
+              key={`${i}-separator`}
+              className={classNames('d-inline', props.textClassName)}
+              style={props.textStyle}
+            >
               &nbsp;
               {props.delimiter}
               &nbsp;
@@ -102,7 +106,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             ))}
           </Nav>
         </Stack>
-        <Tab.Content style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden'}}>
+        <Tab.Content style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden' }}>
           {props.set.problems.map((problem, i) => (
             <Tab.Pane
               key={problem.name}
@@ -140,9 +144,12 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                     <Tab.Pane eventKey="description">
                       <ProblemDescription metadata={problem} />
                     </Tab.Pane>
-                    <Tab.Pane eventKey="grid" style={{
-                      flexGrow: '1'
-                    }}>
+                    <Tab.Pane
+                      eventKey="grid"
+                      style={{
+                        flexGrow: '1'
+                      }}
+                    >
                       <div className="w-100 h-100 d-flex">
                         {problem.name == null ? null : (
                           <Grid

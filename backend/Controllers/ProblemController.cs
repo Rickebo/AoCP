@@ -12,7 +12,7 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ProblemController(ProblemService problemService) : ControllerBase
+public class ProblemController(ILogger<ProblemController> logger, ProblemService problemService) : ControllerBase
 {
     private static JsonSerializerOptions JsonOptions = new()
     {
@@ -108,6 +108,7 @@ public class ProblemController(ProblemService problemService) : ControllerBase
         }
         catch (Exception ex)
         {
+            logger.LogDebug("An exception occurred while solving problem", ex);
             await Transmit(
                 socket,
                 new FinishedProblemUpdate

@@ -40,41 +40,10 @@ public class Day10 : ProblemSet
                             .Range(0, graph.Grid.GetLength(1))
                             .ToDictionary(
                                 x => x.ToString(),
-                                x => graph.Grid[y, x] != '.' ? "#FFFFFF" : "#000000"
+                                x => (object) new GridUpdate.Cell(graph.Grid[y, x].ToString(), "#FFFFFF", "#000000")
                             )
                     )
             };
-
-
-            yield return new GridUpdate()
-            {
-                Rows = new Dictionary<string, Dictionary<string, string>>()
-                {
-                    ["0"] = new()
-                    {
-                        ["0"] = "S"
-                    }
-                }
-            };
-
-            var rnd = Random.Shared;
-            for (var i = 0; i < 100; i++)
-            {
-                Thread.Sleep(30);
-                var x = rnd.Next(100);
-                var y = rnd.Next(100);
-
-                yield return new GridUpdate
-                {
-                    Rows = new Dictionary<string, Dictionary<string, string>>()
-                    {
-                        [y.ToString()] = new()
-                        {
-                            [x.ToString()] = "#FFFFFF"
-                        }
-                    }
-                };
-            }
 
             var result = graph
                 .BreadthFirstSearch()
@@ -101,7 +70,7 @@ public class Day10 : ProblemSet
 
                 yield return new GridUpdate
                 {
-                    Rows = new Dictionary<string, Dictionary<string, string>>()
+                    Rows = new Dictionary<string, Dictionary<string, object>>()
                     {
                         [y.ToString()] = new()
                         {

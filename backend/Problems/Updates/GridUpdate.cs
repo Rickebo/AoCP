@@ -7,5 +7,7 @@ public class GridUpdate : OngoingProblemUpdate
     public int? Width { get; set; }
     public int? Height { get; set; }
     public bool? Clear { get; set; }
-    public Dictionary<string, Dictionary<string, string>> Rows { get; set; }
+    public Dictionary<string, Dictionary<string, object>> Rows { get; set; }
+
+    public record Cell(string Glyph, string Fg, string Bg);
 }

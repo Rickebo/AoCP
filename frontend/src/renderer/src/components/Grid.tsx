@@ -1,10 +1,15 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
-
-export type GridData = Record<string, Record<string, string>>
-
-export interface GridProps {
+import { Transform } from '../lib/Transform'
+export interface GridCell {
+  glyph: string
+  bg: string
+  fg: string
 }
+
+export type GridData = Record<string, Record<string, string | GridCell>>
+
+export interface GridProps {}
 
 export interface GridRef {
   draw: ((grid: GridData) => void) | undefined
@@ -12,27 +17,149 @@ export interface GridRef {
   setSize: (w: number, h: number) => void
 }
 
+export interface Glyph {
+  rows: boolean[][]
+}
+
+function glyph(...lines: string[]): Glyph {
+  const resultRows: boolean[][] = []
+  for (const line of lines) {
+    const row: boolean[] = []
+    for (let i = 0; i < line.length; i++) {
+      row.push(line.charAt(i) == '1')
+    }
+    resultRows.push(row)
+  }
+
+  return {
+    rows: resultRows
+  }
+}
+
+// prettier-ignore
+const Glyphs: Record<string, Glyph> = {
+  '|': glyph('010', '010', '010'),
+  '-': glyph('000', '111', '000'),
+  'L': glyph('010', '011', '000'),
+  '7': glyph('000', '110', '010'),
+  'J': glyph('010', '110', '000'),
+  'F': glyph('000', '011', '010'),
+  '.': glyph('000', '000', '000'),
+  '*': glyph('000', '010', '000'),
+  '+': glyph('010', '111', '010')
+}
+
+function fillRectangle(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color: string,
+  transform: Transform
+): void {
+  context.fillStyle = color
+  const [dx, dy] = transform.transform(x, y)
+  context.fillRect(dx, dy, transform.scale(width), transform.scale(height))
+}
+
+function fillGlyph(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  cell: GridCell,
+  transform: Transform
+): void {
+  const glyph = Glyphs[cell.glyph]
+  const rows = glyph?.rows
+  if (rows == null) return
+
+  const gh = size / rows.length
+  const gw = size / rows[0].length
+
+  for (let gy = 0; gy < rows.length; gy++) {
+    const row = rows[gy]
+    for (let gx = 0; gx < row.length; gx++) {
+      fillRectangle(
+        context,
+        x + gx * gw,
+        y + gy * gh,
+        gw,
+        gh,
+        row[gx] ? cell.fg : cell.bg,
+        transform
+      )
+    }
+  }
+}
+
+function handlePixel(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  cell: string | GridCell,
+  transform: Transform
+): void {
+  if (typeof cell === 'string') {
+    fillRectangle(context, x, y, size, size, cell, transform)
+  } else {
+    fillGlyph(context, x, y, size, cell, transform)
+  }
+}
+
+function scaleFactor(scale: number): number {
+  return Math.pow(1.5, scale - 1)
+}
+
+function createTransform(offsetX: number, offsetY: number, scaleCoefficient: number): Transform {
+  const factor = scaleFactor(scaleCoefficient)
+  return new Transform([offsetX, offsetY], factor)
+}
+
 const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
-  const divRef = useRef<HTMLDivElement>(null)
+  const [divRef, setDivRef] = useState<HTMLDivElement | undefined>()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [w, setW] = useState<number>(0)
   const [h, setH] = useState<number>(0)
+  const [canvasSize, setCanvasSize] = useState<number>(0)
   const [data, setData] = useState<GridData>({})
+  const [scale, setScale] = useState<number>(1)
+  const [offset, setOffset] = useState<[number, number]>([0, 0])
+  const [clickPos, setClickPos] = useState<[number, number] | undefined>(undefined)
+  const [mousePos, setMousePos] = useState<[number, number] | undefined>(undefined)
 
-  useResizeObserver(divRef, (entry: ResizeObserverEntry) => {
-    if (canvasRef.current == null || divRef.current == null) return
+  const resizeCanvas = (size: number): void => {
+    if (canvasRef.current == null) return
 
-    const min = Math.min(entry.contentRect.width, entry.contentRect.height)
+    canvasRef.current.setAttribute('width', size.toString())
+    canvasRef.current.setAttribute('height', size.toString())
+    canvasRef.current.style.width = `${size}px`
+    canvasRef.current.style.height = `${size}px`
 
-    canvasRef.current.setAttribute('width', min.toString())
-    canvasRef.current.setAttribute('height', min.toString())
-    canvasRef.current.style.width = `${min}px`
-    canvasRef.current.style.height = `${min}px`
+    draw(data, true)
+  }
 
-    draw(data)
+  useEffect(() => {
+    draw(data, true)
+  }, [offset, scale])
+
+  useEffect(() => {
+    resizeCanvas(canvasSize)
+  }, [canvasSize])
+
+  useEffect(() => {
+    if (divRef == null) return
+    setCanvasSize(Math.min(divRef.clientWidth, divRef.clientHeight))
+  }, [divRef])
+
+  useResizeObserver(divRef, () => {
+    if (divRef == null) return
+    setCanvasSize(Math.min(divRef.clientWidth, divRef.clientHeight))
   })
 
-  const draw = (data: GridData): void => {
+  const draw = (data: GridData, clear: boolean = false): void => {
     if (data == null) return
     if (w == 0 || h == 0) return
 
@@ -41,10 +168,16 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
 
     if (canvas == null || context == null) return
 
+    if (clear) {
+      context.clearRect(0, 0, canvas.width, canvas.height)
+    }
+
     const canvasWidth = context.canvas?.width ?? canvas?.width ?? 0
     const canvasHeight = context.canvas?.height ?? canvas?.height ?? 0
-    const pixelSize = Math.floor(Math.min(canvasWidth / w, canvasHeight / w))
+    const pixelSize = Math.min(canvasWidth / w, canvasHeight / h)
     const newData: GridData = {}
+    const [ox, oy] = offset
+    const transform = createTransform(ox, oy, scale)
 
     for (const [yIndex, row] of Object.entries(data)) {
       const y = Number(yIndex)
@@ -53,18 +186,17 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
       const yp = y * pixelSize
       if (yp > canvasHeight) continue
 
-      const newRow: Record<string, string> = newData[yIndex] = {}
+      const newRow: Record<string, string | GridCell> = (newData[yIndex] = {})
 
-      for (const [xIndex, color] of Object.entries(row)) {
+      for (const [xIndex, cell] of Object.entries(row)) {
         const x = Number(xIndex)
         if (x >= w) continue
 
         const xp = x * pixelSize
         if (xp > canvasWidth) continue
 
-        context.fillStyle = color
-        context.fillRect(xp, yp, pixelSize, pixelSize)
-        newRow[xIndex] = color
+        handlePixel(context, xp, yp, pixelSize, cell, transform)
+        newRow[xIndex] = cell
       }
     }
 
@@ -85,6 +217,20 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
       ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
   }
 
+  const pan = (mx: number, my: number): void => {
+    const [cx, cy] = clickPos
+    const dx = mx - cx
+    const dy = my - cy
+
+    const canvasScale = canvasSize
+
+    const [ox, oy] = offset
+    const nx = ox + (dx * canvasScale) / scaleFactor(scale)
+    const ny = oy + (dy * canvasScale) / scaleFactor(scale)
+
+    setOffset([nx, ny])
+  }
+
   useImperativeHandle(ref, (): GridRef => {
     return {
       draw: draw,
@@ -98,14 +244,43 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
 
   return (
     <div
-      ref={divRef}
+      ref={(r) => setDivRef(r)}
       style={{
         display: 'flex',
         flex: '1 1 auto',
         overflow: 'hidden'
       }}
     >
-      <canvas ref={canvasRef} />
+      <canvas
+        ref={canvasRef}
+        width={100}
+        height={100}
+        onWheel={(e) => {
+          setScale((current) => {
+            const delta = -e.deltaY / 100
+            const newScale = current + delta
+            if (newScale < 1 || newScale > 10) return current
+            return newScale
+          })
+        }}
+        onMouseDown={(e) => {
+          setClickPos([
+            e.clientX / e.currentTarget.clientWidth,
+            e.clientY / e.currentTarget.clientHeight
+          ])
+        }}
+        onMouseUp={() => {
+          setClickPos(undefined)
+        }}
+        onMouseMove={(e) => {
+          const mx = e.clientX / e.currentTarget.clientWidth
+          const my = e.clientY / e.currentTarget.clientHeight
+          setMousePos([mx, my])
+
+          if (clickPos == null) return
+          pan(mx, my)
+        }}
+      />
     </div>
   )
 })
