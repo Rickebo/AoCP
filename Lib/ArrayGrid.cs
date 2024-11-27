@@ -43,6 +43,26 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         set => _values[coordinate.Y, coordinate.X] = value;
     }
 
+    public bool Contains(IntegerCoordinate<int> coordinate) => 
+        coordinate.X >= 0 && coordinate.X < Width && 
+        coordinate.Y >= 0 && coordinate.Y < Height;
+
+    public void Fill(
+        IntegerCoordinate<int> coordinate,
+        int width,
+        int height,
+        TValue value
+    )
+    {
+        for (var y = coordinate.Y; y < height; y++)
+        {
+            for (var x = coordinate.X; x < width; x++)
+            {
+                _values[y, x] = value;
+            }
+        }
+    }
+
     public IntegerCoordinate<int> BottomLeft => new(0, 0);
     public IntegerCoordinate<int> BottomRight => new(Width - 1, 0);
     public IntegerCoordinate<int> TopLeft => new(0, Height - 1);

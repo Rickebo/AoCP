@@ -13,9 +13,20 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
     public static IntegerCoordinate<T> UnitX { get; } = new(T.One, T.Zero);
     public static IntegerCoordinate<T> UnitY { get; } = new(T.Zero, T.One);
 
+    public IEnumerable<IntegerCoordinate<T>> Neighbours
+    {
+        get
+        {
+            var self = this;
+            return DirectionExtensions.Cardinals.Select(
+                direction => self + direction.ToCoordinate<T>()
+            );
+        }
+    }
+
     public IntegerCoordinate<T> Min(IntegerCoordinate<T> other) =>
         new(T.Min(X, other.X), T.Min(Y, other.Y));
-    
+
     public IntegerCoordinate<T> Max(IntegerCoordinate<T> other) =>
         new(T.Max(X, other.X), T.Max(Y, other.Y));
 
