@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Transform } from '../lib/Transform'
+import { BiCoinStack } from 'react-icons/bi'
 export interface GridCell {
   glyph: string
   bg: string
@@ -119,24 +120,25 @@ function createTransform(offsetX: number, offsetY: number, scaleCoefficient: num
 }
 
 const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
-  const [divRef, setDivRef] = useState<HTMLDivElement | undefined>()
+  const [divRef, setDivRef] = useState<HTMLDivElement | null>()
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [w, setW] = useState<number>(0)
   const [h, setH] = useState<number>(0)
-  const [canvasSize, setCanvasSize] = useState<number>(0)
+  const [canvasSize, setCanvasSize] = useState<[number, number]>([0, 0])
   const [data, setData] = useState<GridData>({})
   const [scale, setScale] = useState<number>(1)
   const [offset, setOffset] = useState<[number, number]>([0, 0])
   const [clickPos, setClickPos] = useState<[number, number] | undefined>(undefined)
+  const [clickOffset, setClickOffset] = useState<[number, number] | undefined>(undefined)
   const [mousePos, setMousePos] = useState<[number, number] | undefined>(undefined)
 
-  const resizeCanvas = (size: number): void => {
+  const resizeCanvas = (width: number, height: number): void => {
     if (canvasRef.current == null) return
 
-    canvasRef.current.setAttribute('width', size.toString())
-    canvasRef.current.setAttribute('height', size.toString())
-    canvasRef.current.style.width = `${size}px`
-    canvasRef.current.style.height = `${size}px`
+    canvasRef.current.setAttribute('width', width.toString())
+    canvasRef.current.setAttribute('height', height.toString())
+    canvasRef.current.style.width = `${width}px`
+    canvasRef.current.style.height = `${height}px`
 
     draw(data, true)
   }
@@ -146,17 +148,17 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
   }, [offset, scale])
 
   useEffect(() => {
-    resizeCanvas(canvasSize)
+    resizeCanvas(...canvasSize)
   }, [canvasSize])
 
   useEffect(() => {
     if (divRef == null) return
-    setCanvasSize(Math.min(divRef.clientWidth, divRef.clientHeight))
+    setCanvasSize([divRef.clientWidth, divRef.clientHeight])
   }, [divRef])
 
   useResizeObserver(divRef, () => {
     if (divRef == null) return
-    setCanvasSize(Math.min(divRef.clientWidth, divRef.clientHeight))
+    setCanvasSize([divRef.clientWidth, divRef.clientHeight])
   })
 
   const draw = (data: GridData, clear: boolean = false): void => {
@@ -217,18 +219,60 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
       ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
   }
 
+  const zoom = (delta: number): void => {
+    if (mousePos == null) return
+
+    setScale((currentScale) => {
+      // const [cx, cy] = mousePos
+      const oldScale = scaleFactor(scale)
+      const newScale = scale + delta
+
+      const [canvasWidth, canvasHeight] = canvasSize
+
+      const currentWidth = canvasWidth / oldScale
+      const newWidth = canvasWidth / newScale
+
+      const currentHeight = canvasHeight / oldScale
+      const newHeight = canvasHeight / newScale
+
+      const dx = (currentWidth - newWidth) * mousePos[0]
+      const dy = (currentHeight - newHeight) * mousePos[1]
+
+      if (newScale < 1 || newScale > 10) return currentScale
+
+      setOffset((currentOffset) => {
+        const [cx, cy] = currentOffset
+        return [cx - dx, cy - dy]
+      })
+
+      return newScale
+    })
+  }
+
   const pan = (mx: number, my: number): void => {
+    if (clickPos == null || clickOffset == null) return
+
     const [cx, cy] = clickPos
-    const dx = mx - cx
+    const [w, h] = canvasSize
+    const wFactor = w / h
+    const dx = (mx - cx) * wFactor
     const dy = my - cy
 
-    const canvasScale = canvasSize
+    const factor = Math.min(...canvasSize) / scaleFactor(scale)
 
-    const [ox, oy] = offset
-    const nx = ox + (dx * canvasScale) / scaleFactor(scale)
-    const ny = oy + (dy * canvasScale) / scaleFactor(scale)
+    const [ox, oy] = clickOffset
+    const nx = ox + dx * factor
+    const ny = oy + dy * factor
 
     setOffset([nx, ny])
+  }
+
+  const getRelativePosition = (e: React.MouseEvent<HTMLCanvasElement>): [number, number] => {
+    const boundingRect = e.currentTarget.getBoundingClientRect()
+    return [
+      (e.clientX - boundingRect.left) / boundingRect.width,
+      (e.clientY - boundingRect.top) / boundingRect.height
+    ]
   }
 
   useImperativeHandle(ref, (): GridRef => {
@@ -256,25 +300,18 @@ const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
         width={100}
         height={100}
         onWheel={(e) => {
-          setScale((current) => {
-            const delta = -e.deltaY / 100
-            const newScale = current + delta
-            if (newScale < 1 || newScale > 10) return current
-            return newScale
-          })
+          zoom(-e.deltaY / 100)
         }}
         onMouseDown={(e) => {
-          setClickPos([
-            e.clientX / e.currentTarget.clientWidth,
-            e.clientY / e.currentTarget.clientHeight
-          ])
+          setClickPos(getRelativePosition(e))
+          setClickOffset(offset)
         }}
         onMouseUp={() => {
           setClickPos(undefined)
+          setClickOffset(undefined)
         }}
         onMouseMove={(e) => {
-          const mx = e.clientX / e.currentTarget.clientWidth
-          const my = e.clientY / e.currentTarget.clientHeight
+          const [mx, my] = getRelativePosition(e)
           setMousePos([mx, my])
 
           if (clickPos == null) return
