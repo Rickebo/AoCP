@@ -1,4 +1,4 @@
-﻿namespace Backend.Problems;
+﻿namespace Common;
 
 public class ProblemId
 {

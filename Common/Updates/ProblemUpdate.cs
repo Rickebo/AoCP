@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Backend.Problems.Updates;
+namespace Common.Updates;
 
 [JsonDerivedType(typeof(OngoingProblemUpdate))]
 [JsonDerivedType(typeof(FinishedProblemUpdate))]

@@ -1,4 +1,4 @@
-﻿namespace Backend.Problems.Updates;
+﻿namespace Common.Updates;
 
 public class StartProblemUpdate : OngoingProblemUpdate
 { 

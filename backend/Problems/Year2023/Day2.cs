@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using Backend.Problems.Updates;
+using Common.Updates;
 
 namespace Backend.Problems.Year2023;
 
@@ -22,7 +22,7 @@ public class Day2 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
+        public async override Task Solve(string input, Reporter reporter)
         {
             var result = input
                 .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries)
@@ -32,11 +32,13 @@ public class Day2 : ProblemSet
                 .Sum(game => game!.Id)
                 .ToString();
 
-            yield return new FinishedProblemUpdate
-            {
-                Successful = true,
-                Solution = result
-            };
+            reporter.Report(
+                new FinishedProblemUpdate
+                {
+                    Successful = true,
+                    Solution = result
+                }
+            );
         }
     }
 
@@ -46,7 +48,10 @@ public class Day2 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
+        public async override Task Solve(
+            string input,
+            Reporter reporter
+        )
         {
             var result = input
                 .Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries)
@@ -55,11 +60,13 @@ public class Day2 : ProblemSet
                 .Sum(game => game!.CalculatePower())
                 .ToString();
 
-            yield return new FinishedProblemUpdate()
-            {
-                Successful = true,
-                Solution = result
-            };
+            reporter.Report(
+                new FinishedProblemUpdate()
+                {
+                    Successful = true,
+                    Solution = result
+                }
+            );
         }
     }
 

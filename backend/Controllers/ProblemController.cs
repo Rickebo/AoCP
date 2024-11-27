@@ -2,23 +2,26 @@
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Backend.Problems;
-using Backend.Problems.Updates;
 using Backend.Services;
+using Common;
+using Common.Updates;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class ProblemController(ILogger<ProblemController> logger, ProblemService problemService) : ControllerBase
+public class ProblemController(
+    ILogger<ProblemController> logger,
+    ProblemService problemService
+) : ControllerBase
 {
     private static JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
-    
+
     private async Task Transmit(WebSocket socket, ProblemUpdate update)
     {
         var json = JsonSerializer.Serialize(update, JsonOptions);
@@ -37,7 +40,7 @@ public class ProblemController(ILogger<ProblemController> logger, ProblemService
         while (true)
         {
             var buffer = new byte[0x1000];
-            
+
             var result = await webSocket.ReceiveAsync(
                 buffer,
                 CancellationToken.None
@@ -46,13 +49,13 @@ public class ProblemController(ILogger<ProblemController> logger, ProblemService
             var readBytes = result.Count != buffer.Length
                 ? buffer[..result.Count]
                 : buffer;
-            
+
             buffers.Add(readBytes);
-            
+
             if (result.EndOfMessage)
                 break;
         }
-        
+
         var bytes = buffers.SelectMany(b => b).ToArray();
         return Encoding.UTF8.GetString(bytes);
     }
@@ -63,8 +66,10 @@ public class ProblemController(ILogger<ProblemController> logger, ProblemService
     [Route("solve/{year}/{setName}/{problemName}")]
     public async Task Solve(
         [FromRoute] string year,
-        [FromRoute] string setName,
-        [FromRoute] string problemName
+        [FromRoute]
+        string setName,
+        [FromRoute]
+        string problemName
     )
     {
         if (!HttpContext.WebSockets.IsWebSocketRequest)
@@ -87,24 +92,32 @@ public class ProblemController(ILogger<ProblemController> logger, ProblemService
 
         if (problem == null)
         {
-            HttpContext.Response.StatusCode = (int) HttpStatusCode.NotFound;
+            HttpContext.Response.StatusCode = (int)HttpStatusCode.NotFound;
             return;
         }
 
-        await Transmit(socket, new StartProblemUpdate
-        {
-            Id = id
-        });
-        
+        await Transmit(
+            socket,
+            new StartProblemUpdate
+            {
+                Id = id
+            }
+        );
+
         try
         {
+            var reporter = new Reporter();
+            var problemTask = Task.Run(() => problem.Solve(input, reporter));
+
             await foreach (
-                var update in problem.Solve(input).WithCancellation(CancellationToken.None)
+                var update in reporter.ReadAll().WithCancellation(CancellationToken.None)
             )
             {
                 update.Id = id;
                 await Transmit(socket, update);
             }
+
+            await problemTask;
         }
         catch (Exception ex)
         {

@@ -1,4 +1,6 @@
-﻿namespace Backend.Problems;
+﻿using Common;
+
+namespace Backend.Problems;
 
 public class ProblemInput
 {

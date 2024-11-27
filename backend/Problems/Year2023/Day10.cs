@@ -1,4 +1,4 @@
-﻿using Backend.Problems.Updates;
+﻿using Common.Updates;
 
 namespace Backend.Problems.Year2023;
 
@@ -21,35 +21,43 @@ public class Day10 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
+        public async override Task Solve(string input, Reporter reporter)
         {
             var graph = Graph.Parse(
                 input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
             );
 
-            yield return new GridUpdate()
-            {
-                Width = graph.Grid.GetLength(1),
-                Height = graph.Grid.GetLength(0),
-                Clear = true,
-                Rows = Enumerable
-                    .Range(0, graph.Grid.GetLength(0))
-                    .ToDictionary(
-                        y => y.ToString(),
-                        y => Enumerable
-                            .Range(0, graph.Grid.GetLength(1))
-                            .ToDictionary(
-                                x => x.ToString(),
-                                x => (object) new GridUpdate.Cell(graph.Grid[y, x].ToString(), "#FFFFFF", "#000000")
-                            )
-                    )
-            };
+            reporter.Report(
+                new GridUpdate()
+                {
+                    Width = graph.Grid.GetLength(1),
+                    Height = graph.Grid.GetLength(0),
+                    Clear = true,
+                    Rows = Enumerable
+                        .Range(0, graph.Grid.GetLength(0))
+                        .ToDictionary(
+                            y => y.ToString(),
+                            y => Enumerable
+                                .Range(0, graph.Grid.GetLength(1))
+                                .ToDictionary(
+                                    x => x.ToString(),
+                                    x => (object)new GridUpdate.Cell(
+                                        graph.Grid[y, x].ToString(),
+                                        "#FFFFFF",
+                                        "#000000"
+                                    )
+                                )
+                        )
+                }
+            );
 
             var result = graph
                 .BreadthFirstSearch()
                 .ToString();
 
-            yield return FinishedProblemUpdate.FromSolution(result);
+            reporter.Report(
+                FinishedProblemUpdate.FromSolution(result)
+            );
         }
     }
 
@@ -59,7 +67,7 @@ public class Day10 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public async override IAsyncEnumerable<ProblemUpdate> Solve(string input)
+        public async override Task Solve(string input, Reporter reporter)
         {
             var rnd = Random.Shared;
             for (var i = 0; i < 100; i++)
@@ -68,7 +76,7 @@ public class Day10 : ProblemSet
                 var x = rnd.Next(100);
                 var y = rnd.Next(100);
 
-                yield return new GridUpdate
+                reporter.Report(new GridUpdate
                 {
                     Rows = new Dictionary<string, Dictionary<string, object>>()
                     {
@@ -77,7 +85,7 @@ public class Day10 : ProblemSet
                             [x.ToString()] = "#FFFFFF"
                         }
                     }
-                };
+                });
             }
 
             var result = Graph
@@ -85,7 +93,7 @@ public class Day10 : ProblemSet
                 .CountWithinLoop()
                 .ToString();
 
-            yield return FinishedProblemUpdate.FromSolution(result);
+             reporter.Report(FinishedProblemUpdate.FromSolution(result));
         }
     }
 

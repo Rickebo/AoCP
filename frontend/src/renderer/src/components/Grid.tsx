@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Transform } from '../lib/Transform'
-import { BiCoinStack } from 'react-icons/bi'
+
 export interface GridCell {
   glyph: string
   bg: string
@@ -10,7 +10,6 @@ export interface GridCell {
 
 export type GridData = Record<string, Record<string, string | GridCell>>
 
-export interface GridProps {}
 
 export interface GridRef {
   draw: ((grid: GridData) => void) | undefined
@@ -82,15 +81,9 @@ function fillGlyph(
   for (let gy = 0; gy < rows.length; gy++) {
     const row = rows[gy]
     for (let gx = 0; gx < row.length; gx++) {
-      fillRectangle(
-        context,
-        x + gx * gw,
-        y + gy * gh,
-        gw,
-        gh,
-        row[gx] ? cell.fg : cell.bg,
-        transform
-      )
+      const color = row[gx] ? cell.fg : cell.bg
+      if (!color) continue
+      fillRectangle(context, x + gx * gw, y + gy * gh, gw, gh, color, transform)
     }
   }
 }
@@ -119,8 +112,8 @@ function createTransform(offsetX: number, offsetY: number, scaleCoefficient: num
   return new Transform([offsetX, offsetY], factor)
 }
 
-const Grid = forwardRef<GridRef, GridProps>((props, ref) => {
-  const [divRef, setDivRef] = useState<HTMLDivElement | null>()
+const Grid = forwardRef<GridRef, unknown>((_, ref) => {
+  const [divRef, setDivRef] = useState<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [w, setW] = useState<number>(0)
   const [h, setH] = useState<number>(0)
