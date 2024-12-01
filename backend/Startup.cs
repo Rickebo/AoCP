@@ -1,4 +1,5 @@
 ﻿using Backend.Problems.Year2023;
+using Backend.Problems.Year2024;
 using Backend.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
@@ -19,5 +20,6 @@ public static class Startup
                 }
             )
             .AddSingleton<ProblemService>()
-            .AddYear2023();
+            .AddYear2023()
+            .AddYear2024();
 }
