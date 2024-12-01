@@ -23,6 +23,25 @@ public class Day10 : ProblemSet
 
         public async override Task Solve(string input, Reporter reporter)
         {
+            var rnd = Random.Shared;
+            for (var i = 0; i < 100; i++)
+            {
+                Thread.Sleep(30);
+                var x = rnd.Next(100);
+                var y = rnd.Next(100);
+
+                reporter.Report(new GridUpdate
+                {
+                    Rows = new Dictionary<string, Dictionary<string, object>>()
+                    {
+                        [y.ToString()] = new()
+                        {
+                            [x.ToString()] = "#FFFFFF"
+                        }
+                    }
+                });
+            }
+
             var graph = Graph.Parse(
                 input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
             );
