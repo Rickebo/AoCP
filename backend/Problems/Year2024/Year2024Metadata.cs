@@ -11,7 +11,8 @@ public static class Year2024Metadata
 
         public override List<ProblemSet> Problems { get; } =
         [
-            new Day1()
+            new Day1(),
+            new Day2()
         ];
     }
 }
