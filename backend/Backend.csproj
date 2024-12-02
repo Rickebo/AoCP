@@ -16,8 +16,4 @@
       <ProjectReference Include="..\Common\Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Problems\Year2024\" />
-    </ItemGroup>
-
 </Project>
