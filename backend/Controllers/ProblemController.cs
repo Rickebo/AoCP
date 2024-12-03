@@ -107,30 +107,52 @@ public class ProblemController(
         try
         {
             var reporter = new Reporter();
-            var problemTask = Task.Run(() => problem.Solve(input, reporter));
-
-            await foreach (
-                var update in reporter.ReadAll().WithCancellation(CancellationToken.None)
-            )
+            var cts = new CancellationTokenSource();
+            var problemTask = Task.Run(async () =>
             {
-                update.Id = id;
-                await Transmit(socket, update);
-            }
+                try
+                {
+                    await problem.Solve(input, reporter);
+                }
+                finally
+                {
+                    cts.Cancel();
+                }
+            });
 
+
+            try
+            {
+                await foreach (
+                var update in reporter.ReadAll().WithCancellation(cts.Token)
+            )
+                {
+                    update.Id = id;
+                    await Transmit(socket, update);
+                }
+            } catch (TaskCanceledException) { }
+            
             await problemTask;
         }
         catch (Exception ex)
         {
-            logger.LogDebug("An exception occurred while solving problem", ex);
-            await Transmit(
-                socket,
-                new FinishedProblemUpdate
-                {
-                    Error = ex.Message,
-                    Solution = null,
-                    Successful = false
-                }
-            );
+            if (ex is ProblemException problemEx)
+            {
+                logger.LogDebug(ex, $"A problem exception occurred while solving problem {setName} -> {problemName}:");
+
+                await Transmit(
+                    socket,
+                    new FinishedProblemUpdate
+                    {
+                        Error = ex.Message,
+                        Solution = null,
+                        Successful = false
+                    }
+                );
+            } else
+            {
+                logger.LogError(ex, "An exception occurred while solving problem.");
+            }
         }
     }
 
