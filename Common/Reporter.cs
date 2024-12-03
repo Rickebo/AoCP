@@ -24,6 +24,12 @@ public class Reporter
         throw new Exception("Failed to dequeue update after semaphore notification.");
     }
 
+    public IEnumerable<ProblemUpdate> ReadAllCurrent()
+    {
+        while (_updates.TryDequeue(out var item))
+            yield return item;
+    }
+
     public async IAsyncEnumerable<ProblemUpdate> ReadAll(
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )

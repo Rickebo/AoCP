@@ -108,37 +108,51 @@ public class ProblemController(
         {
             var reporter = new Reporter();
             var cts = new CancellationTokenSource();
-            var problemTask = Task.Run(async () =>
-            {
-                try
+            var problemTask = Task.Run(
+                async () =>
                 {
-                    await problem.Solve(input, reporter);
+                    try
+                    {
+                        await problem.Solve(input, reporter);
+                    }
+                    finally
+                    {
+                        cts.Cancel();
+                    }
                 }
-                finally
-                {
-                    cts.Cancel();
-                }
-            });
+            );
 
 
             try
             {
                 await foreach (
-                var update in reporter.ReadAll().WithCancellation(cts.Token)
-            )
+                    var update in reporter.ReadAll().WithCancellation(cts.Token)
+                )
                 {
                     update.Id = id;
                     await Transmit(socket, update);
                 }
-            } catch (TaskCanceledException) { }
-            
+            }
+            catch (TaskCanceledException)
+            {
+            }
+
             await problemTask;
+
+            foreach (var update in reporter.ReadAllCurrent())
+            {
+                update.Id = id;
+                await Transmit(socket, update);
+            }
         }
         catch (Exception ex)
         {
             if (ex is ProblemException problemEx)
             {
-                logger.LogDebug(ex, $"A problem exception occurred while solving problem {setName} -> {problemName}:");
+                logger.LogDebug(
+                    ex,
+                    $"A problem exception occurred while solving problem {setName} -> {problemName}:"
+                );
 
                 await Transmit(
                     socket,
@@ -149,7 +163,8 @@ public class ProblemController(
                         Successful = false
                     }
                 );
-            } else
+            }
+            else
             {
                 logger.LogError(ex, "An exception occurred while solving problem.");
             }
