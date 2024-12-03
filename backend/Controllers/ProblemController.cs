@@ -133,7 +133,7 @@ public class ProblemController(
                     await Transmit(socket, update);
                 }
             }
-            catch (TaskCanceledException)
+            catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
             {
             }
 
