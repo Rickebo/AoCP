@@ -17,6 +17,8 @@ public class MetadataController : ControllerBase
     [Route("")]
     public async Task<IActionResult> GetYears()
     {
-        return Ok(_problemService.GetMetadata());
+        var meta = _problemService.GetMetadata();
+        _problemService.Validate(meta);
+        return Ok(meta);
     }
 }

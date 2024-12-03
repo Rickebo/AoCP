@@ -22,16 +22,52 @@ public class ProblemService
         );
     }
 
-    public ProblemsMetadata GetMetadata()
+    private void ValidateYear(int year)
     {
-        return new ProblemsMetadata(
-            _problemCollections
+        if (year < 2015 || year > 2100)
+            throw new InvalidOperationException(
+                "Invalid year"
+            );
+    }
+
+    public void Validate(ProblemsMetadata metadata)
+    {
+        foreach (var problemCollection in metadata.Collections.Values)
+        {
+            ValidateYear(problemCollection.Year);
+
+            foreach (var problemSet in problemCollection.ProblemSets)
+            {
+                if (string.IsNullOrEmpty(problemSet.Name))
+                    throw new InvalidOperationException(
+                        "Problem set name cannot be empty"
+                    );
+
+                if (problemSet.ReleaseTime.Year != problemCollection.Year)
+                    throw new InvalidOperationException(
+                        "Problem set release time must be in the same year as the collection"
+                    );
+
+                foreach (var problem in problemSet.Problems)
+                {
+                    if (string.IsNullOrEmpty(problem.Name))
+                        throw new InvalidOperationException(
+                            "Problem name cannot be empty"
+                        );
+                }
+            }
+        }
+    }
+
+    public ProblemsMetadata GetMetadata() =>
+        new()
+        {
+            Collections = _problemCollections
                 .ToDictionary(
                     entry => entry.Key,
                     entry => entry.Value.GetMetadata()
                 )
-        );
-    }
+        };
 
     public Problem? GetProblem(ProblemId problemId) =>
         _indexedProblemCollections.TryGetValue(problemId.Year, out var collection)
