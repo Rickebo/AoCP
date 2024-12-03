@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Backend.Problems.Year2024;
 
-public class Day3 : ProblemSet
+public class Day03 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
         new(2024, 12, 03, 0, 0, 0);
@@ -22,7 +22,7 @@ public class Day3 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public override async Task Solve(string input, Reporter reporter)
+        public override Task Solve(string input, Reporter reporter)
         {
             int sum = Multis(input, reporter);
 
@@ -33,33 +33,7 @@ public class Day3 : ProblemSet
                     Solution = sum.ToString()
                 }
             );
-        }
-
-        private static int Multis(string str, Reporter rep)
-        {
-            Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
-
-            var matches = Regex.Matches(str);
-            var sum = 0;
-
-            foreach (Match match in matches)
-            {
-                // Add the mullimulls
-                int num1 = int.Parse(match.Groups[1].Value);
-                int num2 = int.Parse(match.Groups[2].Value);
-
-                sum += num1 * num2;
-
-                // Report that shit
-                rep.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"mul({num1},{num2})"]
-                    }
-                );
-            }
-
-            return sum;
+            return Task.CompletedTask;
         }
     }
 
@@ -69,10 +43,7 @@ public class Day3 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public override async Task Solve(
-            string input,
-            Reporter reporter
-        )
+        public override Task Solve(string input, Reporter reporter)
         {
             // Input starts active
             bool active = true;
@@ -124,53 +95,54 @@ public class Day3 : ProblemSet
                     Solution = sum.ToString()
                 }
             );
+            return Task.CompletedTask;
+        }
+    }
+
+    private static int Multis(string str, Reporter rep)
+    {
+        Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
+
+        var matches = Regex.Matches(str);
+        var sum = 0;
+
+        foreach (Match match in matches)
+        {
+            // Add the mullimulls
+            int num1 = int.Parse(match.Groups[1].Value);
+            int num2 = int.Parse(match.Groups[2].Value);
+
+            sum += num1 * num2;
+
+            // Report that shit
+            rep.Report(
+                new TextProblemUpdate()
+                {
+                    Lines = [$"mul({num1},{num2})"]
+                }
+            );
         }
 
-        private static int Multis(string str, Reporter rep)
+        return sum;
+    }
+
+    private static List<string> DivideString(string str, string divider)
+    {
+        List<string> res = [];
+
+        // Check if divider is ahead
+        int i = str.IndexOf(divider);
+
+        if (i != -1)
         {
-            Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
-
-            var matches = Regex.Matches(str);
-            var sum = 0;
-
-            foreach (Match match in matches)
-            {
-                // Add the mullimulls
-                int num1 = int.Parse(match.Groups[1].Value);
-                int num2 = int.Parse(match.Groups[2].Value);
-
-                sum += num1 * num2;
-
-                // Report that shit
-                rep.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"mul({num1},{num2})"]
-                    }
-                );
-            }
-
-            return sum;
-        }
-
-        private static List<string> DivideString(string str, string divider)
-        {
-            List<string> res = [];
-
-            // Check if divider is ahead
-            int i = str.IndexOf(divider);
-
-            if (i != -1)
-            {
-                // Split string at divider
-                res.Add(str[..i]);
-                res.Add(str[(i + divider.Length)..]);
-                return res;
-            }
-
-            // No divider found
-            res.Add(str);
+            // Split string at divider
+            res.Add(str[..i]);
+            res.Add(str[(i + divider.Length)..]);
             return res;
         }
+
+        // No divider found
+        res.Add(str);
+        return res;
     }
 }
