@@ -11,13 +11,27 @@ public static class DirectionExtensions
         Direction.South,
         Direction.West
     ];
-    
+
+    public static Direction Opposite(this Direction direction) => direction switch
+    {
+        Direction.North => Direction.South,
+        Direction.NorthEast => Direction.SouthWest,
+        Direction.East => Direction.West,
+        Direction.SouthEast => Direction.NorthWest,
+        Direction.South => Direction.North,
+        Direction.SouthWest => Direction.NorthEast,
+        Direction.West => Direction.East,
+        Direction.NorthWest => Direction.SouthEast,
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
+    public static Direction[] All() => Enum.GetValues<Direction>();
+
     public static Direction RotateClockwise(this Direction direction)
     {
         var next = (int)direction << 1;
         return next > (int)Direction.West ? Direction.North : (Direction)next;
     }
-
 
     public static Direction RotateCounterClockwise(this Direction direction)
     {
@@ -63,9 +77,6 @@ public static class DirectionExtensions
         ordinal is >= 0 and < 4
             ? (Direction)(1 << ordinal)
             : throw new ArgumentOutOfRangeException(nameof(ordinal));
-
-    public static Direction Opposite(this Direction direction) =>
-        FromOrdinal(MathExtensions.Remainder(direction.Ordinal() + 2, 4));
 
     public static bool IsVertical(this Direction direction) =>
         IsSubsetOf(direction, Direction.North | Direction.South);
