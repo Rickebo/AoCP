@@ -40,6 +40,12 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         set => _values[coordinate.X, coordinate.Y] = value;
     }
 
+    public TValue this[int x, int y]
+    {
+        get => _values[x, y];
+        set => _values[x, y] = value;
+    }
+
     public bool Contains(IntegerCoordinate<int> coordinate)
     {
         return coordinate.X >= 0 && coordinate.X < Width &&
