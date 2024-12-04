@@ -9,7 +9,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public ArrayGrid(int width, int height)
     {
-        _values = new TValue[height, width];
+        _values = new TValue[width, height];
     }
 
     public ArrayGrid(TValue[,] values)
@@ -17,33 +17,34 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         _values = values;
     }
 
-    public ArrayGrid(IEnumerable<IEnumerable<TValue>> rows, int height, int width)
+    public ArrayGrid(IEnumerable<IEnumerable<TValue>> rows, int width, int height)
     {
-        _values = new TValue[height, width];
-        var y = 0;
+        _values = new TValue[width, height];
+        int y = 0;
         foreach (var row in rows)
         {
-            var x = 0;
-
+            int x = 0;
             foreach (var cell in row)
             {
-                _values[y, x] = cell;
-                x += 1;
+                _values[x, y] = cell;
+                x++;
             }
 
-            y += 1;
+            y++;
         }
     }
 
     public TValue this[IntegerCoordinate<int> coordinate]
     {
-        get => _values[coordinate.Y, coordinate.X];
-        set => _values[coordinate.Y, coordinate.X] = value;
+        get => _values[coordinate.X, coordinate.Y];
+        set => _values[coordinate.X, coordinate.Y] = value;
     }
 
-    public bool Contains(IntegerCoordinate<int> coordinate) => 
-        coordinate.X >= 0 && coordinate.X < Width && 
+    public bool Contains(IntegerCoordinate<int> coordinate)
+    {
+        return coordinate.X >= 0 && coordinate.X < Width &&
         coordinate.Y >= 0 && coordinate.Y < Height;
+    }
 
     public void Fill(
         IntegerCoordinate<int> coordinate,
@@ -52,11 +53,11 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         TValue value
     )
     {
-        for (var y = coordinate.Y; y < height; y++)
+        for (int y = coordinate.Y; y < height; y++)
         {
-            for (var x = coordinate.X; x < width; x++)
+            for (int x = coordinate.X; x < width; x++)
             {
-                _values[y, x] = value;
+                _values[x, y] = value;
             }
         }
     }
@@ -94,13 +95,13 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public ArrayGrid<TValue> Section(IntegerCoordinate<int> origin, int width, int height)
     {
-        var newHeight = Math.Min(Height, height) - origin.Y;
-        var newWidth = Math.Min(Width, width) - origin.X;
+        int newHeight = Math.Min(Height, height) - origin.Y;
+        int newWidth = Math.Min(Width, width) - origin.X;
         var newValues = new TValue[newHeight, newWidth];
 
-        for (var y = origin.Y; y < newHeight; y++)
+        for (int y = origin.Y; y < newHeight; y++)
         {
-            for (var x = origin.X; x < newWidth; x++)
+            for (int x = origin.X; x < newWidth; x++)
             {
                 newValues[y, x] = _values[y, x];
             }
