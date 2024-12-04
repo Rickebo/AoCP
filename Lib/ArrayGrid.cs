@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-namespace Lib;
+﻿namespace Lib;
 
 public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 {
