@@ -24,13 +24,13 @@ public class Day04 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            Grid grid = new(input);
+            CharGrid grid = new(input);
 
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = grid.XmasOccurences().ToString()
+                    Solution = XmasOccurences(grid).ToString()
                 }
             );
             return Task.CompletedTask;
@@ -45,238 +45,208 @@ public class Day04 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            Grid grid = new(input);
+            CharGrid grid = new(input);
 
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = grid.MasOccurences().ToString()
+                    Solution = MasOccurences(grid).ToString()
                 }
             );
             return Task.CompletedTask;
         }
     }
 
-    public class Grid
+    public static int XmasOccurences(CharGrid grid)
     {
-        public int width;
-        public int height;
-        public Tile[,] tiles;
+        int occurences = 0;
 
-        public Grid(string input)
+        for (int y = 0; y < grid.Height; y++)
         {
-            string[] rows = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
-            height = rows.Length;
-            width = rows[0].Length;
-            tiles = new Tile[width, height];
-
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < grid.Width; x++)
             {
-                for (int x = 0; x < width; x++)
+                if (grid[x, y] == 'X')
                 {
-                    tiles[x, y] = new Tile(x, y, rows[(height - 1) - y][x]);
+                    occurences += TileXmasCount(grid, x, y);
                 }
             }
         }
 
-        public int XmasOccurences()
-        {
-            int occurences = 0;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (tiles[x, y].c == 'X')
-                    {
-                        occurences += TileXmasCount(tiles[x, y]);
-                    }
-                }
-            }
-
-            return occurences;
-        }
-
-        public int MasOccurences()
-        {
-            int occurences = 0;
-
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    if (tiles[x, y].c == 'A')
-                    {
-                        occurences += TileMasCross(tiles[x, y]) ? 1 : 0;
-                    }
-                }
-            }
-
-            return occurences;
-        }
-
-        public bool TileMasCross(Tile tile)
-        {
-            bool present1 = false;
-            bool present2 = false;
-
-            // Check \
-            int X1 = tile.x - 1;
-            int Y1 = tile.y + 1;
-            int X2 = tile.x + 1;
-            int Y2 = tile.y - 1;
-            if (X1 >= 0 && X1 < width && Y1 >= 0 && Y1 < height && X2 >= 0 && X2 < width && Y2 >= 0 && Y2 < height)
-            {
-                if ((tiles[X1, Y1].c == 'M' && tiles[X2, Y2].c == 'S') || (tiles[X1, Y1].c == 'S' && tiles[X2, Y2].c == 'M'))
-                {
-                    present1 = true;
-                }
-            }
-
-            // Check /
-            X1 = tile.x + 1;
-            Y1 = tile.y + 1;
-            X2 = tile.x - 1;
-            Y2 = tile.y - 1;
-            if (X1 >= 0 && X1 < width && Y1 >= 0 && Y1 < height && X2 >= 0 && X2 < width && Y2 >= 0 && Y2 < height)
-            {
-                if ((tiles[X1, Y1].c == 'M' && tiles[X2, Y2].c == 'S') || (tiles[X1, Y1].c == 'S' && tiles[X2, Y2].c == 'M'))
-                {
-                    present2 = true;
-                }
-            }
-
-            return present1 && present2;
-        }
-
-        public int TileXmasCount(Tile tile)
-        {
-            // Check all directions for xmas
-            int count = 0;
-            int i;
-            string xmas = "XMAS";
-
-            // Check right
-            i = 1;
-            for (int x = tile.x + 1; x < width && i < xmas.Length; x++, i++)
-            {
-                if (tiles[x, tile.y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check left
-            i = 1;
-            for (int x = tile.x - 1; x >= 0 && i < xmas.Length; x--, i++)
-            {
-                if (tiles[x, tile.y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check north
-            i = 1;
-            for (int y = tile.y + 1; y < height && i < xmas.Length; y++, i++)
-            {
-                if (tiles[tile.x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check south
-            i = 1;
-            for (int y = tile.y - 1; y >= 0 && i < xmas.Length; y--, i++)
-            {
-                if (tiles[tile.x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check diag top right
-            i = 1;
-            for (int y = tile.y + 1, x = tile.x + 1; y < height && x < width && i < xmas.Length; y++, x++, i++)
-            {
-                if (tiles[x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check diag top left
-            i = 1;
-            for (int y = tile.y + 1, x = tile.x - 1; y < height && x >= 0 && i < xmas.Length; y++, x--, i++)
-            {
-                if (tiles[x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check diag bot right
-            i = 1;
-            for (int y = tile.y - 1, x = tile.x + 1; y >= 0 && x < width && i < xmas.Length; y--, x++, i++)
-            {
-                if (tiles[x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            // Check diag bot left
-            i = 1;
-            for (int y = tile.y - 1, x = tile.x - 1; y >= 0 && x >= 0 && i < xmas.Length; y--, x--, i++)
-            {
-                if (tiles[x, y].c != xmas[i])
-                {
-                    break;
-                }
-                else if (i == 3)
-                {
-                    count++;
-                }
-            }
-
-            return count;
-        }
+        return occurences;
     }
 
-    public struct Tile(int _x, int _y, char _c)
+    public static int MasOccurences(CharGrid grid)
     {
-        public int x = _x;
-        public int y = _y;
-        public char c = _c;
+        int occurences = 0;
+
+        for (int y = 0; y < grid.Height; y++)
+        {
+            for (int x = 0; x < grid.Width; x++)
+            {
+                if (grid[x, y] == 'A')
+                {
+                    occurences += TileMasCross(grid, x, y) ? 1 : 0;
+                }
+            }
+        }
+
+        return occurences;
+    }
+
+    public static bool TileMasCross(CharGrid grid, int x, int y)
+    {
+        bool present1 = false;
+        bool present2 = false;
+
+        // Check \
+        int X1 = x - 1;
+        int Y1 = y + 1;
+        int X2 = x + 1;
+        int Y2 = y - 1;
+        if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
+        {
+            if ((grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S') || (grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M'))
+            {
+                present1 = true;
+            }
+        }
+
+        // Check /
+        X1 = x + 1;
+        Y1 = y + 1;
+        X2 = x - 1;
+        Y2 = y - 1;
+        if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
+        {
+            if ((grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S') || (grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M'))
+            {
+                present2 = true;
+            }
+        }
+
+        return present1 && present2;
+    }
+
+    public static int TileXmasCount(CharGrid grid, int x, int y)
+    {
+        // Check all directions for xmas
+        int count = 0;
+        int i;
+        string xmas = "XMAS";
+
+        // Check right
+        i = 1;
+        for (int xx = x + 1; xx < grid.Width && i < xmas.Length; xx++, i++)
+        {
+            if (grid[xx, y] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check left
+        i = 1;
+        for (int xx = x - 1; xx >= 0 && i < xmas.Length; xx--, i++)
+        {
+            if (grid[xx, y] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check north
+        i = 1;
+        for (int yy = y + 1; yy < grid.Height && i < xmas.Length; yy++, i++)
+        {
+            if (grid[x, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check south
+        i = 1;
+        for (int yy = y - 1; yy >= 0 && i < xmas.Length; yy--, i++)
+        {
+            if (grid[x, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check diag top right
+        i = 1;
+        for (int yy = y + 1, xx = x + 1; yy < grid.Height && xx < grid.Width && i < xmas.Length; yy++, xx++, i++)
+        {
+            if (grid[xx, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check diag top left
+        i = 1;
+        for (int yy = y + 1, xx = x - 1; yy < grid.Height && xx >= 0 && i < xmas.Length; yy++, xx--, i++)
+        {
+            if (grid[xx, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check diag bot right
+        i = 1;
+        for (int yy = y - 1, xx = x + 1; yy >= 0 && xx < grid.Width && i < xmas.Length; yy--, xx++, i++)
+        {
+            if (grid[xx, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        // Check diag bot left
+        i = 1;
+        for (int yy = y - 1, xx = x - 1; yy >= 0 && xx >= 0 && i < xmas.Length; yy--, xx--, i++)
+        {
+            if (grid[xx, yy] != xmas[i])
+            {
+                break;
+            }
+            else if (i == 3)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 }
