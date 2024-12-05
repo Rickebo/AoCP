@@ -2,6 +2,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Common.Updates;
 using Lib;
+using Lib.Coordinate;
+using Lib.Grid;
 
 namespace Backend.Problems.Year2024;
 
@@ -53,22 +55,7 @@ public class Day4 : ProblemSet
         }
     }
 
-    private static ArrayGrid<char> Parse(string input)
-    {
-        var lines = input.Split(["\r\n", "\r", "\n"], StringSplitOptions.RemoveEmptyEntries);
-        var width = lines[0].Length;
-        var rows = new char[lines.Length, width];
-        for (var y = 0; y < lines.Length; y++)
-        {
-            var line = lines[y];
-            for (var x = 0; x < width; x++)
-            {
-                rows[y, x] = line[x];
-            }
-        }
-
-        return new ArrayGrid<char>(rows);
-    }
+    private static CharGrid Parse(string input) => Parser.ParseCharGrid(input);
 
     public static int CountOccurrences(ArrayGrid<char> grid, string characters)
     {
