@@ -3,6 +3,7 @@
 [Flags]
 public enum Direction
 {
+    None = 0,
     North = 1,
     NorthEast = 1 | 2,
     East = 2,

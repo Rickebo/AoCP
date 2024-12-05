@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
-using System.Xml.Xsl;
 
-namespace Lib;
+namespace Lib.Coordinate;
 
 public readonly struct Coordinate<T>(T x, T y) : ICoordinate<Coordinate<T>, T>
     where T : INumber<T>

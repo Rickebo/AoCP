@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Lib;
+namespace Lib.Coordinate;
 
 public readonly struct FloatingCoordinate<T>(T x, T y)
     : ICoordinate<FloatingCoordinate<T>, T>
