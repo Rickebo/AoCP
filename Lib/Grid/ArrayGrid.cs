@@ -1,4 +1,6 @@
-﻿namespace Lib;
+﻿using Lib.Coordinate;
+
+namespace Lib.Grid;
 
 public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 {
@@ -49,7 +51,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public bool Contains(IntegerCoordinate<int> coordinate)
     {
         return coordinate.X >= 0 && coordinate.X < Width &&
-        coordinate.Y >= 0 && coordinate.Y < Height;
+               coordinate.Y >= 0 && coordinate.Y < Height;
     }
 
     public void Fill(
@@ -67,6 +69,40 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             }
         }
     }
+
+    protected virtual TGrid FlipX<TGrid>(Func<TValue[,], TGrid> constructor)
+        where TGrid : ArrayGrid<TValue>
+    {
+        var newGrid = new TValue[Width, Height];
+        var mx = Width - 1;
+
+        for (var x = 0; x < Width; x++)
+        {
+            for (var y = 0; y < Height; y++)
+            {
+                newGrid[x, y] = _values[mx - x, y];
+            }
+        }
+
+        return constructor(newGrid);
+    }
+    
+    protected virtual TGrid FlipY<TGrid>(Func<TValue[,], TGrid> constructor)
+        where TGrid : ArrayGrid<TValue>
+    {
+        var newGrid = new TValue[Width, Height];
+        var my = Height - 1;
+
+        for (var x = 0; x < Width; x++)
+        {
+            for (var y = 0; y < Height; y++)
+            {
+                newGrid[x, y] = _values[x, my - y];
+            }
+        }
+
+        return constructor(newGrid);
+    } 
 
     public IntegerCoordinate<int> BottomLeft => new(0, 0);
     public IntegerCoordinate<int> BottomRight => new(Width - 1, 0);

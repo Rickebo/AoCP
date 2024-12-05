@@ -1,8 +1,9 @@
 ﻿using System.Numerics;
+using Lib.Coordinate;
 
-namespace Lib;
+namespace Lib.Grid;
 
-public interface IGrid<TValue, TCoordinate, TCoordinateNumber>
+public interface IGrid<TValue, in TCoordinate, TCoordinateNumber>
     where TCoordinate : ICoordinate<TCoordinate, TCoordinateNumber>
     where TCoordinateNumber : INumber<TCoordinateNumber>
 {

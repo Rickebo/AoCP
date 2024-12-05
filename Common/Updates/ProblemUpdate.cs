@@ -6,7 +6,8 @@ namespace Common.Updates;
 [JsonDerivedType(typeof(FinishedProblemUpdate))]
 [JsonDerivedType(typeof(TextProblemUpdate))]
 [JsonDerivedType(typeof(StartProblemUpdate))]
-[JsonDerivedType(typeof(GridUpdate))]
+[JsonDerivedType(typeof(GlyphGridUpdate))]
+[JsonDerivedType(typeof(StringGridUpdate))]
 public abstract class ProblemUpdate
 {
     public abstract string Type { get; }

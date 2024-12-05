@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using Lib.Coordinate;
 
 namespace Lib;
 
@@ -23,6 +24,28 @@ public static class DirectionExtensions
         Direction.West => Direction.East,
         Direction.NorthWest => Direction.SouthEast,
         _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+    };
+
+    public static Direction Parse(char character) => character switch
+    {
+        '-' => Direction.East | Direction.West,
+        '|' => Direction.North | Direction.South,
+        '+' => Direction.North | Direction.East | Direction.South | Direction.West,
+        '>' => Direction.East,
+        '<' => Direction.West,
+        '^' => Direction.North,
+        'v' => Direction.South,
+        '7' => Direction.South | Direction.West,
+        'F' => Direction.East | Direction.South,
+        'L' => Direction.North | Direction.East,
+        'J' => Direction.North | Direction.West,
+        'N' => Direction.North,
+        'E' => Direction.East,
+        'S' => Direction.South,
+        'W' => Direction.West,
+        ' ' => Direction.None,
+        '.' => Direction.None,
+        _ => throw new ArgumentException($"Unknown direction for character {character}")
     };
 
     public static Direction[] All() => Enum.GetValues<Direction>();

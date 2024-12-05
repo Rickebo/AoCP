@@ -1,4 +1,4 @@
-﻿namespace Lib;
+﻿namespace Lib.Grid;
 
 public class IntGrid(string input) : ArrayGrid<int>(Init(input))
 {

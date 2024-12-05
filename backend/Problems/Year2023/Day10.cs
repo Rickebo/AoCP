@@ -30,16 +30,18 @@ public class Day10 : ProblemSet
                 var x = rnd.Next(100);
                 var y = rnd.Next(100);
 
-                reporter.Report(new GridUpdate
-                {
-                    Rows = new Dictionary<string, Dictionary<string, object>>()
+                reporter.Report(
+                    new StringGridUpdate
                     {
-                        [y.ToString()] = new()
+                        Rows = new Dictionary<string, Dictionary<string, string>>()
                         {
-                            [x.ToString()] = "#FFFFFF"
+                            [y.ToString()] = new()
+                            {
+                                [x.ToString()] = "#FFFFFF"
+                            }
                         }
                     }
-                });
+                );
             }
 
             var graph = Graph.Parse(
@@ -47,7 +49,7 @@ public class Day10 : ProblemSet
             );
 
             reporter.Report(
-                new GridUpdate()
+                new GlyphGridUpdate()
                 {
                     Width = graph.Grid.GetLength(1),
                     Height = graph.Grid.GetLength(0),
@@ -60,7 +62,7 @@ public class Day10 : ProblemSet
                                 .Range(0, graph.Grid.GetLength(1))
                                 .ToDictionary(
                                     x => x.ToString(),
-                                    x => (object)new GridUpdate.Cell(
+                                    x => new Cell(
                                         graph.Grid[y, x].ToString(),
                                         "#FFFFFF",
                                         "#000000"
@@ -95,16 +97,18 @@ public class Day10 : ProblemSet
                 var x = rnd.Next(100);
                 var y = rnd.Next(100);
 
-                reporter.Report(new GridUpdate
-                {
-                    Rows = new Dictionary<string, Dictionary<string, object>>()
+                reporter.Report(
+                    new StringGridUpdate()
                     {
-                        [y.ToString()] = new()
+                        Rows = new Dictionary<string, Dictionary<string, string>>()
                         {
-                            [x.ToString()] = "#FFFFFF"
+                            [y.ToString()] = new()
+                            {
+                                [x.ToString()] = "#FFFFFF"
+                            }
                         }
                     }
-                });
+                );
             }
 
             var result = Graph
@@ -112,7 +116,7 @@ public class Day10 : ProblemSet
                 .CountWithinLoop()
                 .ToString();
 
-             reporter.Report(FinishedProblemUpdate.FromSolution(result));
+            reporter.Report(FinishedProblemUpdate.FromSolution(result));
         }
     }
 

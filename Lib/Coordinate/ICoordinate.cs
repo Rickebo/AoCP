@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Lib;
+namespace Lib.Coordinate;
 
 public interface ICoordinate<TCoordinate, TNumber> where TNumber : INumber<TNumber>
 {
