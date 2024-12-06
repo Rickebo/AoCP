@@ -24,32 +24,38 @@ public class Day01 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
+            // Get number lists from input string
             (List<int> left, List<int> right) = GetValueLists(input);
 
+            // Sort lists
             left.Sort();
             right.Sort();
 
-            int diff = 0;
-
+            // Retrieve total distance between the lists
+            int distance = 0;
             for (int i = 0; i < left.Count; i++)
             {
-                int currDiff = Math.Abs(left[i] - right[i]);
+                // Absolute value
+                int currDistance = Math.Abs(left[i] - right[i]);
 
+                // Send to frontend
                 reporter.Report(
                     new TextProblemUpdate()
                     {
-                        Lines = [$"|{left[i]} - {right[i]}| = {currDiff}"]
+                        Lines = [$"|{left[i]} - {right[i]}| = {currDistance}"]
                     }
                 );
 
-                diff += currDiff;
+                // Accumulate distance
+                distance += currDistance;
             }
 
+            // Send solution to frontend
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = diff.ToString()
+                    Solution = distance.ToString()
                 }
             );
             return Task.CompletedTask;
@@ -64,30 +70,37 @@ public class Day01 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
+            // Get number lists from input string
             (List<int> left, List<int> right) = GetValueLists(input);
 
-            int sim = 0;
-
+            // Retrieve total similarity score between the lists
+            int similarity = 0;
             for (int i = 0; i < left.Count; i++)
             {
-                int multiplier = right.Where(x => x.Equals(left[i])).Count();
-                int currSim = left[i] * multiplier;
+                // Count occurences of each number in the right list
+                int occurences = right.Where(x => x.Equals(left[i])).Count();
 
+                // Calculate similarity score
+                int currSimilarity = left[i] * occurences;
+
+                // Send to frontend
                 reporter.Report(
                     new TextProblemUpdate()
                     {
-                        Lines = [$"{left[i]} * {multiplier} = {currSim}"]
+                        Lines = [$"{left[i]} * {occurences} = {currSimilarity}"]
                     }
                 );
 
-                sim += currSim;
+                // Accumulate similarity score
+                similarity += currSimilarity;
             }
 
+            // Send solution to frontend
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = sim.ToString()
+                    Solution = similarity.ToString()
                 }
             );
             return Task.CompletedTask;
@@ -96,10 +109,11 @@ public class Day01 : ProblemSet
 
     private static (List<int>, List<int>) GetValueLists(string input)
     {
-        List<int> left = [];
-        List<int> right = [];
+        // Retrieve both number columns
+        List<int> left = [], right = [];
         foreach (string row in Parser.SplitBy(input, ["\r\n", "\r", "\n"]))
         {
+            // Parse numbers and populate lists
             int[] numbers = Parser.GetValues<int>(row);
             left.Add(numbers[0]);
             right.Add(numbers[1]);

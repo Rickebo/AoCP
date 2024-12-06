@@ -24,34 +24,40 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            string[] rows = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
+            // Retrieve input reports
+            string[] reports = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
 
-            int safeCount = 0;
-
-            foreach (string row in rows)
+            // Check for safe reports
+            int safeReports = 0;
+            foreach (string report in reports)
             {
-                int[] numbers = Parser.GetValues<int>(row);
+                // Parse levels from report
+                int[] levels = Parser.GetValues<int>(report);
 
-                bool safe = CheckIncreasing(numbers) || CheckDecreasing(numbers);
+                // Check if levels are safe
+                bool safe = IsSafe(levels) || IsSafe(levels.Reverse());
 
+                // Send to frontend
                 reporter.Report(
                     new TextProblemUpdate()
                     {
-                        Lines = [$"{row} = {safe}"]
+                        Lines = [$"[{report}] = {safe}"]
                     }
                 );
 
+                // Accumulate safe reports
                 if (safe)
                 {
-                    safeCount++;
+                    safeReports++;
                 }
             }
 
+            // Send solution to frontend
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = safeCount.ToString()
+                    Solution = safeReports.ToString()
                 }
             );
             return Task.CompletedTask;
@@ -66,71 +72,78 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            string[] rows = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
+            // Retrieve input reports
+            string[] reports = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
 
-            int safeCount = 0;
-
-            foreach (string row in rows)
+            // Check for safe reports
+            int safeReports = 0;
+            foreach (string report in reports)
             {
-                int[] numbers = Parser.GetValues<int>(row);
+                // Parse levels from report
+                int[] levels = Parser.GetValues<int>(report);
 
+                // Remove one level at the time and check for safe report
                 bool safe = false;
-                for (int i = 0; i < numbers.Length; i++)
+                for (int i = 0; i < levels.Length; i++)
                 {
-                    List<int> copy = [.. numbers];
-                    copy.RemoveAt(i);
+                    // Create sub array
+                    int[] subLevels = levels.Where((_, index) => index != i).ToArray();
 
-                    safe = CheckIncreasing([.. copy]) || CheckDecreasing([.. copy]);
+                    // Check if levels are safe
+                    safe = IsSafe(subLevels) || IsSafe(subLevels.Reverse());
 
+                    // Accumulate safe reports
                     if (safe)
                     {
-                        safeCount++;
+                        safeReports++;
                         break;
                     }
                 }
 
+                // Send to frontend
                 reporter.Report(
                     new TextProblemUpdate()
                     {
-                        Lines = [$"{row} = {safe}"]
+                        Lines = [$"[{report}] = {safe}"]
                     }
                 );
             }
 
+            // Send solution to frontend
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
                     Successful = true,
-                    Solution = safeCount.ToString()
+                    Solution = safeReports.ToString()
                 }
             );
             return Task.CompletedTask;
         }
     }
 
-    private static bool CheckIncreasing(int[] numbers)
+    private static bool IsSafe(IEnumerable<int> levels)
     {
-        for (int i = 1; i < numbers.Length; i++)
+        // Loop through levels
+        int? last = null;
+        foreach (int level in levels)
         {
-            int diff = numbers[i] - numbers[i - 1];
-            if (diff < 1 || diff > 3)
+            // Catch first level
+            if (last == null)
+            {
+                last = level;
+                continue;
+            }
+
+            // Get difference for each level
+            int difference = level - last.Value;
+
+            // Make sure the difference is within safe specs
+            if (difference > 3 || difference < 1)
             {
                 return false;
             }
-        }
 
-        return true;
-    }
-
-    private static bool CheckDecreasing(int[] numbers)
-    {
-        for (int i = 1; i < numbers.Length; i++)
-        {
-            int diff = numbers[i] - numbers[i - 1];
-            if (diff < -3 || diff > -1)
-            {
-                return false;
-            }
+            last = level;
         }
 
         return true;
