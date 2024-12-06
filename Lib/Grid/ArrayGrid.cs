@@ -22,10 +22,10 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public ArrayGrid(IEnumerable<IEnumerable<TValue>> rows, int width, int height)
     {
         _values = new TValue[width, height];
-        int y = 0;
+        var y = 0;
         foreach (var row in rows)
         {
-            int x = 0;
+            var x = 0;
             foreach (var cell in row)
             {
                 _values[x, y] = cell;
@@ -33,6 +33,22 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             }
 
             y++;
+        }
+    }
+
+    public IEnumerable<TValue> this[Range x, Range y]
+    {
+        get
+        {
+            var xDir = Math.Sign(x.End.Value - x.Start.Value);
+            var yDir = Math.Sign(y.End.Value - y.Start.Value);
+            for (var cx = x.Start.Value; cx < x.End.Value; cx += xDir)
+            {
+                for (var cy = y.Start.Value; cy < y.End.Value; cy += yDir)
+                {   
+                    yield return _values[cx, cy];
+                }
+            }
         }
     }
 
@@ -48,11 +64,23 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         set => _values[x, y] = value;
     }
 
-    public bool Contains(IntegerCoordinate<int> coordinate)
+    public IEnumerable<TValue> Row(int y)
     {
-        return coordinate.X >= 0 && coordinate.X < Width &&
-               coordinate.Y >= 0 && coordinate.Y < Height;
+        for (var x = 0; x < Width; x++)
+            yield return _values[x, y];
     }
+
+    public IEnumerable<TValue> Column(int x)
+    {
+        for (var y = 0; y < Height; y++)
+            yield return _values[x, y];
+    }
+    
+    public bool Contains(IntegerCoordinate<int> coordinate) =>
+        coordinate.X >= 0 &&
+        coordinate.X < Width &&
+        coordinate.Y >= 0 &&
+        coordinate.Y < Height;
 
     public void Fill(
         IntegerCoordinate<int> coordinate,
@@ -61,14 +89,36 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         TValue value
     )
     {
-        for (int y = coordinate.Y; y < height; y++)
+        for (var y = coordinate.Y; y < height; y++)
         {
-            for (int x = coordinate.X; x < width; x++)
+            for (var x = coordinate.X; x < width; x++)
             {
                 _values[x, y] = value;
             }
         }
     }
+
+    public IntegerCoordinate<int> Find(Func<TValue, bool> predicate)
+    {
+        return FindOrNull(predicate) ?? throw new Exception("Found no grid cell matching predicate.");
+    }
+
+    public IntegerCoordinate<int>? FindOrNull(Func<TValue, bool> predicate)
+    {
+        foreach (var coordinate in Coordinates)
+        {
+            if (predicate(this[coordinate]))
+                return coordinate;
+        }
+
+        return null;
+    }
+
+    public IEnumerable<IntegerCoordinate<int>> FindAll(Func<TValue, bool> predicate) =>
+        Coordinates.Where(coordinate => predicate(this[coordinate]));
+
+    public virtual ArrayGrid<TValue> FlipX() => FlipX(values => new ArrayGrid<TValue>(values));
+    public virtual ArrayGrid<TValue> FlipY() => FlipY(values => new ArrayGrid<TValue>(values));
 
     protected virtual TGrid FlipX<TGrid>(Func<TValue[,], TGrid> constructor)
         where TGrid : ArrayGrid<TValue>
@@ -86,7 +136,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
         return constructor(newGrid);
     }
-    
+
     protected virtual TGrid FlipY<TGrid>(Func<TValue[,], TGrid> constructor)
         where TGrid : ArrayGrid<TValue>
     {
@@ -102,7 +152,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         }
 
         return constructor(newGrid);
-    } 
+    }
 
     public IntegerCoordinate<int> BottomLeft => new(0, 0);
     public IntegerCoordinate<int> BottomRight => new(Width - 1, 0);
@@ -137,13 +187,13 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public ArrayGrid<TValue> Section(IntegerCoordinate<int> origin, int width, int height)
     {
-        int newHeight = Math.Min(Height, height) - origin.Y;
-        int newWidth = Math.Min(Width, width) - origin.X;
+        var newHeight = Math.Min(Height, height) - origin.Y;
+        var newWidth = Math.Min(Width, width) - origin.X;
         var newValues = new TValue[newHeight, newWidth];
 
-        for (int y = origin.Y; y < newHeight; y++)
+        for (var y = origin.Y; y < newHeight; y++)
         {
-            for (int x = origin.X; x < newWidth; x++)
+            for (var x = origin.X; x < newWidth; x++)
             {
                 newValues[y, x] = _values[y, x];
             }
