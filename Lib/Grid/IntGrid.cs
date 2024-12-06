@@ -1,26 +1,41 @@
 ﻿namespace Lib.Grid;
 
-public class IntGrid(string input) : ArrayGrid<int>(Init(input))
+public class IntGrid : ArrayGrid<int>
 {
-    private static int[,] Init(string str)
+    public IntGrid(
+        string input,
+        OriginPosition originPosition = OriginPosition.BottomLeft
+    ) : base(Init(input, originPosition))
+    {
+    }
+
+    public IntGrid(int[,] values) : base(values)
+    {
+    }
+
+    private static int[,] Init(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
     {
         // Parse string input
-        string[] rows = Parser.SplitBy(str, ["\r\n", "\r", "\n"]);
-        int height = rows.Length;
-        int width = rows[0].Length;
+        var rows = Parser.SplitBy(str, ["\r\n", "\r", "\n"]);
+        var height = rows.Length;
+        var width = rows[0].Length;
 
         // Init array of ints
-        int[,] arr = new int[width, height];
+        var arr = new int[width, height];
 
         // Fill 2D-array with ints
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                arr[x, y] = rows[height - 1 - y][x] - '0';
+                var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
+                arr[x, y] = rows[mappedY][x] - '0';
             }
         }
 
         return arr;
     }
+
+    public override IntGrid FlipX() => FlipX(values => new IntGrid(values));
+    public override IntGrid FlipY() => FlipY(values => new IntGrid(values));
 }

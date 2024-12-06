@@ -1,26 +1,41 @@
 ﻿namespace Lib.Grid;
 
-public class CharGrid(string input) : ArrayGrid<char>(Init(input))
+public class CharGrid : ArrayGrid<char>
 {
-    private static char[,] Init(string str)
+    public CharGrid(
+        string input,
+        OriginPosition originPosition = OriginPosition.BottomLeft
+    ) : base(Init(input, originPosition))
+    {
+    }
+
+    public CharGrid(char[,] values) : base(values)
+    {
+    }
+
+    private static char[,] Init(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
     {
         // Parse string input
-        string[] rows = Parser.SplitBy(str, ["\r\n", "\r", "\n"]);
-        int height = rows.Length;
-        int width = rows[0].Length;
+        var rows = Parser.SplitBy(str, ["\r\n", "\r", "\n"]);
+        var height = rows.Length;
+        var width = rows[0].Length;
 
         // Init array of chars
-        char[,] arr = new char[width, height];
+        var arr = new char[width, height];
 
         // Fill 2D-array with chars
-        for (int y = 0; y < height; y++)
+        for (var y = 0; y < height; y++)
         {
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                arr[x, y] = rows[height - 1 - y][x];
+                var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
+                arr[x, y] = rows[mappedY][x];
             }
         }
 
         return arr;
     }
+
+    public override CharGrid FlipX() => FlipX(values => new CharGrid(values));
+    public override CharGrid FlipY() => FlipY(values => new CharGrid(values));
 }
