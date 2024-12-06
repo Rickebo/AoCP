@@ -2,10 +2,15 @@
 
 namespace Lib.Coordinate;
 
-public interface ICoordinate<TCoordinate, TNumber> where TNumber : INumber<TNumber>
+public interface ICoordinate<TCoordinate, TNumber>
+    where TCoordinate : IStringCoordinate
+    where TNumber : INumber<TNumber>
 {
     public TNumber X { get; }
     public TNumber Y { get; }
+
+    public string? GetStringX() => X.ToString();
+    public string? GetStringY() => Y.ToString();
 
     public static abstract TCoordinate Zero { get; }
     public static abstract TCoordinate One { get; }
