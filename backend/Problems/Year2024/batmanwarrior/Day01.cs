@@ -40,25 +40,14 @@ public class Day01 : ProblemSet
                 int currDistance = Math.Abs(left[i] - right[i]);
 
                 // Send to frontend
-                reporter.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"|{left[i]} - {right[i]}| = {currDistance}"]
-                    }
-                );
+                reporter.Report(TextProblemUpdate.FromLine($"|{left[i]} - {right[i]}| = {currDistance}"));
 
                 // Accumulate distance
                 distance += currDistance;
             }
 
             // Send solution to frontend
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = distance.ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(distance));
             return Task.CompletedTask;
         }
     }
@@ -85,25 +74,14 @@ public class Day01 : ProblemSet
                 int currSimilarity = left[i] * occurences;
 
                 // Send to frontend
-                reporter.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"{left[i]} * {occurences} = {currSimilarity}"]
-                    }
-                );
+                reporter.Report(TextProblemUpdate.FromLine($"{left[i]} * {occurences} = {currSimilarity}"));
 
                 // Accumulate similarity score
                 similarity += currSimilarity;
             }
 
             // Send solution to frontend
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = similarity.ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(similarity));
             return Task.CompletedTask;
         }
     }
@@ -112,7 +90,7 @@ public class Day01 : ProblemSet
     {
         // Retrieve both number columns
         List<int> left = [], right = [];
-        foreach (string row in Parser.SplitBy(input, ["\r\n", "\r", "\n"]))
+        foreach (string row in input.SplitLines())
         {
             // Parse numbers and populate lists
             int[] numbers = Parser.GetValues<int>(row);

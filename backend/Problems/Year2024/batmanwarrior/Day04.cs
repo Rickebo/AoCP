@@ -25,15 +25,10 @@ public class Day04 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
+            // Create character grid
             CharGrid grid = new(input);
 
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = XmasOccurences(grid).ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(XmasOccurences(grid)));
             return Task.CompletedTask;
         }
     }
