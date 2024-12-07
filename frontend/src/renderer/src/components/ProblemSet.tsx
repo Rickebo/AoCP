@@ -101,14 +101,17 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   useEffect(() => {
     if (!isSolvingAny) return
 
-    const interval = setInterval(() => {
+    const updater = (): void => {
       const newData = Object.fromEntries(
         props.set.problems.map((problem) => [problem.name, solveElapsedTime(problem.name)])
       )
       setSolveData(newData)
-    }, 7)
+    }
 
-    return () => clearInterval(interval)
+    updater()
+    const interval = setInterval(updater, 7)
+
+    return (): void => clearInterval(interval)
   }, [isSolvingAny])
 
   return (
