@@ -190,12 +190,7 @@ public class Day05 : ProblemSet
             }
 
             // Send to frontend
-            string[] lines =
-            [
-                $"{row} = {(correct ? "CORRECT" : "INCORRECT")}",
-                $"{(!correct ? string.Join(",", printed) + " (FIXED)" : "")}"
-            ];
-            reporter.Report(TextProblemUpdate.FromLines(lines));
+            reporter.Report(TextProblemUpdate.FromLine($"{row} = {(correct ? "CORRECT" : $"INCORRECT\n{string.Join(",", printed)} (FIXED)")}"));
             correctlyOrdered += !correct ? printed[printed.Count / 2] : 0;
         }
     }
