@@ -9,14 +9,7 @@ public static class Year2023Metadata
     {
         public override int Year { get; } = 2023;
 
-        public Year2023Collection()
-        {
-            Problems = FindProblems(typeof(Year2023Metadata));
-        }
-        
         public override Dictionary<string, List<ProblemSet>> Problems { get; } =
-        [
-            
-        ];
+            FindProblems(typeof(Year2023Metadata));
     }
 }

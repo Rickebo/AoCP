@@ -1,3 +1,4 @@
+using Common;
 using Common.Updates;
 
 namespace Backend.Problems.Year2024.Rickebo;

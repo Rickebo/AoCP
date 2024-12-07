@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Common;
 using Common.Updates;
 
 namespace Backend.Problems.Year2024.Rickebo;

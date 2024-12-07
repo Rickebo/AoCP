@@ -1,4 +1,4 @@
-namespace Backend.Problems.Year2024;
+﻿namespace Backend.Problems.Year2024;
 
 public static class Year2024Metadata
 {
@@ -7,10 +7,9 @@ public static class Year2024Metadata
 
     public class Year2024Collection : ProblemCollection
     {
-        public override int Year { get; } = 2024;
+        public override Dictionary<string, List<ProblemSet>> Problems { get; } =
+            FindProblems(typeof(Year2024Metadata));
 
-        public override List<ProblemSet> Problems { get; } =
-        [
-        ];
+        public override int Year { get; } = 2024;
     }
 }
