@@ -4,7 +4,7 @@
 
 export interface ProblemCollectionMetadata {
   year: number
-  problemSets: ProblemSetMetadata[]
+  problemSets: Record<string, ProblemSetMetadata[]>
 }
 
 export interface ProblemSetMetadata {

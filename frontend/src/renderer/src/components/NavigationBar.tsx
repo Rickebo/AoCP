@@ -11,20 +11,35 @@
 } from 'react-bootstrap'
 import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
-import { Metadata, ProblemCollectionMetadata, ProblemSetMetadata } from '../data/metadata'
+import { Metadata, ProblemSetMetadata } from '../data/metadata'
 import { useBackend } from '../context/BackendContext'
 
 export interface NavigationBarProps {
   setProblemSet: (year: number, problemSet: ProblemSetMetadata) => void
+  author: string
+  setAuthor: (author: string) => void
 }
 
 const NavigationBar: FC<NavigationBarProps> = (props) => {
-  const backend = useBackend()
-  const metadataService = useMetadataService()
   const [metadata, setMetadata] = useState({} as Metadata)
   const [loaded, setLoaded] = useState<boolean>(false)
+
+  const backend = useBackend()
+  const metadataService = useMetadataService()
+  const [authorShown, setAuthorShown] = useState<boolean>(false)
   const [backendShown, setBackendShown] = useState<boolean>(false)
   const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
+
+  const authorSet = new Set<string>()
+  const collections = loaded ? metadata.collections : {}
+
+  for (const collection of Object.values(collections)) {
+    for (const author of Object.keys(collection.problemSets)) {
+      authorSet.add(author)
+    }
+  }
+
+  const authors = [...authorSet]
 
   useEffect(() => {
     setMetadata({} as Metadata)
@@ -39,8 +54,6 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
     window.open('https://github.com/Rickebo/AoCP')
   }
 
-  const collections = loaded ? metadata.collections : {}
-
   return (
     <Navbar>
       <Container fluid>
@@ -51,7 +64,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
             <Nav.Link onClick={openGithub}>GitHub</Nav.Link>
             {Object.entries(collections).map(([year, collection]) => (
               <NavDropdown key={year} title={year}>
-                {(collection?.problemSets ?? []).map((problemSet) => (
+                {(collection?.problemSets[props.author ?? 0] ?? []).map((problemSet) => (
                   <NavDropdown.Item
                     key={`${year}/${problemSet.releaseTime}`}
                     onClick={() => props.setProblemSet(Number(year), problemSet)}
@@ -61,6 +74,36 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
                 ))}
               </NavDropdown>
             ))}
+            <NavDropdown
+              key="author"
+              title="Author"
+              className="ms-auto"
+              autoClose="outside"
+              show={authorShown}
+              onToggle={(open, metadata) => {
+                if (metadata.source != 'select') setAuthorShown(open)
+              }}
+            >
+              {authors.map((currentAuthor) => (
+                <NavDropdown.Item
+                  key={currentAuthor}
+                  onClick={() => {
+                    props.setAuthor(currentAuthor)
+                    setAuthorShown(false)
+                  }}
+                >
+                  <Stack direction="horizontal">
+                    <span
+                      style={{
+                        fontWeight: props.author == currentAuthor ? 700 : undefined
+                      }}
+                    >
+                      {currentAuthor}
+                    </span>
+                  </Stack>
+                </NavDropdown.Item>
+              ))}
+            </NavDropdown>
             <NavDropdown
               key="backend"
               title="Backend"
@@ -100,7 +143,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
                 </NavDropdown.Item>
               ))}
               <NavDropdown.Item onClick={() => {}}>
-                <Form inline>
+                <Form>
                   <InputGroup size="sm">
                     <Form.Control
                       placeholder="new backend..."

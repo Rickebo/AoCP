@@ -1,7 +1,8 @@
 ﻿using System.Text.RegularExpressions;
+using Common;
 using Common.Updates;
 
-namespace Backend.Problems.Year2023;
+namespace Backend.Problems.Year2023.Rickebo;
 
 public class Day2 : ProblemSet
 {

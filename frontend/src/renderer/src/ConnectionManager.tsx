@@ -21,6 +21,7 @@ export interface ProblemFeedbackHandler {
 
 export function useConnectionManager(
   year: number,
+  author: string,
   set: ProblemSetMetadata,
   grids: MutableRefObject<Record<string, GridRef | null>>
 ): ProblemFeedbackHandler {
@@ -125,6 +126,7 @@ export function useConnectionManager(
 
     const id: ProblemId = {
       year: year,
+      author: author,
       setName: set.name,
       problemName: problem.name
     }

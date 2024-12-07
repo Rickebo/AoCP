@@ -3,15 +3,19 @@
 public class FinishedProblemUpdate : ProblemUpdate
 {
     public override string Type => "finished";
-    
+
     public bool Successful { get; set; }
     public string? Solution { get; set; }
     public string? Error { get; set; }
 
+
+    public static FinishedProblemUpdate FromSolution(IFormattable solution) =>
+        FromSolution(solution.ToString() ?? "");
+
     public static FinishedProblemUpdate FromSolution(string solution) =>
         new()
         {
-            Solution = solution,
+            Solution = solution.ToString(),
             Error = null,
             Successful = true
         };

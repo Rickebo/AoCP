@@ -1,9 +1,10 @@
-﻿using Common.Updates;
+﻿using Common;
+using Common.Updates;
 using Lib;
 using Lib.Coordinate;
 using Lib.Grid;
 
-namespace Backend.Problems.Year2023;
+namespace Backend.Problems.Year2023.Rickebo;
 
 public class Day10 : ProblemSet
 {

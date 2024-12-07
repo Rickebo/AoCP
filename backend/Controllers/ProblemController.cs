@@ -63,9 +63,10 @@ public class ProblemController(
     private async Task<T?> Receive<T>(WebSocket webSocket) =>
         JsonSerializer.Deserialize<T>(await Receive(webSocket));
 
-    [Route("solve/{year}/{setName}/{problemName}")]
+    [Route("solve/{year}/{author}/{setName}/{problemName}")]
     public async Task Solve(
         [FromRoute] string year,
+        [FromRoute] string author,
         [FromRoute]
         string setName,
         [FromRoute]
@@ -84,6 +85,7 @@ public class ProblemController(
         var id = new ProblemId
         {
             Year = int.Parse(year),
+            Author = author,
             SetName = setName,
             ProblemName = problemName
         };

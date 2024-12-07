@@ -30,7 +30,7 @@ export const BackendProvider: React.FC<{ children: ReactNode }> = ({ children })
   })
 
   const value: BackendContextType = {
-    url: state.state.urls[state.state.url],
+    url: state.state.urls[state.state.url ?? 0],
     urls: state.state.urls,
     setUrl: (url: string) => {
       state.update((current) => {
@@ -52,7 +52,7 @@ export const BackendProvider: React.FC<{ children: ReactNode }> = ({ children })
         if (index < 0) return
 
         if (current.url == index) current.url = undefined
-        else if (current.url > index) current.url--
+        else if (current.url != null && current.url > index) current.url--
 
         current.urls.splice(index, 1)
         state.save(current)

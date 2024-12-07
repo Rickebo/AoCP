@@ -1,6 +1,7 @@
-﻿using Common.Updates;
+﻿using Common;
+using Common.Updates;
 
-namespace Backend.Problems.Year2023;
+namespace Backend.Problems.Year2023.Rickebo;
 
 public class Day1 : ProblemSet
 {
