@@ -14,6 +14,13 @@ public class TextProblemUpdate : OngoingProblemUpdate
             Text = null
         };
 
+    public static TextProblemUpdate FromLine(string line) =>
+        new()
+        {
+            Lines = [line],
+            Text = null
+        };
+
     public static TextProblemUpdate FromLines(IFormattable[] lines) =>
         new()
         {
@@ -21,7 +28,14 @@ public class TextProblemUpdate : OngoingProblemUpdate
             Text = null
         };
 
-    public static TextProblemUpdate FromText(IFormattable text) =>
+    public static TextProblemUpdate FromLines(string[] lines) =>
+        new()
+        {
+            Lines = lines,
+            Text = null
+        };
+
+    public static TextProblemUpdate FromText(string text) =>
         new()
         {
             Lines = null,
