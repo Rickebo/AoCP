@@ -21,8 +21,12 @@ const Layout: FC = () => {
 
   const author = authorState.state.author
   const setAuthor = (newAuthor: string): void => {
-    authorState.update((current) => (current.author = newAuthor))
-    setSelectedProblemSet(undefined)
+    authorState.update((current) => {
+      current.author = newAuthor
+      authorState.save(current)
+    })
+
+    // setSelectedProblemSet(undefined)
   }
 
   return (
@@ -38,7 +42,12 @@ const Layout: FC = () => {
 
       <div className="d-flex flex-column flex-grow-1 overflow-hidden">
         {year == null || author == null || selectedProblemSet == null ? null : (
-          <ProblemSet year={year} author={author} set={selectedProblemSet} />
+          <ProblemSet
+            key={`problem-${year}-${author}-${selectedProblemSet.name}`}
+            year={year}
+            author={author}
+            set={selectedProblemSet}
+          />
         )}
       </div>
     </div>
