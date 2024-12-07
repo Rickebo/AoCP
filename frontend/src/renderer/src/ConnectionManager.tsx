@@ -17,6 +17,12 @@ export interface ProblemFeedbackHandler {
   log: (problemName: string) => string[] | undefined
   solve: (problem: ProblemMetadata, input: string) => Promise<void>
   solveAll: (input: string) => void
+  getSolveData: (problemName: string | undefined) => SolveData | undefined
+}
+
+export interface SolveData {
+  start: Date
+  end: Date | undefined
 }
 
 export function useConnectionManager(
@@ -30,6 +36,7 @@ export function useConnectionManager(
   const [log, setLog] = useState<Record<string, string[] | undefined>>({})
   const [, setSocket] = useState<ProblemSocket | undefined>()
   const [gridQueue, setGridQueue] = useState<Record<string, GridData[]>>({})
+  const [solveTimes, setSolveTimes] = useState<Record<string, SolveData>>({})
 
   useEffect(() => {
     if (Object.entries(gridQueue).length < 1) return
@@ -53,6 +60,15 @@ export function useConnectionManager(
 
   const handleFinished = (update: FinishedProblemUpdate): void => {
     if (update.solution == null) return
+
+    setSolveTimes((current) => {
+      const clone = { ...current }
+      const data = clone[update.id.problemName]
+      if (data == null) return clone
+
+      data.end = new Date()
+      return clone
+    })
 
     setSolutions((solutions) => {
       return {
@@ -131,6 +147,16 @@ export function useConnectionManager(
       problemName: problem.name
     }
 
+    setSolveTimes((times) => {
+      const clone = { ...times }
+      clone[problem.name!] = {
+        start: new Date(),
+        end: undefined
+      }
+
+      return clone
+    })
+
     problemService.solve(id, input).then((socket) => {
       setSocket(socket)
       socket.addHandler(handleMessage)
@@ -145,11 +171,15 @@ export function useConnectionManager(
     }
   }
 
+  const getSolveData = (problemName: string | undefined): SolveData | undefined =>
+    problemName != null ? solveTimes[problemName] : undefined
+
   return {
     problemService: problemService,
     solution: (name: string): string | undefined => solutions[name],
     log: (name: string): string[] | undefined => log[name],
     solve: solve,
-    solveAll: solveAll
+    solveAll: solveAll,
+    getSolveData: getSolveData
   }
 }

@@ -1,13 +1,14 @@
-import { CSSProperties, FC, ReactNode, useRef } from 'react'
+import React, { CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
 import ProblemSolution from './ProblemSolution'
-import { Nav, Stack, Tab } from 'react-bootstrap'
+import { Nav, Spinner, Stack, Tab } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
 import ProblemDescription from './ProblemDescription'
+import { BsStopwatch } from 'react-icons/bs'
 
 export interface ProblemSetProps {
   year: number
@@ -28,7 +29,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
   return (
     <div className={classNames(props.className, 'd-inline')} style={props.style}>
       {props.parts.map((part, i) => (
-        <>
+        <React.Fragment key={`title-part-${i}`}>
           <h3
             key={i}
             className={classNames('d-inline', props.textClassName)}
@@ -47,7 +48,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
               &nbsp;
             </h3>
           )}
-        </>
+        </React.Fragment>
       ))}
     </div>
   )
@@ -56,12 +57,59 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef>>({})
   const mgr = useConnectionManager(props.year, props.author, props.set, grids)
+  const [solveData, setSolveData] = useState<Record<string, string>>({})
+
+  // Cooldown before showing spinner for problem being solved. To prevent it from flashing
+  // too quickly when a solution is just a bit too efficient.
+  const startCooldown = 10
 
   const navigate = (url: string): void => {
     window.open(url)
   }
 
   const defaultKey = props.set.problems[0].name ?? undefined
+
+  const isSolving = (problemName: string | undefined): boolean => {
+    const data = mgr.getSolveData(problemName)
+    if (data == null || data.end != null) return false
+
+    const elapsed = new Date().getTime() - data.start.getTime()
+    return elapsed > startCooldown
+  }
+
+  const solveElapsedTime = (problemName: string | undefined): string => {
+    const data = mgr.getSolveData(problemName)
+    if (data == null) return ''
+
+    const start = data.start
+    const end = data.end ?? new Date()
+
+    const elapsed = end.getTime() - start.getTime()
+    const seconds = Math.floor(elapsed / 1000)
+    const minutes = Math.floor(seconds / 60)
+
+    if (minutes > 0)
+      return `${minutes}m ${(seconds % 60).toString().padStart(2, '0')}s ${(elapsed % 1000).toString().padStart(3, '0')} ms`
+    else if (seconds > 0) return `${seconds}s ${(elapsed % 1000).toString().padStart(3, '0')} ms`
+    else return `${elapsed} ms`
+  }
+
+  const isSolvingAny = props.set.problems
+    .map((problem) => isSolving(problem.name))
+    .reduce((a, b) => a || b, false)
+
+  useEffect(() => {
+    if (!isSolvingAny) return
+
+    const interval = setInterval(() => {
+      const newData = Object.fromEntries(
+        props.set.problems.map((problem) => [problem.name, solveElapsedTime(problem.name)])
+      )
+      setSolveData(newData)
+    }, 7)
+
+    return () => clearInterval(interval)
+  }, [isSolvingAny])
 
   return (
     <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>
@@ -106,10 +154,14 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           <Nav variant="pills">
             {props.set.problems.map((problem, i) => (
               <Nav.Item key={problem.name}>
-                <Nav.Link eventKey={problem.name ?? i.toString()}>{problem.name}</Nav.Link>
+                <Nav.Link eventKey={problem.name ?? i.toString()}>
+                  {problem.name}
+                  {isSolving(problem.name) ? <Spinner size="sm" className="ms-2" /> : null}
+                </Nav.Link>
               </Nav.Item>
             ))}
           </Nav>
+          <div className="ms-auto" />
         </Stack>
         <Tab.Content style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden' }}>
           {props.set.problems.map((problem, i) => (
@@ -141,6 +193,22 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                     <Nav.Item>
                       <Nav.Link eventKey="solution">Solution</Nav.Link>
                     </Nav.Item>
+                    {problem.name == null ? null : (
+                      <>
+                        <div className="ms-auto" />
+                        <span
+                          style={{
+                            opacity: 0.5,
+                            alignItems: 'center',
+                            display: 'flex'
+                          }}
+                          className="me-3"
+                        >
+                          <BsStopwatch className="me-2 my-0" />
+                          {solveData[problem.name]}
+                        </span>
+                      </>
+                    )}
                   </Nav>
                   <Tab.Content
                     style={{ display: 'flex', flex: '1 1 auto' }}
