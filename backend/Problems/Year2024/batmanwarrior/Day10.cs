@@ -1,12 +1,13 @@
+using Common;
 using Common.Updates;
 using Lib;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.batmanwarrior;
 
-public class Day07 : ProblemSet
+public class Day10 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 07, 0, 0, 0);
+        new(2024, 12, 10, 0, 0, 0);
 
     public override List<Problem> Problems { get; } =
     [

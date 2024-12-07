@@ -1,7 +1,10 @@
+using Common;
 using Common.Updates;
 using Lib;
+using Lib.Coordinate;
+using Lib.Grid;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.batmanwarrior;
 
 public class Day06 : ProblemSet
 {
@@ -114,7 +117,7 @@ public class Day06 : ProblemSet
         Coordinate<int> currPos = guard.pos;
 
         Direction dir = Direction.North;
-        switch(grid[guard.pos.X, guard.pos.Y])
+        switch (grid[guard.pos.X, guard.pos.Y])
         {
             case '>':
                 dir = Direction.East;
@@ -129,7 +132,7 @@ public class Day06 : ProblemSet
 
         grid[guard.pos.X, guard.pos.Y] = 'X';
 
-        for (;;)
+        for (; ; )
         {
             // Look ahead
             Coordinate<int> next = currPos + Coordinate<int>.UnitY;
@@ -210,7 +213,7 @@ public class Day06 : ProblemSet
     {
         HashSet<Guard> visited = [];
 
-        for (;;)
+        for (; ; )
         {
             if (guard.pos.X < 0 || guard.pos.X >= grid.Width || guard.pos.Y < 0 || guard.pos.Y >= grid.Height)
             {

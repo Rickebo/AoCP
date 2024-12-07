@@ -1,7 +1,8 @@
+using Common;
 using Common.Updates;
-using Lib;
+using Lib.Grid;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.batmanwarrior;
 
 public class Day04 : ProblemSet
 {
@@ -106,7 +107,7 @@ public class Day04 : ProblemSet
         int Y2 = y - 1;
         if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
         {
-            if ((grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S') || (grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M'))
+            if (grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S' || grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M')
             {
                 present1 = true;
             }
@@ -119,7 +120,7 @@ public class Day04 : ProblemSet
         Y2 = y - 1;
         if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
         {
-            if ((grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S') || (grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M'))
+            if (grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S' || grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M')
             {
                 present2 = true;
             }

@@ -1,7 +1,8 @@
+using Common;
 using Common.Updates;
 using Lib;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.batmanwarrior;
 
 public class Day02 : ProblemSet
 {

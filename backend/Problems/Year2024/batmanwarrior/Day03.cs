@@ -1,7 +1,8 @@
+using Common;
 using Common.Updates;
 using System.Text.RegularExpressions;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.batmanwarrior;
 
 public class Day03 : ProblemSet
 {
@@ -88,10 +89,10 @@ public class Day03 : ProblemSet
                 }
             }
 
+            // Send to frontend
             reporter.Report(
                 new FinishedProblemUpdate()
                 {
-                    Successful = true,
                     Solution = sum.ToString()
                 }
             );
@@ -101,17 +102,17 @@ public class Day03 : ProblemSet
 
     private static int Multis(string str, Reporter rep)
     {
+        // Extract multipliers
         Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
-
         var matches = Regex.Matches(str);
-        var sum = 0;
 
+        // Check matches
+        var sum = 0;
         foreach (Match match in matches)
         {
             // Add the mullimulls
             int num1 = int.Parse(match.Groups[1].Value);
             int num2 = int.Parse(match.Groups[2].Value);
-
             sum += num1 * num2;
 
             // Report that shit
