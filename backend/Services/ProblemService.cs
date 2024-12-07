@@ -24,7 +24,7 @@ public class ProblemService
 
     private void ValidateYear(int year)
     {
-        if (year < 2015 || year > 2100)
+        if (year is < 2015 or > 2100)
             throw new InvalidOperationException(
                 "Invalid year"
             );

@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
 
-namespace Lib;
+namespace Lib.Coordinate;
 
 public readonly struct IntegerCoordinate<T>(T x, T y)
-    : ICoordinate<IntegerCoordinate<T>, T>
+    : ICoordinate<IntegerCoordinate<T>, T>, IStringCoordinate
     where T : INumber<T>, IBinaryInteger<T>
 {
     public T X { get; } = x;
@@ -130,6 +130,10 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         IntegerCoordinate<T> right
     ) =>
         new(left.X / right.X, left.Y / right.Y);
+
+    public string? GetStringX() => X.ToString();
+
+    public string? GetStringY() => Y.ToString();
 
     public bool Equals(IntegerCoordinate<T> other) => X == other.X && Y == other.Y;
 

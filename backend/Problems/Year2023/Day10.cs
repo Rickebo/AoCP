@@ -1,4 +1,7 @@
 ﻿using Common.Updates;
+using Lib;
+using Lib.Coordinate;
+using Lib.Grid;
 
 namespace Backend.Problems.Year2023;
 
@@ -30,44 +33,29 @@ public class Day10 : ProblemSet
                 var x = rnd.Next(100);
                 var y = rnd.Next(100);
 
-                reporter.Report(new GridUpdate
-                {
-                    Rows = new Dictionary<string, Dictionary<string, object>>()
+                reporter.Report(
+                    new StringGridUpdate
                     {
-                        [y.ToString()] = new()
+                        Rows = new Dictionary<string, Dictionary<string, string>>()
                         {
-                            [x.ToString()] = "#FFFFFF"
+                            [y.ToString()] = new()
+                            {
+                                [x.ToString()] = "#FFFFFF"
+                            }
                         }
                     }
-                });
+                );
             }
 
             var graph = Graph.Parse(
                 input.Split(["\r\n", "\r", "\n"], StringSplitOptions.None)
             );
 
-            reporter.Report(
-                new GridUpdate()
-                {
-                    Width = graph.Grid.GetLength(1),
-                    Height = graph.Grid.GetLength(0),
-                    Clear = true,
-                    Rows = Enumerable
-                        .Range(0, graph.Grid.GetLength(0))
-                        .ToDictionary(
-                            y => y.ToString(),
-                            y => Enumerable
-                                .Range(0, graph.Grid.GetLength(1))
-                                .ToDictionary(
-                                    x => x.ToString(),
-                                    x => (object)new GridUpdate.Cell(
-                                        graph.Grid[y, x].ToString(),
-                                        "#FFFFFF",
-                                        "#000000"
-                                    )
-                                )
-                        )
-                }
+            reporter.ReportGlyphGridUpdate(
+                graph.Grid,
+                (builder, coordinate, glyph) => builder
+                    .WithCoordinate(coordinate)
+                    .WithGlyph(glyph.ToString())
             );
 
             var result = graph
@@ -95,16 +83,10 @@ public class Day10 : ProblemSet
                 var x = rnd.Next(100);
                 var y = rnd.Next(100);
 
-                reporter.Report(new GridUpdate
-                {
-                    Rows = new Dictionary<string, Dictionary<string, object>>()
-                    {
-                        [y.ToString()] = new()
-                        {
-                            [x.ToString()] = "#FFFFFF"
-                        }
-                    }
-                });
+                reporter.ReportStringGridUpdate(
+                    new IntegerCoordinate<int>(x, y),
+                    "#FFFFFF"
+                );
             }
 
             var result = Graph
@@ -112,58 +94,42 @@ public class Day10 : ProblemSet
                 .CountWithinLoop()
                 .ToString();
 
-             reporter.Report(FinishedProblemUpdate.FromSolution(result));
+            reporter.Report(FinishedProblemUpdate.FromSolution(result));
         }
     }
 
     public class Graph
     {
-        public char[,] Grid { get; init; }
-        public Coordinate Source { get; init; }
-        public NodeDirection SourceDirection { get; private set; }
+        public CharGrid Grid { get; init; }
+        public IntegerCoordinate<int> Source { get; init; }
+        public Direction SourceDirection { get; private set; }
 
         public static Graph Parse(string[] lines)
         {
-            var grid = new char[lines.Length, lines[0].Length];
-            var source = default(Coordinate?);
-
-            for (var y = 0; y < lines.Length; y++)
-            {
-                var line = lines[y];
-                for (var x = 0; x < line.Length; x++)
-                {
-                    var ch = line[x];
-                    grid[y, x] = ch;
-
-                    if (ch == 'S')
-                        source = new Coordinate(x, y);
-                }
-            }
+            var grid = Parser.ParseCharGrid(string.Join("\n", lines));
+            var source = grid.Find(c => c == 'S');
 
             var graph = new Graph()
             {
                 Grid = grid,
-                Source = source ??
-                         throw new InvalidOperationException(
-                             "Grid contains no source node."
-                         ),
+                Source = source
             };
 
             graph.SourceDirection = graph.DeduceNodeDirection(graph.Source);
             return graph;
         }
 
-        public NodeDirection DeduceNodeDirection(Coordinate coordinate)
+        public Direction DeduceNodeDirection(IntegerCoordinate<int> coordinate)
         {
             var offsets = new[]
             {
-                (NodeDirection.Left, NodeDirection.Right, new Coordinate(-1, 0)),
-                (NodeDirection.Top, NodeDirection.Bottom, new Coordinate(0, -1)),
-                (NodeDirection.Right, NodeDirection.Left, new Coordinate(1, 0)),
-                (NodeDirection.Bottom, NodeDirection.Top, new Coordinate(0, 1)),
+                (Direction.West, Direction.East, new IntegerCoordinate<int>(-1, 0)),
+                (Direction.North, Direction.South, new IntegerCoordinate<int>(0, -1)),
+                (Direction.East, Direction.West, new IntegerCoordinate<int>(1, 0)),
+                (Direction.South, Direction.North, new IntegerCoordinate<int>(0, 1)),
             };
 
-            var direction = NodeDirection.None;
+            var direction = Direction.None;
             foreach (var offset in offsets)
             {
                 var absolute = coordinate + offset.Item3;
@@ -179,27 +145,14 @@ public class Day10 : ProblemSet
             return direction;
         }
 
-        public NodeDirection GetDirection(Coordinate coordinate)
-        {
-            if (coordinate == Source)
-                return SourceDirection;
+        public Direction GetDirection(IntegerCoordinate<int> coordinate) =>
+            coordinate == Source
+                ? SourceDirection
+                : DirectionExtensions.Parse(Grid[coordinate]);
 
-            return Grid[coordinate.Y, coordinate.X] switch
-            {
-                '|' => NodeDirection.Bottom | NodeDirection.Top,
-                '-' => NodeDirection.Left | NodeDirection.Right,
-                'L' => NodeDirection.Top | NodeDirection.Right,
-                'J' => NodeDirection.Left | NodeDirection.Top,
-                '7' => NodeDirection.Left | NodeDirection.Bottom,
-                'F' => NodeDirection.Bottom | NodeDirection.Right,
-                'S' => NodeDirection.All,
-                _ => NodeDirection.None
-            };
-        }
-
-        public IEnumerable<Coordinate> GetNeighbours(
-            Coordinate coordinate,
-            NodeDirection? overrideDirection = null
+        public IEnumerable<IntegerCoordinate<int>> GetNeighbours(
+            IntegerCoordinate<int> coordinate,
+            Direction? overrideDirection = null
         )
         {
             var x = coordinate.X;
@@ -208,29 +161,29 @@ public class Day10 : ProblemSet
             var node = Grid[y, x];
             var direction = overrideDirection ?? GetDirection(coordinate);
 
-            if ((direction & NodeDirection.Left) != 0 && x > 0)
-                yield return new Coordinate(x - 1, y);
+            if ((direction & Direction.West) != 0 && x > 0)
+                yield return new IntegerCoordinate<int>(x - 1, y);
 
-            if ((direction & NodeDirection.Top) != 0 && y > 0)
-                yield return new Coordinate(x, y - 1);
+            if ((direction & Direction.North) != 0 && y > 0)
+                yield return new IntegerCoordinate<int>(x, y - 1);
 
-            if ((direction & NodeDirection.Right) != 0 && x + 1 < Grid.GetLength(1))
-                yield return new Coordinate(x + 1, y);
+            if ((direction & Direction.East) != 0 && x + 1 < Grid.Width)
+                yield return new IntegerCoordinate<int>(x + 1, y);
 
-            if ((direction & NodeDirection.Bottom) != 0 && y + 1 < Grid.GetLength(0))
-                yield return new Coordinate(x, y + 1);
+            if ((direction & Direction.South) != 0 && y + 1 < Grid.Height)
+                yield return new IntegerCoordinate<int>(x, y + 1);
         }
 
-        public int BreadthFirstSearch(HashSet<Coordinate>? visited = null) =>
+        public int BreadthFirstSearch(HashSet<IntegerCoordinate<int>>? visited = null) =>
             BreadthFirstSearch(Source, visited);
 
         public int BreadthFirstSearch(
-            Coordinate source,
-            HashSet<Coordinate>? visited = null
+            IntegerCoordinate<int> source,
+            HashSet<IntegerCoordinate<int>>? visited = null
         )
         {
-            var frontier = new Queue<(Coordinate, int)>();
-            visited ??= new HashSet<Coordinate>();
+            var frontier = new Queue<(IntegerCoordinate<int>, int)>();
+            visited ??= new HashSet<IntegerCoordinate<int>>();
 
             frontier.Enqueue((source, 0));
             var maxDepth = 0;
@@ -261,32 +214,38 @@ public class Day10 : ProblemSet
             return maxDepth;
         }
 
-        public bool[,] MaskAccessible(Coordinate source, HashSet<Coordinate> visited)
+        public bool[,] MaskAccessible(
+            IntegerCoordinate<int> source,
+            HashSet<IntegerCoordinate<int>> visited
+        )
         {
-            var mask = new bool[Grid.GetLength(0), Grid.GetLength(1)];
+            var mask = new bool[Grid.Width, Grid.Height];
             foreach (var node in visited)
                 mask[node.Y, node.X] = true;
 
             return mask;
         }
 
-        private bool Contains(Coordinate coordinate) =>
-            coordinate.X >= 0 && coordinate.X < Grid.GetLength(1) &&
-            coordinate.Y >= 0 && coordinate.Y < Grid.GetLength(0);
+        private bool Contains(IntegerCoordinate<int> coordinate) =>
+            coordinate.X >= 0 && coordinate.X < Grid.Width &&
+            coordinate.Y >= 0 && coordinate.Y < Grid.Height;
 
-        private bool IsInsidePolygon(Coordinate source, HashSet<Coordinate> visited)
+        private bool IsInsidePolygon(
+            IntegerCoordinate<int> source,
+            HashSet<IntegerCoordinate<int>> visited
+        )
         {
             var crossings = 0;
-            var direction = new Coordinate(1, 0);
-            var ignoredDirection = NodeDirection.Left | NodeDirection.Right;
+            var direction = new IntegerCoordinate<int>(1, 0);
+            var ignoredDirection = Direction.West | Direction.East;
             var wasOn = visited.Contains(source);
 
             if (wasOn)
                 return true;
 
-            var entry = NodeDirection.None;
-            var exit = NodeDirection.None;
-            var upDown = NodeDirection.Top | NodeDirection.Bottom;
+            var entry = Direction.None;
+            var exit = Direction.None;
+            var upDown = Direction.North | Direction.South;
 
             for (var current = source; Contains(current); current += direction)
             {
@@ -295,15 +254,15 @@ public class Day10 : ProblemSet
 
                 if (!isOn)
                 {
-                    entry = NodeDirection.None;
-                    exit = NodeDirection.None;
+                    entry = Direction.None;
+                    exit = Direction.None;
                     continue;
                 }
 
                 if (currentDir == ignoredDirection)
                     continue;
 
-                if ((currentDir & NodeDirection.Right) != 0)
+                if ((currentDir & Direction.East) != 0)
                     entry = currentDir;
                 else
                 {
@@ -319,17 +278,17 @@ public class Day10 : ProblemSet
 
         public int CountWithinLoop() => CountWithinLoop(Source);
 
-        public int CountWithinLoop(Coordinate source)
+        public int CountWithinLoop(IntegerCoordinate<int> source)
         {
-            var visited = new HashSet<Coordinate>();
+            var visited = new HashSet<IntegerCoordinate<int>>();
             BreadthFirstSearch(source, visited);
             var count = 0;
 
-            for (var y = 0; y < Grid.GetLength(0); y++)
+            for (var y = 0; y < Grid.Height; y++)
             {
-                for (var x = 0; x < Grid.GetLength(1); x++)
+                for (var x = 0; x < Grid.Width; x++)
                 {
-                    var coordinate = new Coordinate(x, y);
+                    var coordinate = new IntegerCoordinate<int>(x, y);
                     if (visited.Contains(coordinate))
                         continue;
 
@@ -340,40 +299,5 @@ public class Day10 : ProblemSet
 
             return count;
         }
-    }
-
-    [Flags]
-    public enum NodeDirection
-    {
-        None = 0,
-        Left = 1,
-        Top = 1 << 1,
-        Right = 1 << 2,
-        Bottom = 1 << 3,
-        All = 0b1111
-    }
-
-    public readonly struct Coordinate
-    {
-        public int X { get; }
-        public int Y { get; }
-
-        public Coordinate(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public override bool Equals(object? obj) =>
-            obj is Coordinate other && X == other.X && Y == other.Y;
-
-        public override int GetHashCode() =>
-            HashCode.Combine(X, Y);
-
-        public static bool operator ==(Coordinate a, Coordinate b) => a.Equals(b);
-        public static bool operator !=(Coordinate a, Coordinate b) => !(a == b);
-
-        public static Coordinate operator +(Coordinate a, Coordinate b) =>
-            new(a.X + b.X, a.Y + b.Y);
     }
 }
