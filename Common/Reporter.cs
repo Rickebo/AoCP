@@ -4,7 +4,7 @@ using Common.Updates;
 using Lib.Coordinate;
 using Lib.Grid;
 
-namespace Backend.Problems;
+namespace Common;
 
 public class Reporter
 {
@@ -16,6 +16,22 @@ public class Reporter
         _updates.Enqueue(update);
         _semaphore.Release();
     }
+
+    public void ReportLine(string line) => ReportText(lines: [line]);
+
+    public void ReportText(string? text = null, string[]? lines = null) => Report(
+        new TextProblemUpdate()
+        {
+            Text = text,
+            Lines = lines
+        }
+    );
+
+    public void ReportSolution(IFormattable solution) =>
+        ReportSolution(solution.ToString() ?? "");
+
+    public void ReportSolution(string solution) =>
+        Report(FinishedProblemUpdate.FromSolution(solution));
 
     public void ReportStringGridUpdate(IStringCoordinate coordinate, string text) =>
         ReportStringGridUpdate(

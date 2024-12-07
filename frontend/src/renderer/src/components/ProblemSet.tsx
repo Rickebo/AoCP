@@ -11,6 +11,7 @@ import ProblemDescription from './ProblemDescription'
 
 export interface ProblemSetProps {
   year: number
+  author: string
   set: ProblemSetMetadata
 }
 
@@ -54,7 +55,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef>>({})
-  const mgr = useConnectionManager(props.year, props.set, grids)
+  const mgr = useConnectionManager(props.year, props.author, props.set, grids)
 
   const navigate = (url: string): void => {
     window.open(url)

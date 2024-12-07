@@ -36,24 +36,32 @@ public class ProblemService
         {
             ValidateYear(problemCollection.Year);
 
-            foreach (var problemSet in problemCollection.ProblemSets)
+            foreach (var authorProblems in problemCollection.ProblemSets)
             {
-                if (string.IsNullOrEmpty(problemSet.Name))
+                if (string.IsNullOrEmpty(authorProblems.Key))
                     throw new InvalidOperationException(
-                        "Problem set name cannot be empty"
+                        "Invalid author name: null or empty."
                     );
 
-                if (problemSet.ReleaseTime.Year != problemCollection.Year)
-                    throw new InvalidOperationException(
-                        "Problem set release time must be in the same year as the collection"
-                    );
-
-                foreach (var problem in problemSet.Problems)
+                foreach (var problemSet in authorProblems.Value)
                 {
-                    if (string.IsNullOrEmpty(problem.Name))
+                    if (string.IsNullOrEmpty(problemSet.Name))
                         throw new InvalidOperationException(
-                            "Problem name cannot be empty"
+                            "Problem set name cannot be empty"
                         );
+
+                    if (problemSet.ReleaseTime.Year != problemCollection.Year)
+                        throw new InvalidOperationException(
+                            "Problem set release time must be in the same year as the collection"
+                        );
+
+                    foreach (var problem in problemSet.Problems)
+                    {
+                        if (string.IsNullOrEmpty(problem.Name))
+                            throw new InvalidOperationException(
+                                "Problem name cannot be empty"
+                            );
+                    }
                 }
             }
         }
@@ -74,26 +82,40 @@ public class ProblemService
             ? collection.Get(problemId)
             : null;
 
+    private record ProblemCollectionKey(int Year, string Author);
+
     private class IndexedProblemCollection
     {
-        private Dictionary<string, ProblemSet> ProblemSets { get; } = new();
+        private Dictionary<string, Dictionary<string, ProblemSet>> ProblemSets { get; } =
+            new();
 
-        private Dictionary<string, Dictionary<string, Problem>> Problems { get; } =
+        private Dictionary<string, Dictionary<string, Dictionary<string, Problem>>>
+            Problems { get; } =
             new();
 
         public IndexedProblemCollection(ProblemCollection collection)
         {
-            foreach (var set in collection.Problems)
+            foreach (var authorSets in collection.Problems)
             {
-                ProblemSets[set.Name] = set;
-                Problems[set.Name] = set.Problems
-                    .Where(p => p.Name != null)
-                    .ToDictionary(p => p.Name!, p => p);
+                if (!ProblemSets.TryGetValue(authorSets.Key, out var problemSets))
+                    problemSets = ProblemSets[authorSets.Key] = new();
+
+                if (!Problems.TryGetValue(authorSets.Key, out var problems))
+                    problems = Problems[authorSets.Key] = new();
+
+                foreach (var set in authorSets.Value)
+                {
+                    problemSets[set.Name] = set;
+                    problems[set.Name] = set.Problems
+                        .Where(p => p.Name != null)
+                        .ToDictionary(p => p.Name!, p => p);
+                }
             }
         }
 
         public Problem? Get(ProblemId id) =>
-            !Problems.TryGetValue(id.SetName, out var setProblems)
+            !Problems.TryGetValue(id.Author, out var authorProblems) ||
+            !authorProblems.TryGetValue(id.SetName, out var setProblems)
                 ? null
                 : setProblems.GetValueOrDefault(id.ProblemName);
     }
