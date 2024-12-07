@@ -109,8 +109,13 @@ public class Day06 : ProblemSet
             Guard guard = FindGuard();
             IntegerCoordinate<int> start = guard.Pos;
 
-            // Init grid print
-            InitGrid();
+            // Color grid
+            _reporter.ReportStringGridUpdate(
+                _grid,
+                (builder, coordinate, val) => builder
+                    .WithCoordinate(coordinate)
+                    .WithText(ColorCell(coordinate))
+            );
 
             // Walk until leaving map
             while (_grid.Contains(guard.Pos))
@@ -125,20 +130,6 @@ public class Day06 : ProblemSet
                 // Walk forward or rotate
                 guard = Walk(guard);
             }
-        }
-
-        private void InitGrid()
-        {
-            // Set size of grid
-            _reporter.Report(new StringGridUpdate { Width = _grid.Width, Height = _grid.Height, Clear = true });
-
-            // Color grid content
-            _reporter.ReportStringGridUpdate(
-                _grid,
-                (builder, coordinate, val) => builder
-                    .WithCoordinate(coordinate)
-                    .WithText(ColorCell(coordinate))
-            );
         }
 
         private string ColorCell(IntegerCoordinate<int> coordinate)
@@ -165,9 +156,6 @@ public class Day06 : ProblemSet
                 // Place obstacle at walked tile
                 _grid[pos] = '#';
 
-                // Color obstacle red
-                _reporter.ReportStringGridUpdate(pos, "#FF0000");
-
                 // Keep track of previous positions and directions
                 HashSet<Guard> visited = [];
 
@@ -178,6 +166,9 @@ public class Day06 : ProblemSet
                     // Check if guard has been here before
                     if (!visited.Add(guard))
                     {
+                        // Color obstacle red
+                        _reporter.ReportStringGridUpdate(pos, "#FF0000");
+
                         // Increment loop count
                         loops++;
                         break;
