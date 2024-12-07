@@ -5,7 +5,7 @@ using Lib;
 using Lib.Coordinate;
 using Lib.Grid;
 
-namespace Backend.Problems.Year2024;
+namespace Backend.Problems.Year2024.Rickebo;
 
 public class Day4 : ProblemSet
 {
