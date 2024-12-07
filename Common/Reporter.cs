@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
+using System.Threading.Channels;
 using Common.Updates;
 using Lib.Coordinate;
 using Lib.Grid;
@@ -8,13 +9,12 @@ namespace Common;
 
 public class Reporter
 {
-    private readonly SemaphoreSlim _semaphore = new(0);
-    private readonly ConcurrentQueue<ProblemUpdate> _updates = new();
+    private readonly Channel<ProblemUpdate> _updates = Channel.CreateUnbounded<ProblemUpdate>();
 
     public void Report(ProblemUpdate update)
     {
-        _updates.Enqueue(update);
-        _semaphore.Release();
+        if (!_updates.Writer.TryWrite(update))
+            throw new Exception("Failed to write update to channel.");
     }
 
     public void ReportLine(string line) => ReportText(lines: [line]);
@@ -98,18 +98,9 @@ public class Reporter
             )
     );
 
-    public async Task<ProblemUpdate> Read(CancellationToken cancellationToken = default)
-    {
-        await _semaphore.WaitAsync(cancellationToken);
-        if (_updates.TryDequeue(out var update))
-            return update;
-
-        throw new Exception("Failed to dequeue update after semaphore notification.");
-    }
-
     public IEnumerable<ProblemUpdate> ReadAllCurrent()
     {
-        while (_updates.TryDequeue(out var item))
+        while (_updates.Reader.TryRead(out var item))
             yield return item;
     }
 
@@ -119,7 +110,7 @@ public class Reporter
     {
         while (true)
         {
-            var update = await Read(cancellationToken: cancellationToken);
+            var update = await _updates.Reader.ReadAsync(cancellationToken);
 
             yield return update;
 
