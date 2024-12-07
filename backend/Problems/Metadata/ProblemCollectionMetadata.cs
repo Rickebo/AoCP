@@ -1,3 +1,3 @@
 ﻿namespace Backend.Problems.Metadata;
 
-public record ProblemCollectionMetadata(int Year, List<ProblemSetMetadata> ProblemSets);
+public record ProblemCollectionMetadata(int Year, Dictionary<string, List<ProblemSetMetadata>> ProblemSets);
