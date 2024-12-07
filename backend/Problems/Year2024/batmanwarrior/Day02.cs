@@ -25,12 +25,9 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Retrieve input reports
-            string[] reports = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
-
             // Check for safe reports
             int safeReports = 0;
-            foreach (string report in reports)
+            foreach (string report in input.SplitLines())
             {
                 // Parse levels from report
                 int[] levels = Parser.GetValues<int>(report);
@@ -39,28 +36,14 @@ public class Day02 : ProblemSet
                 bool safe = IsSafe(levels) || IsSafe(levels.Reverse());
 
                 // Send to frontend
-                reporter.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"[{report}] = {safe}"]
-                    }
-                );
+                reporter.Report(TextProblemUpdate.FromLine($"{safe,-5} | {report}"));
 
                 // Accumulate safe reports
-                if (safe)
-                {
-                    safeReports++;
-                }
+                if (safe) safeReports++;
             }
 
             // Send solution to frontend
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = safeReports.ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(safeReports));
             return Task.CompletedTask;
         }
     }
@@ -73,12 +56,9 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Retrieve input reports
-            string[] reports = Parser.SplitBy(input, ["\r\n", "\r", "\n"]);
-
             // Check for safe reports
             int safeReports = 0;
-            foreach (string report in reports)
+            foreach (string report in input.SplitLines())
             {
                 // Parse levels from report
                 int[] levels = Parser.GetValues<int>(report);
@@ -102,22 +82,11 @@ public class Day02 : ProblemSet
                 }
 
                 // Send to frontend
-                reporter.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [$"[{report}] = {safe}"]
-                    }
-                );
+                reporter.Report(TextProblemUpdate.FromLine($"{safe,-5} | {report}"));
             }
 
             // Send solution to frontend
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = safeReports.ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(safeReports));
             return Task.CompletedTask;
         }
     }

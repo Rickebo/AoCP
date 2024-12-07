@@ -25,15 +25,8 @@ public class Day03 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            int sum = Multis(input, reporter);
-
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = sum.ToString()
-                }
-            );
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(Multiplications(input, reporter)));
             return Task.CompletedTask;
         }
     }
@@ -46,82 +39,75 @@ public class Day03 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Input starts active
-            bool active = true;
-            var sum = 0;
+            // Multiplication enabled from the start
+            bool enabled = true;
 
             // Cursed for loop
+            int sum = 0;
             for (;;)
             {
-                List<string> parts;
-
-                if (active)
+                if (enabled)
                 {
-                    parts = DivideString(input, "don't()");
+                    // Divide remaining string at the next "don't()"
+                    List<string> parts = DivideString(input, "don't()");
+
+                    // Check if string got divided properly
                     if (parts.Count > 1)
                     {
-                        // Add up to don't()
-                        sum += Multis(parts[0], reporter);
-                        active = false;
+                        // Add multiplications
+                        sum += Multiplications(parts[0], reporter);
+                        enabled = false;
                         input = parts[1];
                     }
                     else
                     {
-                        // Add the rest (don't() not found)
-                        sum += Multis(input, reporter);
+                        // Add the rest
+                        sum += Multiplications(input, reporter);
                         break;
                     }
                 }
                 else
                 {
-                    parts = DivideString(input, "do()");
+                    // Divide remaining string at the next "do()"
+                    List<string> parts = DivideString(input, "do()");
+
+                    // Check if string got divided properly
                     if (parts.Count > 1)
                     {
-                        // Set active and update input string
-                        active = true;
+                        // Enable multiplications and update remaining string
+                        enabled = true;
                         input = parts[1];
                     }
                     else
                     {
-                        // The rest is not active
+                        // The rest is not enabled
                         break;
                     }
                 }
             }
 
-            // Send to frontend
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Solution = sum.ToString()
-                }
-            );
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(sum));
             return Task.CompletedTask;
         }
     }
 
-    private static int Multis(string str, Reporter rep)
+    private static int Multiplications(string str, Reporter reporter)
     {
         // Extract multipliers
         Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
-        var matches = Regex.Matches(str);
 
         // Check matches
-        var sum = 0;
-        foreach (Match match in matches)
+        int sum = 0;
+        foreach (Match match in Regex.Matches(str))
         {
             // Add the mullimulls
             int num1 = int.Parse(match.Groups[1].Value);
             int num2 = int.Parse(match.Groups[2].Value);
             sum += num1 * num2;
 
-            // Report that shit
-            rep.Report(
-                new TextProblemUpdate()
-                {
-                    Lines = [$"mul({num1},{num2})"]
-                }
-            );
+            // Send to frontend
+            reporter.Report(TextProblemUpdate.FromLine($"mul({num1},{num2})"));
         }
 
         return sum;
@@ -129,21 +115,15 @@ public class Day03 : ProblemSet
 
     private static List<string> DivideString(string str, string divider)
     {
-        List<string> res = [];
-
         // Check if divider is ahead
         int i = str.IndexOf(divider);
-
         if (i != -1)
         {
             // Split string at divider
-            res.Add(str[..i]);
-            res.Add(str[(i + divider.Length)..]);
-            return res;
+            return [str[..i], str[(i + divider.Length)..]];
         }
 
         // No divider found
-        res.Add(str);
-        return res;
+        return [str];
     }
 }
