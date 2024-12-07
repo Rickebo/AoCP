@@ -2,7 +2,8 @@
 
 namespace Lib.Coordinate;
 
-public readonly struct Coordinate<T>(T x, T y) : ICoordinate<Coordinate<T>, T>
+public readonly struct Coordinate<T>(T x, T y)
+    : ICoordinate<Coordinate<T>, T>, IStringCoordinate
     where T : INumber<T>
 {
     public T X { get; } = x;
@@ -11,6 +12,10 @@ public readonly struct Coordinate<T>(T x, T y) : ICoordinate<Coordinate<T>, T>
     public static Coordinate<T> One { get; } = new(T.One, T.One);
     public static Coordinate<T> UnitX { get; } = new(T.One, T.Zero);
     public static Coordinate<T> UnitY { get; } = new(T.Zero, T.One);
+
+    public string? GetStringX() => X.ToString();
+
+    public string? GetStringY() => Y.ToString();
 
     public Coordinate<T> Min(Coordinate<T> other) =>
         new(T.Min(X, other.X), T.Min(Y, other.Y));

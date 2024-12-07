@@ -45,7 +45,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             for (var cx = x.Start.Value; cx < x.End.Value; cx += xDir)
             {
                 for (var cy = y.Start.Value; cy < y.End.Value; cy += yDir)
-                {   
+                {
                     yield return _values[cx, cy];
                 }
             }
@@ -75,7 +75,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         for (var y = 0; y < Height; y++)
             yield return _values[x, y];
     }
-    
+
     public bool Contains(IntegerCoordinate<int> coordinate) =>
         coordinate.X >= 0 &&
         coordinate.X < Width &&
@@ -98,10 +98,9 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         }
     }
 
-    public IntegerCoordinate<int> Find(Func<TValue, bool> predicate)
-    {
-        return FindOrNull(predicate) ?? throw new Exception("Found no grid cell matching predicate.");
-    }
+    public IntegerCoordinate<int> Find(Func<TValue, bool> predicate) =>
+        FindOrNull(predicate) ??
+        throw new Exception("Found no grid cell matching predicate.");
 
     public IntegerCoordinate<int>? FindOrNull(Func<TValue, bool> predicate)
     {
@@ -117,8 +116,11 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public IEnumerable<IntegerCoordinate<int>> FindAll(Func<TValue, bool> predicate) =>
         Coordinates.Where(coordinate => predicate(this[coordinate]));
 
-    public virtual ArrayGrid<TValue> FlipX() => FlipX(values => new ArrayGrid<TValue>(values));
-    public virtual ArrayGrid<TValue> FlipY() => FlipY(values => new ArrayGrid<TValue>(values));
+    public virtual ArrayGrid<TValue> FlipX() =>
+        FlipX(values => new ArrayGrid<TValue>(values));
+
+    public virtual ArrayGrid<TValue> FlipY() =>
+        FlipY(values => new ArrayGrid<TValue>(values));
 
     protected virtual TGrid FlipX<TGrid>(Func<TValue[,], TGrid> constructor)
         where TGrid : ArrayGrid<TValue>

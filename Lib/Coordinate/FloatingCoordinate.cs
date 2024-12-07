@@ -3,7 +3,7 @@
 namespace Lib.Coordinate;
 
 public readonly struct FloatingCoordinate<T>(T x, T y)
-    : ICoordinate<FloatingCoordinate<T>, T>
+    : ICoordinate<FloatingCoordinate<T>, T>, IStringCoordinate
     where T : IFloatingPoint<T>, IRootFunctions<T>
 {
     public T X { get; } = x;
@@ -94,4 +94,7 @@ public readonly struct FloatingCoordinate<T>(T x, T y)
         obj is FloatingCoordinate<T> other && Equals(other);
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
+    public string? GetStringX() => X.ToString();
+
+    public string? GetStringY() => Y.ToString();
 }
