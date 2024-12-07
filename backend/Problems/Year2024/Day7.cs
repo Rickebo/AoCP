@@ -30,7 +30,7 @@ public class Day7 : ProblemSet
                     Solution = Parse(input)
                         .Where(s => IsPossible(s, 0, 0))
                         .Sum(s => s.Target)
-                        .ToString() 
+                        .ToString()
                 }
             );
 
@@ -58,7 +58,12 @@ public class Day7 : ProblemSet
         }
     }
 
-    private static bool IsPossible(NumberSeries series, int index, long sum, bool allowConcat = false)
+    private static bool IsPossible(
+        NumberSeries series,
+        int index,
+        long sum,
+        bool allowConcat = false
+    )
     {
         if (sum > series.Target) return false;
 
@@ -66,20 +71,22 @@ public class Day7 : ProblemSet
             return sum == series.Target;
 
         var n = series.Numbers[index];
-        var a = sum + n;
-        var b = sum * n;
 
-        var result = IsPossible(series, index + 1, a, allowConcat) || IsPossible(series, index + 1, b, allowConcat);
+        var result = IsPossible(series, index + 1, sum + n, allowConcat) ||
+                     IsPossible(series, index + 1, sum * n, allowConcat);
 
         if (!allowConcat) return result;
-        
-        var c = long.Parse(sum.ToString() + n);
-        result |= IsPossible(series, index + 1, c, true);
 
-        return result;
+        return result | IsPossible(
+            series,
+            index + 1,
+            sum * (long)Math.Pow(10, Math.Ceiling(Math.Log10(n + 1))) + n,
+            true
+        );
     }
-    
-    private static NumberSeries[] Parse(string input) => Parser.SplitLines(input)
+
+    private static NumberSeries[] Parse(string input) => input
+        .SplitLines()
         .Select(line => NumberSeries.FromArray(Parser.GetValues<long>(line)))
         .ToArray();
 
