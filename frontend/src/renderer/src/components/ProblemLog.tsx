@@ -15,14 +15,16 @@ const ProblemLog: FC<ProblemLogProps> = (props) => {
           fontWeight: 300
         }}
       >
-        <code>
-          {props.content?.map((line, i) => (
-            <span key={i}>
-              {line}
-              {i == lastIndex ? null : <br />}
-            </span>
-          ))}
-        </code>
+        <pre>
+          <code>
+            {props.content?.map((line, i) => (
+              <span key={i}>
+                {line}
+                {i == lastIndex ? null : <br />}
+              </span>
+            ))}
+          </code>
+        </pre>
       </pre>
     </div>
   )
