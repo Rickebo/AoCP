@@ -94,7 +94,11 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           }}
         />
 
-        <ProblemInput className="mb-3" onSolve={mgr.solveAll} />
+        <ProblemInput
+          className="mb-3"
+          onSolve={mgr.solveAll}
+          problemKey={`input-${props.year}-${props.set.name}`}
+        />
       </div>
 
       <Tab.Container id="problems" defaultActiveKey={defaultKey}>
