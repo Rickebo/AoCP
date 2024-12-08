@@ -76,6 +76,15 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             yield return _values[x, y];
     }
 
+    public IEnumerable<TValue> RetrieveDirection(IntegerCoordinate<int> pos, Direction dir, int count)
+    {
+        while (Contains(pos) && count-- > 0)
+        {
+            yield return _values[pos.X, pos.Y];
+            pos = pos.Move(dir);
+        }
+    }
+
     public bool Contains(IntegerCoordinate<int> coordinate) =>
         coordinate.X >= 0 &&
         coordinate.X < Width &&
