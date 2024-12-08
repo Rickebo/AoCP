@@ -92,6 +92,10 @@ public class Day04 : ProblemSet
             int count = 0;
             foreach (IntegerCoordinate<int> pos in _grid.FindAll(c => c == 'A'))
             {
+                // Skip edge positions
+                if (pos.X == 0 || pos.X == (_grid.Width - 1) || pos.Y == 0 || pos.Y == (_grid.Height - 1))
+                    continue;
+
                 // Positions to check
                 List<IntegerCoordinate<int>[]> posDiagonals = [
                     [pos.Move(Direction.NorthWest), pos.Move(Direction.SouthEast)], // '\' 
@@ -111,6 +115,7 @@ public class Day04 : ProblemSet
                         else
                             break;
                     }
+                    else break;
                 }
 
                 // Check if both diagonals were valid
