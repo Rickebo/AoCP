@@ -3,16 +3,13 @@ using Common.Updates;
 using Lib;
 using Lib.Coordinate;
 using Lib.Grid;
-using System;
-using System.Reflection.Metadata.Ecma335;
-using static Backend.Problems.Year2023.Rickebo.Day10;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
 public class Day06 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 06, 0, 0, 0);
+        new(2024, 12, 06);
 
     public override List<Problem> Problems { get; } =
     [
