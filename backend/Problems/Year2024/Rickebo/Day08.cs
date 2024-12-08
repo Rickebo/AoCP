@@ -61,7 +61,7 @@ public class Day08 : ProblemSet
         bool multiple = false
     )
     {
-        var antinodes = new Dictionary<IntegerCoordinate<int>, string>();
+        var antinodes = new Dictionary<IntegerCoordinate<int>, (string, string)>();
 
         reporter?.ReportStringGridUpdate(
             state.Grid,
@@ -70,18 +70,22 @@ public class Day08 : ProblemSet
                 .WithText("#000000")
         );
 
-        var fi = 0;
+        var freqColors = state.Antennas.Keys
+            .Select((key, i) => (key, _colors[i % _colors.Length]))
+            .ToDictionary(pair => pair.key, pair => pair.Item2);
+        
+        freqColors['.'] = "#000000";
+
         foreach (var freq in state.Antennas.Keys)
         {
-            var freqColor = _colors[fi++ % _colors.Length];
-
+            var freqColor = freqColors[freq];
             foreach (var antennaPos in state.Antennas[freq])
             {
                 reporter?.ReportGlyphGridUpdate(
                     builder => builder.WithEntry(
                         b => b
                             .WithCoordinate(antennaPos)
-                            .WithGlyph("+")
+                            .WithGlyph("O")
                             .WithForeground(freqColor + "66")
                     )
                 );
@@ -95,16 +99,13 @@ public class Day08 : ProblemSet
                     var p1 = antennaPos + delta;
 
                     if (state.Grid.Contains(p1))
-                        antinodes[p1] = freqColor;
+                        antinodes[p1] = (freqColor, freqColors[state.Grid[p1]]);
 
                     if (!multiple)
                         continue;
 
                     for (var pc = antennaPos; state.Grid.Contains(pc); pc += delta)
-                        antinodes[pc] = freqColor;
-                    
-                    for (var pc = antennaPos; state.Grid.Contains(pc); pc -= delta)
-                        antinodes[pc] = freqColor;
+                        antinodes[pc] = (freqColor, freqColors[state.Grid[pc]]);
                 }
             }
         }
@@ -115,8 +116,8 @@ public class Day08 : ProblemSet
                     antinodes,
                     (glyphBuilder, pair) => glyphBuilder
                         .WithCoordinate(pair.Key)
-                        .WithForeground(pair.Value)
-                        .WithBackground("#00000000")
+                        .WithForeground(pair.Value.Item1)
+                        .WithBackground(pair.Value.Item2)
                         .WithGlyph("*")
                 )
         );

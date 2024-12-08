@@ -1,15 +1,16 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Transform } from '../lib/Transform'
+import '../assets/grid.scss'
 
 export interface GridCell {
-  glyph: string
-  bg: string
-  fg: string
+  char: string | undefined
+  glyph: string | undefined
+  bg: string | undefined
+  fg: string | undefined
 }
 
 export type GridData = Record<string, Record<string, string | GridCell>>
-
 
 export interface GridRef {
   draw: ((grid: GridData) => void) | undefined
@@ -46,7 +47,10 @@ const Glyphs: Record<string, Glyph> = {
   'F': glyph('000', '011', '010'),
   '.': glyph('000', '000', '000'),
   '*': glyph('000', '010', '000'),
-  '+': glyph('010', '111', '010')
+  '+': glyph('010', '111', '010'),
+  'O': glyph('111', '101', '111'),
+  'X': glyph('101', '010', '101'),
+  '9': glyph('111', '111', '111')
 }
 
 function fillRectangle(
@@ -71,19 +75,35 @@ function fillGlyph(
   cell: GridCell,
   transform: Transform
 ): void {
-  const glyph = Glyphs[cell.glyph]
-  const rows = glyph?.rows
-  if (rows == null) return
+  if (cell.char != null) {
+    if (cell.bg != null) {
+      fillRectangle(context, x, y, size, size, cell.bg, transform)
+    }
 
-  const gh = size / rows.length
-  const gw = size / rows[0].length
+    if (cell.fg != null) {
+      const textSize = transform.scale(size)
+      context.font = `${textSize}px Pixel Square`
+      context.fillStyle = cell.fg
+      const [dx, dy] = transform.transform(x, y)
+      context.fillText(cell.char, dx, dy + textSize, textSize)
+    }
+  }
 
-  for (let gy = 0; gy < rows.length; gy++) {
-    const row = rows[gy]
-    for (let gx = 0; gx < row.length; gx++) {
-      const color = row[gx] ? cell.fg : cell.bg
-      if (!color) continue
-      fillRectangle(context, x + gx * gw, y + gy * gh, gw, gh, color, transform)
+  if (cell.glyph != null) {
+    const glyph = Glyphs[cell.glyph]
+    const rows = glyph?.rows
+    if (rows == null) return
+
+    const gh = size / rows.length
+    const gw = size / rows[0].length
+
+    for (let gy = 0; gy < rows.length; gy++) {
+      const row = rows[gy]
+      for (let gx = 0; gx < row.length; gx++) {
+        const color = row[gx] ? cell.fg : cell.bg
+        if (!color) continue
+        fillRectangle(context, x + gx * gw, y + gy * gh, gw, gh, color, transform)
+      }
     }
   }
 }

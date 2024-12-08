@@ -3,7 +3,7 @@ using Lib.Grid;
 
 namespace Common.Updates;
 
-public record Cell(string Glyph, string Fg, string Bg);
+public record Cell(string? Glyph, string? Char, string? Fg, string? Bg);
 
 public class GlyphGridUpdate : GridUpdate<Cell>
 {
@@ -33,7 +33,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         string backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell(ch.ToString(), foregroundColor, backgroundColor),
+        ch => new Cell(null, ch.ToString(), foregroundColor, backgroundColor),
         Construct
     );
 
@@ -42,28 +42,35 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     public class GlyphBuilder
     {
         public IStringCoordinate Coordinate { get; set; }
+        public char? Character { get; set; }
         public string Glyph { get; set; }
         public string Foreground { get; set; }
         public string Background { get; set; }
-        
+
         public GlyphBuilder WithCoordinate(IStringCoordinate coordinate)
         {
             Coordinate = coordinate;
             return this;
         }
-        
+
+        public GlyphBuilder WithChar(char ch)
+        {
+            Character = ch;
+            return this;
+        }
+
         public GlyphBuilder WithGlyph(string glyph)
         {
             Glyph = glyph;
             return this;
         }
-        
+
         public GlyphBuilder WithForeground(string foreground)
         {
             Foreground = foreground;
             return this;
         }
-        
+
         public GlyphBuilder WithBackground(string background)
         {
             Background = background;
@@ -120,11 +127,16 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             {
                 var x = glyph.Coordinate.GetStringX();
                 var y = glyph.Coordinate.GetStringY();
+
+                if (x == null || y == null)
+                    throw new Exception("X and Y cannot be null.");
+                
                 if (!rows.TryGetValue(y, out var row))
                     row = rows[y] = new Dictionary<string, Cell>();
 
                 row[x] = new Cell(
                     glyph.Glyph,
+                    glyph.Character.ToString(),
                     glyph.Foreground,
                     glyph.Background
                 );
