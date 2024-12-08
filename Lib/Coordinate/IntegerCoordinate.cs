@@ -24,6 +24,12 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         }
     }
 
+    public Distance<T> Distance(IntegerCoordinate<T> other)
+        => new(other.X - X, other.Y - Y);
+
+    public IntegerCoordinate<T> Move(Distance<T> distance) =>
+        new(X + distance.X, Y + distance.Y);
+
     public IntegerCoordinate<T> Min(IntegerCoordinate<T> other) =>
         new(T.Min(X, other.X), T.Min(Y, other.Y));
 
