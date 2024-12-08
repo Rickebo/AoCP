@@ -10,9 +10,9 @@ export interface ProblemSolutionProps {
 
 const ProblemSolution: FC<ProblemSolutionProps> = (props) => {
   return (
-    <div className={props.className} style={props.style}>
+    <span>
       Solution: {props.solution ?? '?'}
-    </div>
+    </span>
   )
 }
 

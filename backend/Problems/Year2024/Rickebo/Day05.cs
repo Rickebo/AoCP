@@ -6,10 +6,10 @@ using Lib;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
-public class Day5 : ProblemSet
+public class Day05 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 05, 0, 0, 0);
+        new(2024, 12, 05);
 
     public override List<Problem> Problems { get; } =
     [

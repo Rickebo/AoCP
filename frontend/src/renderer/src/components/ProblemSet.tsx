@@ -8,7 +8,7 @@ import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
 import ProblemDescription from './ProblemDescription'
-import { BsStopwatch } from 'react-icons/bs'
+import { BsCheck2, BsCheck2Circle, BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
 
 export interface ProblemSetProps {
   year: number
@@ -195,24 +195,42 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                     <Nav.Item>
                       <Nav.Link eventKey="log">Log</Nav.Link>
                     </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link eventKey="solution">Solution</Nav.Link>
-                    </Nav.Item>
-                    {problem.name == null ? null : (
-                      <>
-                        <div className="ms-auto" />
-                        <span
-                          style={{
-                            opacity: 0.5,
-                            alignItems: 'center',
-                            display: 'flex'
-                          }}
-                          className="me-3"
-                        >
-                          <BsStopwatch className="me-2 my-0" />
-                          {solveData[problem.name]}
-                        </span>
-                      </>
+
+                    <div className="ms-auto" />
+                    {problem.name == null || mgr.solution(problem.name) == null ? null : (
+                      <span
+                        style={{
+                          opacity: 0.5,
+                          alignItems: 'center',
+                          display: 'flex',
+                          color: 'lightgreen'
+                        }}
+                        className="me-4"
+                      >
+                        <BsCheck2Square className="me-2" />
+                        {mgr.solution(problem.name)}
+                        <div style={{ alignItems: 'center', display: 'flex', cursor: 'pointer' }} className="m-0" onClick={() => {
+                          const solution = mgr.solution(problem.name!)
+
+                          if (solution != null) navigator.clipboard.writeText(solution)
+                        }}>
+                          <BsCopy className="ms-2" />
+                        </div>
+                      </span>
+                    )}
+                    {problem.name == null || solveData[problem.name] == null ? null : (
+                      <span
+                        style={{
+                          opacity: 0.5,
+                          alignItems: 'center',
+                          display: 'flex',
+                          color: 'var(--bs-btn-bg)'
+                        }}
+                        className="me-3"
+                      >
+                        <BsStopwatch className="me-2 my-0" />
+                        {solveData[problem.name]}
+                      </span>
                     )}
                   </Nav>
                   <Tab.Content
@@ -243,16 +261,6 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                     <Tab.Pane eventKey="log">
                       {problem.name == null ? null : (
                         <ProblemLog content={mgr.log(problem.name)!} />
-                      )}
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="solution">
-                      {problem.name == null ? null : (
-                        <ProblemSolution
-                          key={problem.name}
-                          problem={problem}
-                          solution={mgr.solution(problem.name!)}
-                          className="mt-3"
-                        />
                       )}
                     </Tab.Pane>
                   </Tab.Content>

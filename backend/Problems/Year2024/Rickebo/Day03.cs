@@ -5,10 +5,10 @@ using Common.Updates;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
-public class Day3 : ProblemSet
+public class Day03 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 03, 0, 0, 0);
+        new(2024, 12, 03);
 
     public override List<Problem> Problems { get; } =
     [

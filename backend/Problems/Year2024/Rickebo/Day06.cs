@@ -7,10 +7,10 @@ using Lib.Grid;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
-public class Day6 : ProblemSet
+public class Day06 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 06, 0, 0, 0);
+        new(2024, 12, 06);
 
     public override List<Problem> Problems { get; } =
     [
@@ -133,32 +133,6 @@ public class Day6 : ProblemSet
                 .WithCoordinate(coordinate)
                 .WithText(ColorCell(grid, coordinate, val != '#' && val != '.'))
         );
-        
-        // reporter?.Report(
-        //     new StringGridUpdate()
-        //     {
-        //         Width = grid.Width,
-        //         Height = grid.Height,
-        //         Rows = Enumerable.Range(0, grid.Height)
-        //             .ToDictionary(
-        //                 y => (grid.Height - 1 - y).ToString(),
-        //                 y => Enumerable.Range(0, grid.Width)
-        //                     .ToDictionary(
-        //                         x => x.ToString(),
-        //                         x =>
-        //                         {
-        //                             var cellPos = new IntegerCoordinate<int>(x, y);
-        //                             var val = grid[cellPos];
-        //                             return ColorCell(
-        //                                 grid,
-        //                                 cellPos,
-        //                                 val != '#' && val != '.'
-        //                             );
-        //                         }
-        //                     )
-        //             )
-        //     }
-        // );
 
         while (grid.Contains(pos))
         {

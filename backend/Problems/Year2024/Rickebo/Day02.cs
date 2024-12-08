@@ -3,10 +3,10 @@ using Common.Updates;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
-public class Day2 : ProblemSet
+public class Day02 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 02, 0, 0, 0);
+        new(2024, 12, 02);
 
     public override List<Problem> Problems { get; } =
     [
@@ -14,7 +14,7 @@ public class Day2 : ProblemSet
         new ProblemTwo()
     ];
 
-    public override string Name => "Historian Hysteria";
+    public override string Name => "Red-Nosed Reports";
 
     private class ProblemOne : Problem
     {
