@@ -73,7 +73,7 @@ public class Day08 : ProblemSet
         var freqColors = state.Antennas.Keys
             .Select((key, i) => (key, _colors[i % _colors.Length]))
             .ToDictionary(pair => pair.key, pair => pair.Item2);
-        
+
         freqColors['.'] = "#000000";
 
         foreach (var freq in state.Antennas.Keys)
@@ -81,6 +81,16 @@ public class Day08 : ProblemSet
             var freqColor = freqColors[freq];
             foreach (var antennaPos in state.Antennas[freq])
             {
+                reporter?.ReportGlyphGridUpdate(
+                    builder => builder.WithEntries(
+                        [antennaPos],
+                        (glyphBuilder, coord) => glyphBuilder
+                                .WithCoordinate(antennaPos)
+                                .WithGlyph("O")
+                                .WithForeground(freqColor + "66")
+                    )
+                );
+
                 reporter?.ReportGlyphGridUpdate(
                     builder => builder.WithEntry(
                         b => b
