@@ -2,21 +2,16 @@
 
 public class CharGrid : ArrayGrid<char>
 {
-    public CharGrid(
-        string input,
-        OriginPosition originPosition = OriginPosition.BottomLeft
-    ) : base(Init(input, originPosition))
-    {
-    }
+    public CharGrid(string input, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, originPosition)) { }
 
-    public CharGrid(char[,] values) : base(values)
-    {
-    }
+    public CharGrid(char c, int width, int height) : base(ArrFromValSize(c, width, height)) { }
 
-    private static char[,] Init(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
+    public CharGrid(char[,] values) : base(values) { }
+
+    private static char[,] ArrFromStr(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
     {
         // Parse string input
-        var rows = Parser.SplitBy(str, ["\r\n", "\r", "\n"]);
+        var rows = str.SplitLines();
         var height = rows.Length;
         var width = rows[0].Length;
 
@@ -30,6 +25,23 @@ public class CharGrid : ArrayGrid<char>
             {
                 var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
                 arr[x, y] = rows[mappedY][x];
+            }
+        }
+
+        return arr;
+    }
+
+    private static char[,] ArrFromValSize(char c, int width, int height)
+    {
+        // Init array of chars
+        var arr = new char[width, height];
+
+        // Fill 2D-array with chars
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                arr[x, y] = c;
             }
         }
 

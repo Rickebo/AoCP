@@ -43,8 +43,8 @@ public class Day05 : ProblemSet
                 }
             }
 
-            // Send to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(printer.correctlyOrdered));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(printer.CorrectlyOrdered));
             return Task.CompletedTask;
         }
     }
@@ -75,16 +75,16 @@ public class Day05 : ProblemSet
                 }
             }
 
-            // Send to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(printer.correctlyOrdered));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(printer.CorrectlyOrdered));
             return Task.CompletedTask;
         }
     }
 
     private class Printer
     {
-        public Dictionary<int, List<int>> printRules = [];
-        public int correctlyOrdered = 0;
+        private readonly Dictionary<int, List<int>> _printRules = [];
+        public int CorrectlyOrdered = 0;
 
         public Printer() { }
 
@@ -94,7 +94,7 @@ public class Day05 : ProblemSet
             int[] pages = Parser.GetValues<int>(row);
 
             // Check if rule exists
-            if (printRules.TryGetValue(pages[1], out List<int>? value))
+            if (_printRules.TryGetValue(pages[1], out List<int>? value))
             {
                 // Add to existing rules
                 if (!value.Contains(pages[0])) value.Add(pages[0]);
@@ -102,7 +102,7 @@ public class Day05 : ProblemSet
             else
             {
                 // Create new rule
-                printRules[pages[1]] = [pages[0]];
+                _printRules[pages[1]] = [pages[0]];
             }
 
             // Send to frontend
@@ -120,7 +120,7 @@ public class Day05 : ProblemSet
             foreach (int page in pages)
             {
                 // Check if this page has rules
-                if (printRules.TryGetValue(page, out List<int>? rules))
+                if (_printRules.TryGetValue(page, out List<int>? rules))
                 {
                     // Make sure all rules are satisfied
                     foreach (var rule in rules)
@@ -145,7 +145,7 @@ public class Day05 : ProblemSet
 
             // Send to frontend
             reporter.Report(TextProblemUpdate.FromLine($"{row} = CORRECT"));
-            correctlyOrdered += pages[pages.Length / 2];
+            CorrectlyOrdered += pages[pages.Length / 2];
         }
 
         public void OrderedPrint(string row, Reporter reporter)
@@ -163,7 +163,7 @@ public class Day05 : ProblemSet
             {
                 // Check if this page has rules
                 bool allowed = true;
-                if (printRules.TryGetValue(page, out List<int>? rules))
+                if (_printRules.TryGetValue(page, out List<int>? rules))
                 {
                     // Make sure all rules are satisfied
                     foreach (var rule in rules)
@@ -191,7 +191,7 @@ public class Day05 : ProblemSet
 
             // Send to frontend
             reporter.Report(TextProblemUpdate.FromLine($"{row} = {(correct ? "CORRECT" : $"INCORRECT\n{string.Join(",", printed)} (FIXED)")}"));
-            correctlyOrdered += !correct ? printed[printed.Count / 2] : 0;
+            CorrectlyOrdered += !correct ? printed[printed.Count / 2] : 0;
         }
     }
 }

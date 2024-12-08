@@ -3,6 +3,9 @@ using Common.Updates;
 using Lib;
 using Lib.Coordinate;
 using Lib.Grid;
+using System;
+using System.Reflection.Metadata.Ecma335;
+using static Backend.Problems.Year2023.Rickebo.Day10;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -27,17 +30,14 @@ public class Day06 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            CharGrid grid = new(input);
+            // Create lab
+            Lab lab = new(input, reporter);
 
-            MarkWalk(grid, reporter);
+            // Walk with guard
+            lab.GuardWalk();
 
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = WalkedTiles(grid, reporter).ToString()
-                }
-            );
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(lab.WalkedTiles()));
             return Task.CompletedTask;
         }
     }
@@ -50,183 +50,139 @@ public class Day06 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            CharGrid grid = new(input);
+            // Create lab
+            Lab lab = new(input, reporter);
 
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = LoopCount(grid, reporter).ToString()
-                }
-            );
+            // Walk with guard
+            lab.GuardWalk();
+
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(lab.LoopCount()));
             return Task.CompletedTask;
         }
     }
 
-    public static Guard GetGuard(CharGrid grid, Reporter reporter)
+    public class Lab(string input, Reporter reporter)
     {
-        for (int y = 0; y < grid.Height; y++)
-        {
-            for (int x = 0; x < grid.Width; x++)
-            {
-                foreach (Direction dir in DirectionExtensions.Cardinals)
-                {
-                    if (grid[x, y] == dir.Arrow())
-                    {
-                        return new Guard(new Coordinate<int>(x, y), dir);
-                    }
-                }
-            }
-        }
-        throw new NotImplementedException();
-    }
+        private readonly CharGrid _grid = new(input);
+        private readonly Reporter _reporter = reporter;
+        private readonly HashSet<IntegerCoordinate<int>> _walked = [];
+        private record Guard(IntegerCoordinate<int> Pos, Direction Dir);
 
-    public static Guard Walk(Guard guard, CharGrid grid, Reporter reporter)
-    {
-        // Look ahead
-        Coordinate<int> next = guard.pos + Coordinate<int>.UnitY;
-        switch (guard.dir)
+        private Guard FindGuard()
         {
-            case Direction.East:
-                next = guard.pos + Coordinate<int>.UnitX;
-                break;
-            case Direction.South:
-                next = guard.pos - Coordinate<int>.UnitY;
-                break;
-            case Direction.West:
-                next = guard.pos - Coordinate<int>.UnitX;
-                break;
+            // Guard characters
+            const string guardChars = "<>v^";
+
+            // Search grid for guard position
+            var pos = _grid.Find(ch => guardChars.Contains(ch.ToString()));
+
+            // Parse direction
+            var dir = DirectionExtensions.Parse(_grid[pos]);
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"Guard ({dir.Arrow()}) found at [{pos.X},{pos.Y}]"));
+            return new Guard(pos, dir);
         }
 
-        // Check if next step is an obstacle
-        if (next.X >= 0 && next.X < grid.Width && next.Y >= 0 && next.Y < grid.Height && grid[next.X, next.Y] == '#')
-        {
-            // Rotate clockwise
-            return new Guard(guard.pos, guard.dir.RotateClockwise());
-        }
-        else
-        {
-            // Keep walking
-            return new Guard(next, guard.dir);
-        }
-    }
-
-    public static void MarkWalk(CharGrid grid, Reporter reporter)
-    {
-        Guard guard = GetGuard(grid, reporter);
-        Coordinate<int> currPos = guard.pos;
-
-        Direction dir = Direction.North;
-        switch (grid[guard.pos.X, guard.pos.Y])
-        {
-            case '>':
-                dir = Direction.East;
-                break;
-            case 'v':
-                dir = Direction.South;
-                break;
-            case '<':
-                dir = Direction.West;
-                break;
-        }
-
-        grid[guard.pos.X, guard.pos.Y] = 'X';
-
-        for (; ; )
+        private Guard Walk(Guard guard)
         {
             // Look ahead
-            Coordinate<int> next = currPos + Coordinate<int>.UnitY;
-            switch (dir)
-            {
-                case Direction.East:
-                    next = currPos + Coordinate<int>.UnitX;
-                    break;
-                case Direction.South:
-                    next = currPos - Coordinate<int>.UnitY;
-                    break;
-                case Direction.West:
-                    next = currPos - Coordinate<int>.UnitX;
-                    break;
-            }
-
-            // Check if next step is outside grid
-            if (next.X < 0 || next.X >= grid.Width || next.Y < 0 || next.Y >= grid.Height)
-            {
-                return;
-            }
+            IntegerCoordinate<int> next = guard.Pos.Move(guard.Dir);
 
             // Check if next step is an obstacle
-            if (grid[next.X, next.Y] == '#')
+            if (_grid.Contains(next) && _grid[next] == '#')
             {
-                dir = dir.RotateClockwise();
+                // Rotate clockwise
+                return new Guard(guard.Pos, guard.Dir.RotateClockwise());
             }
             else
             {
-                // Mark next tile as walked
-                grid[next.X, next.Y] = 'X';
-
-                // Update current position
-                currPos = next;
+                // Keep walking
+                return new Guard(next, guard.Dir);
             }
         }
-    }
 
-    public static int WalkedTiles(CharGrid grid, Reporter reporter)
-    {
-        int count = 0;
-        for (int y = 0; y < grid.Height; y++)
+        public void GuardWalk()
         {
-            for (int x = 0; x < grid.Width; x++)
+            // Find guard on lab grid
+            Guard guard = FindGuard();
+            IntegerCoordinate<int> start = guard.Pos;
+
+            // Color grid
+            _reporter.ReportStringGridUpdate(
+                _grid,
+                (builder, coordinate, val) => builder
+                    .WithCoordinate(coordinate)
+                    .WithText(ColorCell(coordinate))
+            );
+
+            // Walk until leaving map
+            while (_grid.Contains(guard.Pos))
             {
-                if (grid[x, y] == 'X')
+                // Save walked tiles for later
+                if (_walked.Add(guard.Pos))
                 {
-                    count++;
+                    // Send to frontend grid (skip guard start pos)
+                    if (!guard.Pos.Equals(start)) _reporter.ReportStringGridUpdate(guard.Pos, "#66FF66");
                 }
+
+                // Walk forward or rotate
+                guard = Walk(guard);
             }
         }
-        return count;
-    }
 
-    public static int LoopCount(CharGrid grid, Reporter reporter)
-    {
-        int loops = 0;
-        Guard guard = GetGuard(grid, reporter);
-        for (int y = 0; y < grid.Height; y++)
+        private string ColorCell(IntegerCoordinate<int> coordinate)
         {
-            for (int x = 0; x < grid.Width; x++)
+            return _grid[coordinate] switch
             {
-                if (grid[x, y] == '.')
+                '#' => "#FFFFFF", // Obstacle
+                '.' => "#B3B3B3", // Floor
+                _ => "#0066FF" // Guard
+            };
+        }
+
+        public int WalkedTiles() => _walked.Count;
+
+        public int LoopCount()
+        {
+            // Find guard on lab grid
+            Guard guardStart = FindGuard();
+
+            // Place obstacles and check for guard loops
+            int loops = 0;
+            foreach (IntegerCoordinate<int> pos in _walked.Skip(1))
+            {
+                // Place obstacle at walked tile
+                _grid[pos] = '#';
+
+                // Keep track of previous positions and directions
+                HashSet<Guard> visited = [];
+
+                // Create guard and start walking
+                Guard guard = Walk(guardStart);
+                while (_grid.Contains(guard.Pos))
                 {
-                    grid[x, y] = '#';
-                    if (LoopCheck(grid, guard, reporter))
+                    // Check if guard has been here before
+                    if (!visited.Add(guard))
                     {
+                        // Color obstacle red
+                        _reporter.ReportStringGridUpdate(pos, "#FF0000");
+
+                        // Increment loop count
                         loops++;
+                        break;
                     }
-                    grid[x, y] = '.';
+
+                    // Walk forward or rotate
+                    guard = Walk(guard);
                 }
-            }
-        }
-        return loops;
-    }
 
-    public static bool LoopCheck(CharGrid grid, Guard guard, Reporter reporter)
-    {
-        HashSet<Guard> visited = [];
-
-        for (; ; )
-        {
-            if (guard.pos.X < 0 || guard.pos.X >= grid.Width || guard.pos.Y < 0 || guard.pos.Y >= grid.Height)
-            {
-                return false;
-            }
-            else if (!visited.Add(guard))
-            {
-                return true;
+                // Remove obstacle for next iteration
+                _grid[pos] = '.';
             }
 
-            guard = Walk(guard, grid, reporter);
+            return loops;
         }
     }
-
-    public record Guard(Coordinate<int> pos, Direction dir);
 }

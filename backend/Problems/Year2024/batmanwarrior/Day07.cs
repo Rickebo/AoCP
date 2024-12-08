@@ -30,13 +30,7 @@ public class Day07 : ProblemSet
             Obunga obunga = new(input, ['+', '*'], reporter);
 
             // Run from obunga
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = obunga.Chase().ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(obunga.Chase()));
             return Task.CompletedTask;
         }
     }
@@ -53,13 +47,7 @@ public class Day07 : ProblemSet
             Obunga obunga = new(input, ['+', '*', '|'], reporter);
 
             // Run from obunga
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = obunga.Chase().ToString()
-                }
-            );
+            reporter.Report(FinishedProblemUpdate.FromSolution(obunga.Chase()));
             return Task.CompletedTask;
         }
     }
