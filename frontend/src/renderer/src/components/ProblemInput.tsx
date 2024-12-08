@@ -1,9 +1,13 @@
-﻿import { FC } from 'react'
-import { Button, Form, Stack } from 'react-bootstrap'
+﻿import { FC, useState } from 'react'
+import { Button, Form, Spinner, Stack } from 'react-bootstrap'
 import { usePersistentState } from '../StateUtils'
 import { v4 as uuid } from 'uuid'
+import { BsCloudDownload } from 'react-icons/bs'
+import { useAocService } from '../AocUtils'
 
 export interface ProblemInputProps {
+  year: number
+  day: number
   className?: string
   problemKey: string
   onSolve: (input: string) => void
@@ -15,10 +19,13 @@ interface ProblemInputData {
 }
 
 const ProblemInput: FC<ProblemInputProps> = (props) => {
+  const aocService = useAocService()
   const inputCache = usePersistentState<ProblemInputData>(props.problemKey, {
     selected: undefined,
     inputs: {}
   })
+
+  const [loadingInput, setLoadingInput] = useState<boolean>(false)
 
   const setInput = (newInput: string): void => {
     inputCache.update((current) => {
@@ -35,6 +42,17 @@ const ProblemInput: FC<ProblemInputProps> = (props) => {
       : undefined
 
   const hasInput = getInput() != null
+  const hasToken = aocService.hasToken()
+
+  const downloadInput = async (): Promise<void> => {
+    setLoadingInput(true)
+    try {
+      const response = await aocService.getInput(props.year, props.day)
+      setInput(response)
+    } finally {
+      setLoadingInput(false)
+    }
+  }
 
   return (
     <Stack direction="horizontal" className={props.className} gap={3}>
@@ -49,6 +67,9 @@ const ProblemInput: FC<ProblemInputProps> = (props) => {
           fontWeight: 300
         }}
       />
+      <Button onClick={() => downloadInput()} disabled={!hasToken}>
+        {!loadingInput ? <BsCloudDownload /> : <Spinner size="sm" />}
+      </Button>
       <div className="vr" />
       <Button onClick={() => props.onSolve(getInput() ?? '')} disabled={!hasInput}>
         Run

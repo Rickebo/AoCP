@@ -13,6 +13,9 @@ import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
 import { Metadata, ProblemSetMetadata } from '../data/metadata'
 import { useBackend } from '../context/BackendContext'
+import { BsGear } from 'react-icons/bs'
+import SettingsModal from './SettingsModal'
+import './NavigationBar.css'
 
 export interface NavigationBarProps {
   setProblemSet: (year: number, problemSet: ProblemSetMetadata) => void
@@ -29,6 +32,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   const [authorShown, setAuthorShown] = useState<boolean>(false)
   const [backendShown, setBackendShown] = useState<boolean>(false)
   const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
+  const [showSettings, setShowSettings] = useState<boolean>(false)
 
   const authorSet = new Set<string>()
   const collections = loaded ? metadata.collections : {}
@@ -57,6 +61,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   return (
     <Navbar>
       <Container fluid>
+        <SettingsModal show={showSettings} hide={() => setShowSettings(false)} />
         <Navbar.Brand>AoCP</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse id="navbarScroll">
@@ -161,6 +166,10 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
               </NavDropdown.Item>
             </NavDropdown>
           </Nav>
+          <div className="ms-auto" />
+          <Nav.Link onClick={() => setShowSettings(true)} className="me-2 hover-btn">
+            <BsGear />
+          </Nav.Link>
         </Navbar.Collapse>
       </Container>
     </Navbar>

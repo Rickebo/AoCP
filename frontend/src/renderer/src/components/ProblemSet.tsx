@@ -149,6 +149,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           className="mb-3"
           onSolve={mgr.solveAll}
           problemKey={`input-${props.year}-${props.set.name}`}
+          year={props.year}
+          day={new Date(props.set.releaseTime).getDate()}
         />
       </div>
 

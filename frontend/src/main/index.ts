@@ -37,6 +37,36 @@ function createWindow(): void {
     }
   })
 
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        'Access-Control-Allow-Origin': [
+          details.webContents?.mainFrame.origin ?? details.referrer.replace(/\/$/, '')
+        ],
+        'Access-Control-Allow-Credentials': ['true'],
+        ...details.responseHeaders
+      }
+    })
+  })
+
+  ipcMain.handle('set-cookie', (_, url, cookie): Promise<void> => {
+    return mainWindow.webContents.session.cookies.set({
+      url: url,
+      name: 'session',
+      value: cookie
+    })
+  })
+
+  ipcMain.handle('get-input', async (_, year, day, token): Promise<string> => {
+    const resp = await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
+      headers: {
+        cookie: `session=${token}`
+      }
+    })
+
+    return resp.text()
+  })
+
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
