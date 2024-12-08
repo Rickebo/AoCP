@@ -1,14 +1,13 @@
 import React, { CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
-import ProblemSolution from './ProblemSolution'
 import { Nav, Spinner, Stack, Tab } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
 import ProblemDescription from './ProblemDescription'
-import { BsCheck2, BsCheck2Circle, BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
+import { BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
 
 export interface ProblemSetProps {
   year: number
@@ -209,11 +208,15 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                       >
                         <BsCheck2Square className="me-2" />
                         {mgr.solution(problem.name)}
-                        <div style={{ alignItems: 'center', display: 'flex', cursor: 'pointer' }} className="m-0" onClick={() => {
-                          const solution = mgr.solution(problem.name!)
+                        <div
+                          style={{ alignItems: 'center', display: 'flex', cursor: 'pointer' }}
+                          className="m-0"
+                          onClick={() => {
+                            const solution = mgr.solution(problem.name!)
 
-                          if (solution != null) navigator.clipboard.writeText(solution)
-                        }}>
+                            if (solution != null) navigator.clipboard.writeText(solution)
+                          }}
+                        >
                           <BsCopy className="ms-2" />
                         </div>
                       </span>
