@@ -1,5 +1,7 @@
 using Common;
 using Common.Updates;
+using Lib;
+using Lib.Coordinate;
 using Lib.Grid;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
@@ -25,10 +27,11 @@ public class Day04 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Create character grid
-            CharGrid grid = new(input);
+            // Create WordSearch
+            WordSearch wordSearch = new(input, reporter);
 
-            reporter.Report(FinishedProblemUpdate.FromSolution(XmasOccurences(grid)));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(wordSearch.XmasCount()));
             return Task.CompletedTask;
         }
     }
@@ -41,208 +44,81 @@ public class Day04 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            CharGrid grid = new(input);
+            // Create WordSearch
+            WordSearch wordSearch = new(input, reporter);
 
-            reporter.Report(
-                new FinishedProblemUpdate()
-                {
-                    Successful = true,
-                    Solution = MasOccurences(grid).ToString()
-                }
-            );
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(wordSearch.MasCount()));
             return Task.CompletedTask;
         }
     }
 
-    public static int XmasOccurences(CharGrid grid)
+    public class WordSearch(string input, Reporter reporter)
     {
-        int occurences = 0;
+        private readonly Reporter _reporter = reporter;
+        private readonly CharGrid _grid = new(input);
+        private const string _find = "MAS";
 
-        for (int y = 0; y < grid.Height; y++)
+        public int XmasCount()
         {
-            for (int x = 0; x < grid.Width; x++)
+            // Loop through all 'X' characters
+            int count = 0;
+            foreach (IntegerCoordinate<int> pos in _grid.FindAll(c => c == 'X'))
             {
-                if (grid[x, y] == 'X')
+                // Look for "MAS" in every direction
+                foreach (Direction dir in DirectionExtensions.All())
                 {
-                    occurences += TileXmasCount(grid, x, y);
+                    // Check values in direction
+                    int matches = 0;
+                    foreach (char c in _grid.RetrieveDirection(pos.Move(dir), dir, _find.Length))
+                    {
+                        // Keep track of matches
+                        if (c == _find[matches]) matches++;
+                        else break;
+                    }
+
+                    // Check if all characters were matched
+                    if (matches == _find.Length)
+                        count++;
                 }
             }
+
+            return count;
         }
 
-        return occurences;
-    }
-
-    public static int MasOccurences(CharGrid grid)
-    {
-        int occurences = 0;
-
-        for (int y = 0; y < grid.Height; y++)
+        public int MasCount()
         {
-            for (int x = 0; x < grid.Width; x++)
+            // Loop through all 'A' characters
+            int count = 0;
+            foreach (IntegerCoordinate<int> pos in _grid.FindAll(c => c == 'A'))
             {
-                if (grid[x, y] == 'A')
+                // Positions to check
+                List<IntegerCoordinate<int>[]> posDiagonals = [
+                    [pos.Move(Direction.NorthWest), pos.Move(Direction.SouthEast)], // '\' 
+                    [pos.Move(Direction.NorthEast), pos.Move(Direction.SouthWest)]  // '/'
+                ];
+
+                // Check if diagonals contain the right characters
+                int validDiagonals = 0;
+                foreach (IntegerCoordinate<int>[] posArr in posDiagonals)
                 {
-                    occurences += TileMasCross(grid, x, y) ? 1 : 0;
+                    // Only check points within grid
+                    if (_grid.Contains(posArr[0]) && _grid.Contains(posArr[1]))
+                    {
+                        // Check characters
+                        if ((_grid[posArr[0]] == 'M' && _grid[posArr[1]] == 'S') || (_grid[posArr[0]] == 'S' && _grid[posArr[1]] == 'M'))
+                            validDiagonals++;
+                        else
+                            break;
+                    }
                 }
+
+                // Check if both diagonals were valid
+                if (validDiagonals == 2)
+                    count++;
             }
+
+            return count;
         }
-
-        return occurences;
-    }
-
-    public static bool TileMasCross(CharGrid grid, int x, int y)
-    {
-        bool present1 = false;
-        bool present2 = false;
-
-        // Check \
-        int X1 = x - 1;
-        int Y1 = y + 1;
-        int X2 = x + 1;
-        int Y2 = y - 1;
-        if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
-        {
-            if (grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S' || grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M')
-            {
-                present1 = true;
-            }
-        }
-
-        // Check /
-        X1 = x + 1;
-        Y1 = y + 1;
-        X2 = x - 1;
-        Y2 = y - 1;
-        if (X1 >= 0 && X1 < grid.Width && Y1 >= 0 && Y1 < grid.Height && X2 >= 0 && X2 < grid.Width && Y2 >= 0 && Y2 < grid.Height)
-        {
-            if (grid[X1, Y1] == 'M' && grid[X2, Y2] == 'S' || grid[X1, Y1] == 'S' && grid[X2, Y2] == 'M')
-            {
-                present2 = true;
-            }
-        }
-
-        return present1 && present2;
-    }
-
-    public static int TileXmasCount(CharGrid grid, int x, int y)
-    {
-        // Check all directions for xmas
-        int count = 0;
-        int i;
-        string xmas = "XMAS";
-
-        // Check right
-        i = 1;
-        for (int xx = x + 1; xx < grid.Width && i < xmas.Length; xx++, i++)
-        {
-            if (grid[xx, y] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check left
-        i = 1;
-        for (int xx = x - 1; xx >= 0 && i < xmas.Length; xx--, i++)
-        {
-            if (grid[xx, y] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check north
-        i = 1;
-        for (int yy = y + 1; yy < grid.Height && i < xmas.Length; yy++, i++)
-        {
-            if (grid[x, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check south
-        i = 1;
-        for (int yy = y - 1; yy >= 0 && i < xmas.Length; yy--, i++)
-        {
-            if (grid[x, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check diag top right
-        i = 1;
-        for (int yy = y + 1, xx = x + 1; yy < grid.Height && xx < grid.Width && i < xmas.Length; yy++, xx++, i++)
-        {
-            if (grid[xx, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check diag top left
-        i = 1;
-        for (int yy = y + 1, xx = x - 1; yy < grid.Height && xx >= 0 && i < xmas.Length; yy++, xx--, i++)
-        {
-            if (grid[xx, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check diag bot right
-        i = 1;
-        for (int yy = y - 1, xx = x + 1; yy >= 0 && xx < grid.Width && i < xmas.Length; yy--, xx++, i++)
-        {
-            if (grid[xx, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        // Check diag bot left
-        i = 1;
-        for (int yy = y - 1, xx = x - 1; yy >= 0 && xx >= 0 && i < xmas.Length; yy--, xx--, i++)
-        {
-            if (grid[xx, yy] != xmas[i])
-            {
-                break;
-            }
-            else if (i == 3)
-            {
-                count++;
-            }
-        }
-
-        return count;
     }
 }
