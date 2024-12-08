@@ -15,6 +15,7 @@ import { Metadata, ProblemSetMetadata } from '../data/metadata'
 import { useBackend } from '../context/BackendContext'
 import { BsGear } from 'react-icons/bs'
 import SettingsModal from './SettingsModal'
+import './NavigationBar.css'
 
 export interface NavigationBarProps {
   setProblemSet: (year: number, problemSet: ProblemSetMetadata) => void
@@ -164,11 +165,11 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
                 </Form>
               </NavDropdown.Item>
             </NavDropdown>
-            <div className="ms-auto" />
-            <Nav.Link onClick={() => setShowSettings(true)}>
-              <BsGear />
-            </Nav.Link>
           </Nav>
+          <div className="ms-auto" />
+          <Nav.Link onClick={() => setShowSettings(true)} className="me-2 hover-btn">
+            <BsGear />
+          </Nav.Link>
         </Navbar.Collapse>
       </Container>
     </Navbar>

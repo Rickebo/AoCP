@@ -11,7 +11,7 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
   const settings = useSettings()
 
   return (
-    <Modal show={props.show}>
+    <Modal show={props.show} onHide={() => props.hide()}>
       <Modal.Header closeButton>
         <Modal.Title>Settings</Modal.Title>
       </Modal.Header>
