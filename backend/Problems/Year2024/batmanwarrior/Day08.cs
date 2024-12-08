@@ -8,7 +8,7 @@ namespace Backend.Problems.Year2024.batmanwarrior;
 public class Day08 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 08, 0, 0, 0);
+        new(2024, 12, 08);
 
     public override List<Problem> Problems { get; } =
     [
@@ -130,9 +130,6 @@ public class Day08 : ProblemSet
             // Check all antenna groups
             foreach (AntennaGroup group in _antennas)
             {
-                // Skip groups with single or no antenna
-                if (group.Positions.Count <= 1) continue;
-
                 // Compare antennas in group
                 for (int i = 0; i < group.Positions.Count; i++)
                 {
@@ -145,7 +142,7 @@ public class Day08 : ProblemSet
                         // Skip source antenna
                         if (j == i) continue;
 
-                        // Retrieve pos of antenna
+                        // Retrieve pos of second antenna
                         IntegerCoordinate<int> B = group.Positions[j];
 
                         // Calculate distance between antennas

@@ -7,7 +7,7 @@ namespace Backend.Problems.Year2024.batmanwarrior;
 public class Day04 : ProblemSet
 {
     public override DateTime ReleaseTime { get; } =
-        new(2024, 12, 04, 0, 0, 0);
+        new(2024, 12, 04);
 
     public override List<Problem> Problems { get; } =
     [
