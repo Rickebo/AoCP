@@ -99,7 +99,7 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         IntegerCoordinate<T> left,
         IntegerCoordinate<T> right
     ) =>
-        left.X == right.Y && left.Y == right.Y;
+        left.X == right.X && left.Y == right.Y;
 
     public static bool operator !=(
         IntegerCoordinate<T> left,
@@ -141,4 +141,5 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         obj is IntegerCoordinate<T> other && Equals(other);
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
+    public override string ToString() => $"<{X} {Y}>";
 }

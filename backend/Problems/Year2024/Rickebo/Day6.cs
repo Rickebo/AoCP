@@ -31,7 +31,9 @@ public class Day6 : ProblemSet
             reporter.Report(
                 new FinishedProblemUpdate
                 {
-                    Solution = SimulateGuard(grid, FindGuard(grid), reporter)?.Item1.Count.ToString() ?? throw new Exception()
+                    Solution =
+                        SimulateGuard(grid, FindGuard(grid), reporter)?.Item1.Count
+                            .ToString() ?? throw new Exception()
                 }
             );
 
@@ -58,7 +60,11 @@ public class Day6 : ProblemSet
         }
     }
 
-    private static string ColorCell(CharGrid grid, IntegerCoordinate<int> coordinate, bool isGuard)
+    private static string ColorCell(
+        CharGrid grid,
+        IntegerCoordinate<int> coordinate,
+        bool isGuard
+    )
     {
         if (isGuard) return "#FF0000";
         return grid[coordinate] switch
@@ -71,7 +77,8 @@ public class Day6 : ProblemSet
     private static int CountObstacles(CharGrid grid, Reporter reporter)
     {
         var guard = FindGuard(grid);
-        var (visited, path) = SimulateGuard(grid, guard, reporter) ?? throw new Exception();
+        var (visited, path) =
+            SimulateGuard(grid, guard, reporter) ?? throw new Exception();
 
         var obstructions = new HashSet<IntegerCoordinate<int>>();
 
@@ -105,41 +112,53 @@ public class Day6 : ProblemSet
         return obstructions.Count;
     }
 
-    private static Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>? SimulateGuard(
-        CharGrid grid,
-        GuardPosition guardPosition,
-        Reporter? reporter
-    )
+    private static Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>?
+        SimulateGuard(
+            CharGrid grid,
+            GuardPosition guardPosition,
+            Reporter? reporter
+        )
     {
         var pos = guardPosition.Position;
         var dir = guardPosition.Direction;
         grid[pos] = '.';
-        
+
         var visited = new HashSet<IntegerCoordinate<int>>([pos]);
         var visitedGuards = new HashSet<GuardPosition>();
         var path = new List<GuardPosition>();
 
-        reporter?.Report(
-            new StringGridUpdate()
-            {
-                Width = grid.Width,
-                Height = grid.Height,
-                Rows = Enumerable.Range(0, grid.Height)
-                    .ToDictionary(
-                        y => (grid.Height - 1 - y).ToString(),
-                        y => Enumerable.Range(0, grid.Width)
-                            .ToDictionary(
-                                x => x.ToString(),
-                                x =>
-                                {
-                                    var cellPos = new IntegerCoordinate<int>(x, y);
-                                    var val = grid[cellPos];
-                                    return ColorCell(grid, cellPos, val != '#' && val != '.');
-                                }
-                            )
-                    )
-            }
+        reporter?.ReportStringGridUpdate(
+            grid,
+            (builder, coordinate, val) => builder
+                .WithCoordinate(coordinate)
+                .WithText(ColorCell(grid, coordinate, val != '#' && val != '.'))
         );
+        
+        // reporter?.Report(
+        //     new StringGridUpdate()
+        //     {
+        //         Width = grid.Width,
+        //         Height = grid.Height,
+        //         Rows = Enumerable.Range(0, grid.Height)
+        //             .ToDictionary(
+        //                 y => (grid.Height - 1 - y).ToString(),
+        //                 y => Enumerable.Range(0, grid.Width)
+        //                     .ToDictionary(
+        //                         x => x.ToString(),
+        //                         x =>
+        //                         {
+        //                             var cellPos = new IntegerCoordinate<int>(x, y);
+        //                             var val = grid[cellPos];
+        //                             return ColorCell(
+        //                                 grid,
+        //                                 cellPos,
+        //                                 val != '#' && val != '.'
+        //                             );
+        //                         }
+        //                     )
+        //             )
+        //     }
+        // );
 
         while (grid.Contains(pos))
         {
@@ -173,7 +192,10 @@ public class Day6 : ProblemSet
             pos = next;
         }
 
-        return new Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>(visited, path);
+        return new Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>(
+            visited,
+            path
+        );
     }
 
     private static GuardPosition FindGuard(CharGrid grid)
@@ -188,5 +210,6 @@ public class Day6 : ProblemSet
 
     private record GuardPosition(IntegerCoordinate<int> Position, Direction Direction);
 
-    private static CharGrid Parse(string input) => Parser.ParseCharGrid(input, OriginPosition.TopLeft);
+    private static CharGrid Parse(string input) =>
+        Parser.ParseCharGrid(input, OriginPosition.TopLeft);
 }

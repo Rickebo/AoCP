@@ -24,7 +24,7 @@ public static class MathExtensions
             );
 
         foreach (char c in hex)
-            if (!HexadecimalCharacters.Contains(c))
+            if (!HexadecimalCharacters.Contains(char.ToUpper(c)))
                 throw new ArgumentException(
                     "Cannot convert hex to float: Input string is not a hexadecimal number."
                 );
