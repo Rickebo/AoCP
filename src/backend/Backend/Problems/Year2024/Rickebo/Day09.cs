@@ -114,7 +114,7 @@ public class Day09 : ProblemSet
     private static List<IBlock> CompactWithoutFragmentation(List<IBlock> input)
     {
         var blocks = new LinkedList<IBlock>(input);
-
+        
         while (true)
         {
             var biggestSpace = 0;
@@ -122,8 +122,8 @@ public class Day09 : ProblemSet
 
             for (var node = blocks.First; node != null; node = node.Next)
             {
-                if (node.Value is EmptyBlock emptyBlock)
-                    biggestSpace = Math.Max(biggestSpace, emptyBlock.Length);
+                if (node.Value is EmptyBlock)
+                    biggestSpace = Math.Max(biggestSpace, node.Value.Length);
                 else if (node.Value.Length <= biggestSpace)
                     popNode = node;
             }
@@ -144,16 +144,11 @@ public class Day09 : ProblemSet
                 if (empty.Length < insert.Length)
                     continue;
 
-                if (empty.Length > insert.Length)
-                {
-                    current.Value = new EmptyBlock(Length: empty.Length - insert.Length);
-                    blocks.AddBefore(current, insert);
-                }
-                else
-                {
-                    current.Value = insert;
-                }
+                current.Value = insert;
 
+                if (empty.Length > insert.Length)
+                    blocks.AddAfter(current, new EmptyBlock(empty.Length - insert.Length));
+                    
                 break;
             }
         }
