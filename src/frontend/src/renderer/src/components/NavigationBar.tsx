@@ -1,9 +1,5 @@
 ﻿import {
-  Button,
-  CloseButton,
   Container,
-  Form,
-  InputGroup,
   Nav,
   Navbar,
   NavDropdown,
@@ -30,8 +26,6 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   const backend = useBackend()
   const metadataService = useMetadataService()
   const [authorShown, setAuthorShown] = useState<boolean>(false)
-  const [backendShown, setBackendShown] = useState<boolean>(false)
-  const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
   const [showSettings, setShowSettings] = useState<boolean>(false)
 
   const authorSet = new Set<string>()
@@ -108,62 +102,6 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
                   </Stack>
                 </NavDropdown.Item>
               ))}
-            </NavDropdown>
-            <NavDropdown
-              key="backend"
-              title="Backend"
-              className="ms-auto"
-              autoClose="outside"
-              show={backendShown}
-              onToggle={(open, metadata) => {
-                if (metadata.source != 'select') setBackendShown(open)
-              }}
-            >
-              {backend.urls.map((url) => (
-                <NavDropdown.Item
-                  key={url}
-                  onClick={() => {
-                    setBackendShown(false)
-                    backend.setUrl(url)
-                  }}
-                >
-                  <Stack direction="horizontal">
-                    <span
-                      style={{
-                        fontWeight: backend.url == url ? 700 : undefined
-                      }}
-                    >
-                      {url}
-                    </span>
-                    <div className="ms-auto" />
-                    {url != backend.url ? (
-                      <CloseButton
-                        onClick={() => backend.removeUrl(url)}
-                        style={{
-                          fontSize: 12
-                        }}
-                      />
-                    ) : null}
-                  </Stack>
-                </NavDropdown.Item>
-              ))}
-              <NavDropdown.Item onClick={() => {}}>
-                <Form>
-                  <InputGroup size="sm">
-                    <Form.Control
-                      placeholder="new backend..."
-                      onChange={(e) => setEnteredBackendUrl(e.currentTarget.value)}
-                    />
-                    <Button
-                      onClick={() => {
-                        backend.addUrl(enteredBackendUrl)
-                      }}
-                    >
-                      Add
-                    </Button>
-                  </InputGroup>
-                </Form>
-              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
           <div className="ms-auto" />
