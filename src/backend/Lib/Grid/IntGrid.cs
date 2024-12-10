@@ -2,13 +2,27 @@
 
 public class IntGrid : ArrayGrid<int>
 {
-    public IntGrid(string input, int defaultValue, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, defaultValue, originPosition)) { }
+    public IntGrid(
+        string input,
+        int? defaultValue = null,
+        OriginPosition originPosition = OriginPosition.BottomLeft
+    ) : base(ParseFromString(input, defaultValue, originPosition))
+    {
+    }
 
-    public IntGrid(int num, int width, int height) : base(ArrFromValSize(num, width, height)) { }
+    public IntGrid(int num, int width, int height) : base(Fill(num, width, height))
+    {
+    }
 
-    public IntGrid(int[,] values) : base(values) { }
+    public IntGrid(int[,] values) : base(values)
+    {
+    }
 
-    private static int[,] ArrFromStr(string str, int defaultValue, OriginPosition originPosition = OriginPosition.BottomLeft)
+    private static int[,] ParseFromString(
+        string str,
+        int? defaultValue = null,
+        OriginPosition originPosition = OriginPosition.BottomLeft
+    )
     {
         // Parse string input
         var rows = str.SplitLines();
@@ -24,14 +38,19 @@ public class IntGrid : ArrayGrid<int>
             for (var x = 0; x < width; x++)
             {
                 var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
-                arr[x, y] = char.IsDigit(rows[mappedY][x]) ? rows[mappedY][x] - '0' : defaultValue;
+                arr[x, y] = char.IsDigit(rows[mappedY][x])
+                    ? rows[mappedY][x] - '0'
+                    : defaultValue ??
+                      throw new ArgumentException(
+                          "Cannot parse grid containing non-numeric values without a default value specified."
+                      );
             }
         }
 
         return arr;
     }
 
-    private static int[,] ArrFromValSize(int num, int width, int height)
+    private static int[,] Fill(int num, int width, int height)
     {
         // Init array of ints
         var arr = new int[width, height];
