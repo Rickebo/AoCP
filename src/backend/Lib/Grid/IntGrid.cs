@@ -2,13 +2,13 @@
 
 public class IntGrid : ArrayGrid<int>
 {
-    public IntGrid(string input, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, originPosition)) { }
+    public IntGrid(string input, int defaultValue = -1, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, defaultValue, originPosition)) { }
 
     public IntGrid(int num, int width, int height) : base(ArrFromValSize(num, width, height)) { }
 
     public IntGrid(int[,] values) : base(values) { }
 
-    private static int[,] ArrFromStr(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
+    private static int[,] ArrFromStr(string str, int defaultValue = -1, OriginPosition originPosition = OriginPosition.BottomLeft)
     {
         // Parse string input
         var rows = str.SplitLines();
@@ -24,7 +24,7 @@ public class IntGrid : ArrayGrid<int>
             for (var x = 0; x < width; x++)
             {
                 var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
-                arr[x, y] = rows[mappedY][x];
+                arr[x, y] = char.IsDigit(rows[mappedY][x]) ? rows[mappedY][x] - '0' : defaultValue;
             }
         }
 
