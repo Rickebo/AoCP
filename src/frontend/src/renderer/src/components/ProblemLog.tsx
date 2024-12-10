@@ -8,7 +8,7 @@ const ProblemLog: FC<ProblemLogProps> = (props) => {
   const lastIndex = props.content?.length ?? 0 - 1
 
   return (
-    <div className="bg-body-tertiary p-2 px-3 rounded">
+    <div className="bg-body-tertiary p-2 px-3 rounded w-100 overflow-auto">
       <pre
         style={{
           fontFamily: 'Source Code Pro',

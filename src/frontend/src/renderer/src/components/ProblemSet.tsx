@@ -1,7 +1,7 @@
 import React, { CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
-import { Nav, Spinner, Stack, Tab } from 'react-bootstrap'
+import { Col, Nav, Stack, Tab } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
@@ -65,8 +65,6 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   const navigate = (url: string): void => {
     window.open(url)
   }
-
-  const defaultKey = props.set.problems[0].name ?? undefined
 
   const isSolving = (problemName: string | undefined): boolean => {
     const data = mgr.getSolveData(problemName)
@@ -153,123 +151,119 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
         />
       </div>
 
-      <Tab.Container id="problems" defaultActiveKey={defaultKey}>
-        <Stack direction="horizontal" className="mx-1">
-          <Nav variant="pills">
-            {props.set.problems.map((problem, i) => (
-              <Nav.Item key={problem.name}>
-                <Nav.Link eventKey={problem.name ?? i.toString()}>
-                  {problem.name}
-                  {isSolving(problem.name) ? <Spinner size="sm" className="ms-2" /> : null}
-                </Nav.Link>
-              </Nav.Item>
-            ))}
-          </Nav>
-          <div className="ms-auto" />
-        </Stack>
-        <Tab.Content style={{ display: 'flex', flex: '1 1 auto', overflow: 'hidden' }}>
-          {props.set.problems.map((problem, i) => (
-            <Tab.Pane
-              key={problem.name}
-              eventKey={problem.name ?? i.toString()}
-              title={problem.name}
-              className="h-100 w-100"
-            >
-              <div
-                className="d-flex-column flex-grow-1 h-100 w-100"
+      <Stack direction="horizontal">
+        {props.set.problems.map((problem, i) => (
+          <Col key={i}>
+            <Stack direction="horizontal">
+              <span
+                className="ms-3"
                 style={{
-                  display: 'flex',
-                  flex: '1 1 auto',
-                  flexFlow: 'column'
+                  fontWeight: 500
                 }}
               >
-                <Tab.Container>
-                  <Nav variant="tabs">
-                    <Nav.Item>
-                      <Nav.Link eventKey="description">Description</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link eventKey="grid">Grid</Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link eventKey="log">Log</Nav.Link>
-                    </Nav.Item>
+                {problem.name}
+              </span>
+              <div className="ms-auto" />
+              {problem.name == null || mgr.solution(problem.name) == null ? null : (
+                <span
+                  style={{
+                    opacity: 0.5,
+                    alignItems: 'center',
+                    display: 'flex',
+                    color: 'lightgreen'
+                  }}
+                  className="me-4"
+                >
+                  <BsCheck2Square className="me-2" />
+                  {mgr.solution(problem.name)}
+                  <div
+                    style={{ alignItems: 'center', display: 'flex', cursor: 'pointer' }}
+                    className="m-0"
+                    onClick={() => {
+                      const solution = mgr.solution(problem.name!)
 
-                    <div className="ms-auto" />
-                    {problem.name == null || mgr.solution(problem.name) == null ? null : (
-                      <span
-                        style={{
-                          opacity: 0.5,
-                          alignItems: 'center',
-                          display: 'flex',
-                          color: 'lightgreen'
-                        }}
-                        className="me-4"
-                      >
-                        <BsCheck2Square className="me-2" />
-                        {mgr.solution(problem.name)}
-                        <div
-                          style={{ alignItems: 'center', display: 'flex', cursor: 'pointer' }}
-                          className="m-0"
-                          onClick={() => {
-                            const solution = mgr.solution(problem.name!)
-
-                            if (solution != null) navigator.clipboard.writeText(solution)
-                          }}
-                        >
-                          <BsCopy className="ms-2" />
-                        </div>
-                      </span>
-                    )}
-                    {problem.name == null || solveData[problem.name] == null ? null : (
-                      <span
-                        style={{
-                          opacity: 0.5,
-                          alignItems: 'center',
-                          display: 'flex',
-                          color: 'var(--bs-btn-bg)'
-                        }}
-                        className="me-3"
-                      >
-                        <BsStopwatch className="me-2 my-0" />
-                        {solveData[problem.name]}
-                      </span>
-                    )}
-                  </Nav>
-                  <Tab.Content
-                    style={{ display: 'flex', flex: '1 1 auto' }}
-                    className="h-100 w-100 overflow-auto"
+                      if (solution != null) navigator.clipboard.writeText(solution)
+                    }}
                   >
-                    <Tab.Pane eventKey="description">
-                      <ProblemDescription metadata={problem} />
-                    </Tab.Pane>
-                    <Tab.Pane
-                      eventKey="grid"
-                      style={{
-                        flexGrow: '1'
+                    <BsCopy className="ms-2" />
+                  </div>
+                </span>
+              )}
+              {problem.name == null || solveData[problem.name] == null ? null : (
+                <span
+                  style={{
+                    opacity: 0.5,
+                    alignItems: 'center',
+                    display: 'flex',
+                    color: 'var(--bs-btn-bg)'
+                  }}
+                  className="me-3"
+                >
+                  <BsStopwatch className="me-2 my-0" />
+                  {solveData[problem.name]}
+                </span>
+              )}
+            </Stack>
+          </Col>
+        ))}
+      </Stack>
+
+      <Tab.Container defaultActiveKey={`desc-0`}>
+        <Nav variant="tabs">
+          <Nav.Item eventKey="desc"></Nav.Item>
+
+          {props.set.problems.map((problem, i) => (
+            <Col key={i}>
+              <Stack direction="horizontal">
+                <Nav.Item>
+                  <Nav.Link eventKey={`desc-${i}`}>Description</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey={`grid-${i}`}>Grid</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey={`log-${i}`}>Log</Nav.Link>
+                </Nav.Item>
+              </Stack>
+            </Col>
+          ))}
+        </Nav>
+        <Tab.Content
+          style={{ display: 'flex', flex: '1 1 auto' }}
+          className="h-100 w-100 overflow-auto"
+        >
+          {props.set.problems.map((problem, i) => (
+            <>
+              <Tab.Pane eventKey={`desc-${i}`}>
+                <ProblemDescription metadata={problem} />
+              </Tab.Pane>
+              <Tab.Pane
+                eventKey={`grid-${i}`}
+                style={{
+                  flexGrow: '1'
+                }}
+              >
+                <div className="w-100 h-100 d-flex">
+                  {problem.name == null ? null : (
+                    <Grid
+                      ref={(grid) => {
+                        grids.current[problem.name] = grid
                       }}
-                    >
-                      <div className="w-100 h-100 d-flex">
-                        {problem.name == null ? null : (
-                          <Grid
-                            ref={(grid) => {
-                              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                              // @ts-ignore
-                              grids.current[problem.name] = grid
-                            }}
-                          />
-                        )}
-                      </div>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="log">
-                      {problem.name == null ? null : (
-                        <ProblemLog content={mgr.log(problem.name)!} />
-                      )}
-                    </Tab.Pane>
-                  </Tab.Content>
-                </Tab.Container>
-              </div>
-            </Tab.Pane>
+                    />
+                  )}
+                </div>
+              </Tab.Pane>
+              <Tab.Pane
+                eventKey={`log-${i}`}
+                style={{
+                  flexGrow: '1'
+                }}
+              >
+                <div className="w-100 h-100 d-flex flex">
+                  {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
+                </div>
+              </Tab.Pane>
+            </>
           ))}
         </Tab.Content>
       </Tab.Container>
