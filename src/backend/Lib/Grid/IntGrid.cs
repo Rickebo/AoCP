@@ -2,13 +2,13 @@
 
 public class IntGrid : ArrayGrid<int>
 {
-    public IntGrid(string input, int defaultValue = -1, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, defaultValue, originPosition)) { }
+    public IntGrid(string input, int defaultValue, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, defaultValue, originPosition)) { }
 
     public IntGrid(int num, int width, int height) : base(ArrFromValSize(num, width, height)) { }
 
     public IntGrid(int[,] values) : base(values) { }
 
-    private static int[,] ArrFromStr(string str, int defaultValue = -1, OriginPosition originPosition = OriginPosition.BottomLeft)
+    private static int[,] ArrFromStr(string str, int defaultValue, OriginPosition originPosition = OriginPosition.BottomLeft)
     {
         // Parse string input
         var rows = str.SplitLines();
