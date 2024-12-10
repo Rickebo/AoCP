@@ -1,7 +1,6 @@
 using Common;
 using Common.Updates;
-using Lib;
-using System;
+using System.Text;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -24,13 +23,17 @@ public class Day09 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public override async Task Solve(string input, Reporter reporter)
+        public override Task Solve(string input, Reporter reporter)
         {
-            FileSystemDumb fs = new(input, reporter);
+            // Create drive
+            Drive drive = new(input, MemoryMode.Partial, reporter);
 
-            fs.Compact();
+            // Compact memory
+            drive.Compact();
 
-            reporter.Report(FinishedProblemUpdate.FromSolution(fs.Checksum()));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum()));
+            return Task.CompletedTask;
         }
     }
 
@@ -40,256 +43,191 @@ public class Day09 : ProblemSet
 
         public override string Description { get; } = "";
 
-        public override async Task Solve(string input, Reporter reporter)
+        public override Task Solve(string input, Reporter reporter)
         {
-            FileSystemDumb fs = new(input, reporter);
+            // Create drive
+            Drive drive = new(input, MemoryMode.Full, reporter);
 
-            fs.CompactSmart();
+            // Compact memory
+            drive.Compact();
 
-            reporter.Report(FinishedProblemUpdate.FromSolution(fs.ChecksumSmart()));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum()));
+            return Task.CompletedTask;
         }
     }
 
-    public class FileSystem
+    public class Drive
     {
+        private readonly MemoryMode _mode;
+        private readonly LinkedList<Memory> _memory = [];
         private readonly Reporter _reporter;
-        private readonly List<File> _files = [];
-        private readonly List<File> _emptySpaces = [];
-        private readonly List<int> _fileInts = [];
 
-        public FileSystem(string input, Reporter reporter)
+        public Drive(string data, MemoryMode mode, Reporter reporter)
         {
+            // Save reporter for frontend printing
             _reporter = reporter;
-            int fileValue = 0;
-            bool isEmpty = false;
-            for (int i = 0; i < input.Length; i++)
+
+            // Set operation mode
+            _mode = mode;
+
+            // Create and store memory from data
+            int fileID = 0;
+            bool free = false;
+            for (int i = 0; i < data.Length; i++)
             {
-                for (int j = 0; j < input[i] - '0'; j++)
+                // Memory size
+                int size = data[i] - '0';
+
+                // Create and link memory
+                for (int j = 0; j < size; j++)
                 {
-                    File file = new(isEmpty ? -1 : fileValue);
-                    _files.Add(file);
-                    if (isEmpty) _emptySpaces.Add(file);
+                    // Create new memory
+                    Memory memory = new(free ? -1 : fileID, _mode == MemoryMode.Full ? size : 1);
+
+                    // Store memory
+                    _memory.AddLast(memory);
+
+                    // Break if operating in full memory mode
+                    if (_mode == MemoryMode.Full)
+                        break;
                 }
-                if (!isEmpty) fileValue++;
-                isEmpty = !isEmpty;
+
+                // Increment file ID if memory not free
+                if (!free)
+                    fileID++;
+
+                // Toggle free memory
+                free = !free;
             }
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine(MemoryToStr()));
+        }
+
+        private string MemoryToStr()
+        {
+            StringBuilder sb = new();
+            foreach (Memory memory in _memory)
+            {
+                for (int i = 0; i < memory.Size; i++)
+                {
+                    if (sb.Length > 0) sb.Append('|');
+                    sb.Append(memory.Value == -1 ? "." : memory.Value);
+                }
+            }
+
+            return sb.ToString();
         }
 
         public void Compact()
         {
-            // Look from end of files
-            int emptyIndex = 0;
-            for (int i = _files.Count - 1; i >= 0; i--)
+            // No memory to compact
+            if (_memory.First == null || _memory.Last == null)
+                return;
+
+            // Retrieve first and last memory
+            LinkedListNode<Memory> left = _memory.First;
+            LinkedListNode<Memory> right = _memory.Last;
+
+            // Compact loop
+            for (;;)
             {
-                // Skip empty spaces
-                if (_files[i].Value == -1) continue;
+                string memoryStr = MemoryToStr();
 
-                // Stop if no more empty spaces left
-                if (emptyIndex == _emptySpaces.Count) break;
-
-                int val = _files[i].Value;
-                _files[i].Value = -1;
-                _emptySpaces[emptyIndex].Value = val;
-                emptyIndex++;
-            }
-        }
-
-        public long Checksum()
-        {
-            int count = 0;
-            foreach (File file in _files)
-            {
-                if (file.Value != -1) count++;
-                else break;
-            }
-
-            long sum = 0;
-            for (int i = 0; i < _files.Count; i++)
-            {
-                // If empty spaces reached (compacted end of files)
-                if (_files[i].Value == -1) break;
-
-                // Accumulate
-                sum += (long)_files[i].Value * i;
-            }
-            return sum;
-        }
-
-
-    }
-
-    public class File(int value)
-    {
-        public int Value = value;
-    }
-
-    public class FileSystemDumb
-    {
-        private readonly Reporter _reporter;
-        private readonly List<int> _files = [];
-
-        public FileSystemDumb(string input, Reporter reporter)
-        {
-            _reporter = reporter;
-
-            int fileValue = 0;
-            bool isEmpty = false;
-            for (int i = 0; i < input.Length; i++)
-            {
-                for (int j = 0; j < input[i] - '0'; j++)
+                // Go to first memory that is not free from right
+                while (right.Value.Value == -1)
                 {
-                    _files.Add(isEmpty ? -1 : fileValue);
+                    // Check if no more memory left to move
+                    if (right.Previous == null || right == left)
+                        return;
+
+                    // Update right side
+                    right = right.Previous;
                 }
-                if (!isEmpty) fileValue++;
-                isEmpty = !isEmpty;
-            }
-        }
 
-        public void Compact()
-        {
-            // Look from end of files
-            int curr = 0;
-            int end = _files.Count - 1;
-            for (int i = end; i >= 0; i--)
-            {
-                // Skip empty spaces
-                if (_files[i] == -1) continue;
-
-                // Look for empty spot
-                for (; curr <= end; curr++)
+                // Look for space to move memory
+                for (LinkedListNode<Memory> node = left; node.Next != null && node != right; node = node.Next)
                 {
-                    if (curr == i) break;
-
-                    if (_files[curr] == -1)
+                    // Check if memory is free and has room
+                    if (node.Value.Value == -1 && node.Value.Size >= right.Value.Size)
                     {
-                        // Swap values
-                        int val = _files[i];
-                        _files[i] = -1;
-                        _files[curr] = val;
+                        // Move memory
+                        MoveMemory(node, right);
+
+                        // Update left to leftmost free space
+                        while (left.Value.Value != -1)
+                        {
+                            // Return if no more free space
+                            if (left.Next == null || left == right)
+                                return;
+
+                            // Move left node
+                            left = left.Next;
+                        }
+
+                        // Break and look for next memory to move
                         break;
                     }
                 }
 
-                if (curr == i) break;
-            }
-        }
-
-        public void CompactSmart()
-        {
-            for (int i = _files.Count - 1; i >= 0; i--)
-            {
-                // Skip empty
-                if (_files[i] == -1) continue;
-
-                // Size of file
-                int size = ValLength(_files[i], i, -1);
-
-                // Look for empty
-                bool inserted = false;
-                for (int j = 0; j < _files.Count; j++)
+                // Check if swap was not possible
+                if (right.Value.Value != -1)
                 {
-                    // Break if surpassing i
-                    if (j >= i) break;
-
-                    // Skip occupied
-                    if (_files[j] != -1) continue;
-
-                    // Size of space
-                    int space = ValLength(_files[j], j, 1);
-
-                    if (size <= space)
-                    {
-                        InsertAt(j, size, _files[i]);
-                        RemoveAt(i, size);
-                        inserted = true;
-                        break;
-                    }
-                }
-
-                if (!inserted)
-                {
-                    i -= size - 1;
+                    // Skip this memory
+                    if (right.Previous == null || right.Previous == left || left == right)
+                        return;
+                    else
+                        right = right.Previous;
                 }
             }
         }
 
-        public int Spaces(int index)
+        private void MoveMemory(LinkedListNode<Memory> a, LinkedListNode<Memory> b)
         {
-            int spaces = 0;
-            for (int i = index; i < _files.Count; i++)
-            {
-                if (_files[i] == 0) spaces++;
-                else break;
-            }
+            // If a has space left, add empty memory after a
+            if (b.Value.Size < a.Value.Size)
+                _memory.AddAfter(a, new Memory(-1, a.Value.Size - b.Value.Size));
 
-            return spaces;
-        }
+            // Swap values and update size of a
+            a.Value.Value = b.Value.Value;
+            a.Value.Size = b.Value.Size;
 
-        public int ValLength(int val, int index, int delta)
-        {
-            int length = 0;
-            if (delta > 0)
-            {
-                for (int i = index; i < _files.Count; i += delta)
-                {
-                    if (_files[i] == val) length++;
-                    else break;
-                }
-            }
-            else
-            {
-                for (int i = index; i >= 0; i += delta)
-                {
-                    if (_files[i] == val) length++;
-                    else break;
-                }
-            }
-            return length;
-        }
-
-        public void InsertAt(int index, int count, int val)
-        {
-            for (int i = index; i < _files.Count && count > 0; i++)
-            {
-                _files[i] = val;
-                count--;
-            }
-        }
-
-        public void RemoveAt(int index, int count)
-        {
-            for (int i = index; i >= 0 && count > 0; i--)
-            {
-                _files[i] = -1;
-                count--;
-            }
+            // Empty memory of b
+            b.Value.Value = -1;
         }
 
         public long Checksum()
         {
-            long sum = 0;
-            for (int i = 0; i < _files.Count; i++)
-            {
-                // If empty spaces reached (compacted end of files)
-                if (_files[i] == -1) break;
+            // No memory to checksum
+            if (_memory.First == null)
+                return 0;
 
-                // Accumulate
-                sum += (long)_files[i] * i;
-            }
-            return sum;
-        }
-
-        public long ChecksumSmart()
-        {
+            // Calculate checksum
             long sum = 0;
-            for (int i = 0; i < _files.Count; i++)
+            long memoryIndex = 0;
+            for (LinkedListNode<Memory> node = _memory.First; node.Next != null; node = node.Next, memoryIndex++)
             {
                 // Skip empty
-                if (_files[i] == -1) continue;
-                // Accumulate
-                sum += (long)_files[i] * i;
+                if (node.Value.Value == -1)
+                    continue;
+
+                // Add to sum
+                sum += node.Value.Value * memoryIndex;
             }
             return sum;
         }
+    }
+
+    public enum MemoryMode
+    {
+        Full,
+        Partial
+    }
+
+    public class Memory(int val, int size)
+    {
+        public int Value = val;
+        public int Size = size;
     }
 }
