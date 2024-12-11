@@ -18,13 +18,7 @@ public class Day08 : ProblemSet
         new ProblemTwo()
     ];
 
-    private static readonly string[] _colors =
-    [
-        "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231", "#911eb4", "#46f0f0",
-        "#f032e6", "#bcf60c", "#fabebe", "#008080", "#e6beff", "#9a6324", "#fffac8",
-        "#800000", "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080", "#ffffff",
-        "#000000"
-    ];
+    private static Color[] _colors = Color.Generate(100).ToArray();
 
     public override string Name => "Resonant Collinearity";
 
@@ -61,7 +55,7 @@ public class Day08 : ProblemSet
         bool multiple = false
     )
     {
-        var antinodes = new Dictionary<IntegerCoordinate<int>, (string, string)>();
+        var antinodes = new Dictionary<IntegerCoordinate<int>, (Color, Color)>();
 
         reporter?.ReportStringGridUpdate(
             state.Grid,
@@ -74,7 +68,7 @@ public class Day08 : ProblemSet
             .Select((key, i) => (key, _colors[i % _colors.Length]))
             .ToDictionary(pair => pair.key, pair => pair.Item2);
 
-        freqColors['.'] = "#000000";
+        freqColors['.'] = Color.Black;
 
         foreach (var freq in state.Antennas.Keys)
         {

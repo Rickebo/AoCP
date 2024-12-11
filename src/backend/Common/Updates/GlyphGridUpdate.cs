@@ -1,4 +1,5 @@
-﻿using Lib.Coordinate;
+﻿using Lib;
+using Lib.Coordinate;
 using Lib.Grid;
 
 namespace Common.Updates;
@@ -65,6 +66,18 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             return this;
         }
 
+        public GlyphBuilder WithForeground(Color color)
+        {
+            Foreground = color.ToRgbaString();
+            return this;
+        }
+
+        public GlyphBuilder WithBackground(Color color)
+        {
+            Background = color.ToRgbaString();
+            return this;
+        }
+        
         public GlyphBuilder WithForeground(string foreground)
         {
             Foreground = foreground;

@@ -17,9 +17,9 @@ public class StringGridUpdate : GridUpdate<string>
         Rows = rows
     };
 
-    public static StringGridUpdate FromColorGrid(ArrayGrid<Color32> grid) => FromGrid(
+    public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid) => FromGrid(
         grid,
-        color => color.ToString(),
+        color => color.ToRgbaString(),
         Construct
     );
 
