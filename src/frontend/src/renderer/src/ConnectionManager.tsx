@@ -18,11 +18,14 @@ export interface ProblemFeedbackHandler {
   solve: (problem: ProblemMetadata, input: string) => Promise<void>
   solveAll: (input: string) => void
   getSolveData: (problemName: string | undefined) => SolveData | undefined
+  elapsed: (problemName: string) => string | undefined
+  solving: string[]
 }
 
 export interface SolveData {
   start: Date
   end: Date | undefined
+  elapsedNs: number | undefined
 }
 
 export function useConnectionManager(
@@ -37,6 +40,7 @@ export function useConnectionManager(
   const [, setSocket] = useState<ProblemSocket | undefined>()
   const [gridQueue, setGridQueue] = useState<Record<string, GridData[]>>({})
   const [solveTimes, setSolveTimes] = useState<Record<string, SolveData>>({})
+  const [solving, setSolving] = useState<string[]>([])
 
   useEffect(() => {
     if (Object.entries(gridQueue).length < 1) return
@@ -58,6 +62,47 @@ export function useConnectionManager(
     }
   }, [gridQueue, grids.current])
 
+  const getElapsed = (problemName: string): string | undefined => {
+    const data = solveTimes[problemName]
+
+    if (data == null) return undefined
+
+    const start = data.start
+    const end = data.end ?? new Date()
+
+    const elapsed = data.elapsedNs != null
+      ? data.elapsedNs / 1000000
+      : end.getTime() - start.getTime()
+
+    const micros = (elapsed * 1000) % 1000
+    const nanos = (elapsed * 1000000) % 1000
+    const millis = elapsed % 1000
+    const seconds = Math.floor(elapsed / 1000)
+    const minutes = Math.floor(seconds / 60)
+
+    const unitMap: [number, string][] = [
+      [minutes, 'm'],
+      [seconds, 's'],
+      [millis, 'ms'],
+      [micros, 'μs'],
+      [nanos, 'ns']
+    ]
+
+    let usedUnits = 0
+    let result = ''
+    for (const [value, unit] of unitMap) {
+      if (usedUnits >= 2) break
+
+      if (value < 1) continue
+
+      const valueStr = usedUnits == 0 ? Math.floor(value).toString() : Math.floor(value).toString().padStart(3, '0')
+      usedUnits++
+      result += valueStr + ' ' + unit + ' '
+    }
+
+    return result.trimEnd()
+  }
+
   const handleFinished = (update: FinishedProblemUpdate): void => {
     if (update.solution == null) return
 
@@ -67,6 +112,7 @@ export function useConnectionManager(
       if (data == null) return clone
 
       data.end = new Date()
+      data.elapsedNs = update.elapsedNanoseconds
       return clone
     })
 
@@ -76,6 +122,8 @@ export function useConnectionManager(
         [update.id.problemName]: update.solution!
       }
     })
+
+    setSolving((current) => [...current.filter((x) => x != update.id.problemName)])
   }
 
   const handleStart = (): void => {
@@ -139,6 +187,7 @@ export function useConnectionManager(
 
   const solve = async (problem: ProblemMetadata, input: string): Promise<void> => {
     if (problem.name == null) throw new Error('Cannot solve unnamed problem.')
+    setSolving((current) => [...current, problem.name])
 
     const id: ProblemId = {
       year: year,
@@ -151,7 +200,8 @@ export function useConnectionManager(
       const clone = { ...times }
       clone[problem.name!] = {
         start: new Date(),
-        end: undefined
+        end: undefined,
+        elapsedNs: undefined
       }
 
       return clone
@@ -180,6 +230,8 @@ export function useConnectionManager(
     log: (name: string): string[] | undefined => log[name],
     solve: solve,
     solveAll: solveAll,
-    getSolveData: getSolveData
+    getSolveData: getSolveData,
+    solving: solving,
+    elapsed: getElapsed
   }
 }

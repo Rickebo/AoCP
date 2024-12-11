@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
@@ -115,7 +116,9 @@ public class ProblemController(
                 {
                     try
                     {
+                        var sw = Stopwatch.StartNew();
                         await problem.Solve(input, reporter);
+                        return sw.Elapsed;
                     }
                     finally
                     {
@@ -124,6 +127,7 @@ public class ProblemController(
                 }
             );
 
+            var postponed = new Queue<ProblemUpdate>();
 
             try
             {
@@ -131,18 +135,26 @@ public class ProblemController(
                     var update in reporter.ReadAll().WithCancellation(cts.Token)
                 )
                 {
-                    update.Id = id;
-                    await Transmit(socket, update);
+                    if (update is FinishedProblemUpdate finished)
+                        postponed.Enqueue(finished);
+                    else
+                    {
+                        update.Id = id;
+                        await Transmit(socket, update);                        
+                    }
                 }
             }
             catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
             {
             }
 
-            await problemTask;
+            var elapsed = await problemTask;
 
-            foreach (var update in reporter.ReadAllCurrent())
+            foreach (var update in postponed.Concat(reporter.ReadAllCurrent()))
             {
+                if (update is FinishedProblemUpdate finished)
+                    finished.ElapsedNanoseconds = elapsed.Ticks * 100;
+                
                 update.Id = id;
                 await Transmit(socket, update);
             }

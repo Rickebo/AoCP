@@ -74,22 +74,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     return elapsed > startCooldown
   }
 
-  const solveElapsedTime = (problemName: string | undefined): string => {
-    const data = mgr.getSolveData(problemName)
-    if (data == null) return ''
-
-    const start = data.start
-    const end = data.end ?? new Date()
-
-    const elapsed = end.getTime() - start.getTime()
-    const seconds = Math.floor(elapsed / 1000)
-    const minutes = Math.floor(seconds / 60)
-
-    if (minutes > 0)
-      return `${minutes}m ${(seconds % 60).toString().padStart(2, '0')}s ${(elapsed % 1000).toString().padStart(3, '0')} ms`
-    else if (seconds > 0) return `${seconds}s ${(elapsed % 1000).toString().padStart(3, '0')} ms`
-    else return `${elapsed} ms`
-  }
+  const solveElapsedTime = (problemName: string | undefined): string => mgr.elapsed(problemName) ?? ''
 
   const isSolvingAny = props.set.problems
     .map((problem) => isSolving(problem.name))
@@ -108,8 +93,11 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     updater()
     const interval = setInterval(updater, 7)
 
-    return (): void => clearInterval(interval)
-  }, [isSolvingAny])
+    return (): void => {
+      clearInterval(interval)
+      updater()
+    }
+  }, [...props.set.problems.map((prob) => mgr.elapsed(prob.name))])
 
   return (
     <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>
@@ -189,7 +177,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   </div>
                 </span>
               )}
-              {problem.name == null || solveData[problem.name] == null ? null : (
+              {problem.name == null || mgr.elapsed(problem.name) == null ? null : (
                 <span
                   style={{
                     opacity: 0.5,
@@ -200,7 +188,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   className="me-3"
                 >
                   <BsStopwatch className="me-2 my-0" />
-                  {solveData[problem.name]}
+                  {mgr.elapsed(problem.name)}
                 </span>
               )}
             </Stack>

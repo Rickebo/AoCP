@@ -8,6 +8,7 @@ export interface ProblemUpdate {
 export interface FinishedProblemUpdate extends ProblemUpdate {
   successful: boolean
   solution: string | undefined
+  elapsedNanoseconds: number
   error: string | undefined
 }
 
