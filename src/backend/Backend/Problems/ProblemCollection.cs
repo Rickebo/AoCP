@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Backend.Problems.Metadata;
 using Backend.Services;
 
@@ -7,7 +10,10 @@ namespace Backend.Problems;
 public abstract class ProblemCollection
 {
     public abstract int Year { get; }
-    public abstract Dictionary<string, List<ProblemSet>> Problems { get; }
+    public abstract Type ProblemRootType { get; }
+    public Dictionary<string, List<ProblemSet>> Problems { get; } = new();
+
+    public EventHandler? OnUpdate = null;
 
     public ProblemCollectionMetadata GetMetadata() => new(
         Year,
@@ -16,18 +22,23 @@ public abstract class ProblemCollection
             p => p.Value.Select(ps => ps.GetMetadata()).ToList()
         )
     );
-
-    public static Dictionary<string, List<ProblemSet>> FindProblems(Type ns)
+    
+    public void FindProblems(
+        Assembly? assembly = null
+    )
     {
-        var rootNs = ns.Namespace ?? throw new Exception(
+        var rootNs = ProblemRootType.Namespace ?? throw new Exception(
             "Failed to find namespace of specified type."
         );
 
-        var classes = Assembly.GetExecutingAssembly().GetTypes().Where(
-            t => t.IsClass &&
-                 (t.Namespace?.StartsWith(rootNs) ?? false) &&
-                 t.IsAssignableTo(typeof(ProblemSet))
-        );
+        
+        var classes = (assembly ?? Assembly.GetExecutingAssembly())
+            .GetTypes()
+            .Where(
+                t => t.IsClass &&
+                     (t.Namespace?.StartsWith(rootNs) ?? false) &&
+                     t.IsAssignableTo(typeof(ProblemSet))
+            );
 
         var instances = classes
             .Select(
@@ -40,7 +51,6 @@ public abstract class ProblemCollection
             .ToList();
 
 
-        var result = new Dictionary<string, List<ProblemSet>>();
         foreach (var inst in instances)
         {
             var instType = inst.GetType();
@@ -60,15 +70,15 @@ public abstract class ProblemCollection
                 inst.Author = "Unknown";
             }
 
-            if (!result.TryGetValue(inst.Author, out var probList))
-                probList = result[inst.Author] = [];
-            
+            if (!Problems.TryGetValue(inst.Author, out var probList))
+                probList = Problems[inst.Author] = [];
+
             probList.Add(inst);
         }
-        
-        foreach (var probList in result.Values) 
-            probList.Sort((a, b) => a.ReleaseTime.CompareTo(b.ReleaseTime));
 
-        return result;
+        foreach (var probList in Problems.Values)
+            probList.Sort((a, b) => a.ReleaseTime.CompareTo(b.ReleaseTime));
+        
+        OnUpdate?.Invoke(this, EventArgs.Empty);
     }
 }

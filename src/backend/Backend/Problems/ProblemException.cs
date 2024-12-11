@@ -1,4 +1,6 @@
-﻿namespace Backend.Problems
+﻿using System;
+
+namespace Backend.Problems
 {
     public class ProblemException : Exception
     {

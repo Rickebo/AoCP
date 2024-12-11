@@ -1,4 +1,7 @@
-﻿using Backend.Problems;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Backend.Problems;
 using Backend.Problems.Metadata;
 using Common;
 
@@ -6,10 +9,15 @@ namespace Backend.Services;
 
 public class ProblemService
 {
-    private readonly Dictionary<int, ProblemCollection> _problemCollections;
-    private readonly Dictionary<int, IndexedProblemCollection> _indexedProblemCollections;
+    private Dictionary<int, ProblemCollection> _problemCollections = new();
+    private Dictionary<int, IndexedProblemCollection> _indexedProblemCollections = new();
 
     public ProblemService(IEnumerable<ProblemCollection> problemCollections)
+    {
+        Load(problemCollections);
+    }
+
+    private void Load(IEnumerable<ProblemCollection> problemCollections)
     {
         var collections = problemCollections.ToArray();
 

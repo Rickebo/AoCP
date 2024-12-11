@@ -1,4 +1,6 @@
-﻿namespace Backend.Problems.Metadata;
+﻿using System.Collections.Generic;
+
+namespace Backend.Problems.Metadata;
 
 public record ProblemsMetadata
 {

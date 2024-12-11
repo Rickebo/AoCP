@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices.Marshalling;
 using System.Text;
+using System.Threading.Tasks;
 using Common;
 using Common.Updates;
 using Lib;
