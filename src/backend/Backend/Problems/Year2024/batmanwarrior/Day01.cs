@@ -25,29 +25,11 @@ public class Day01 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Get number lists from input string
-            (List<int> left, List<int> right) = GetValueLists(input);
-
-            // Sort lists
-            left.Sort();
-            right.Sort();
-
-            // Retrieve total distance between the lists
-            int distance = 0;
-            for (int i = 0; i < left.Count; i++)
-            {
-                // Absolute value
-                int currDistance = Math.Abs(left[i] - right[i]);
-
-                // Send to frontend
-                reporter.Report(TextProblemUpdate.FromLine($"|{left[i]} - {right[i]}| = {currDistance}"));
-
-                // Accumulate distance
-                distance += currDistance;
-            }
+            // Create list manager
+            ListManager listManager = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(distance));
+            reporter.Report(FinishedProblemUpdate.FromSolution(listManager.Distance()));
             return Task.CompletedTask;
         }
     }
@@ -60,43 +42,88 @@ public class Day01 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Get number lists from input string
-            (List<int> left, List<int> right) = GetValueLists(input);
-
-            // Retrieve total similarity score between the lists
-            int similarity = 0;
-            for (int i = 0; i < left.Count; i++)
-            {
-                // Count occurences of each number in the right list
-                int occurences = right.Where(x => x.Equals(left[i])).Count();
-
-                // Calculate similarity score
-                int currSimilarity = left[i] * occurences;
-
-                // Send to frontend
-                reporter.Report(TextProblemUpdate.FromLine($"{left[i]} * {occurences} = {currSimilarity}"));
-
-                // Accumulate similarity score
-                similarity += currSimilarity;
-            }
+            // Create list manager
+            ListManager listManager = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(similarity));
+            reporter.Report(FinishedProblemUpdate.FromSolution(listManager.Similarity()));
             return Task.CompletedTask;
         }
     }
 
-    private static (List<int>, List<int>) GetValueLists(string input)
+    public class ListManager
     {
-        // Retrieve both number columns
-        List<int> left = [], right = [];
-        foreach (string row in input.SplitLines())
+        private readonly Reporter _reporter;
+        private readonly List<int> _left = [];
+        private readonly List<int> _right = [];
+
+        public ListManager(string input, Reporter reporter)
         {
-            // Parse numbers and populate lists
-            int[] numbers = Parser.GetValues<int>(row);
-            left.Add(numbers[0]);
-            right.Add(numbers[1]);
+            // Save for frontend printing
+            _reporter = reporter;
+
+            // Check every row of input
+            foreach (string row in input.SplitLines())
+            {
+                // Parse numbers and populate lists
+                int[] numbers = Parser.GetValues<int>(row);
+                _left.Add(numbers[0]);
+                _right.Add(numbers[1]);
+            }
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"List pair created with {_left.Count} entries.\n"));
         }
-        return (left, right);
+
+        public int Distance()
+        {
+            // Sort lists
+            _left.Sort();
+            _right.Sort();
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"Left  | Right | Distance | Total Distance"));
+
+            // Loop through lists
+            int totalDistance = 0;
+            for (int i = 0; i < _left.Count; i++)
+            {
+                // Get distance between numbers
+                int distance = Math.Abs(_left[i] - _right[i]);
+
+                // Accumulate distance
+                totalDistance += distance;
+
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -5}   {_right[i], -5}   {distance, -5}      {totalDistance}"));
+            }
+
+            return totalDistance;
+        }
+
+        public int Similarity()
+        {
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"Left  | Occurence | Similarity Score | Total Similarity Score"));
+
+            // Loop through lists
+            int totalSimilarity = 0;
+            for (int i = 0; i < _left.Count; i++)
+            {
+                // Count occurences of left in right
+                int occurences = _right.Where(x => x.Equals(_left[i])).Count();
+
+                // Calculate similarity score
+                int similarity = _left[i] * occurences;
+
+                // Accumulate similarity
+                totalSimilarity += similarity;
+
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -5}   {occurences, -9}   {similarity, -16}   {totalSimilarity}"));
+            }
+
+            return totalSimilarity;
+        }
     }
 }
