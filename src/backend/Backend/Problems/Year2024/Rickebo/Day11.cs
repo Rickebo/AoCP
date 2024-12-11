@@ -28,7 +28,7 @@ public class Day11 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            var data = Parser.GetValues<long>(input);
+            var data = Parser.GetValues<ulong>(input);
 
             reporter.ReportSolution(SimulateBlinks(25, data));
 
@@ -42,20 +42,24 @@ public class Day11 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            var data = Parser.GetValues<long>(input);
+            var data = Parser.GetValues<ulong>(input);
 
             reporter.ReportSolution(SimulateBlinks(75, data));
             return Task.CompletedTask;
         }
     }
 
-    private static long SimulateBlinks(int blinks, IEnumerable<long> stones)
+    private static ulong SimulateBlinks(int blinks, IEnumerable<ulong> stones)
     {
-        var cache = new Dictionary<CacheKey, long>();
-        return stones.Sum(s => SimulateBlinks(blinks, s, cache));
+        var cache = new Dictionary<CacheKey, ulong>();
+        var sum = 0UL;
+        foreach (var s in stones)
+            sum += SimulateBlinks(blinks, s, cache);
+
+        return sum;
     }
-    
-    private static long SimulateBlinks(int blinks, long stone, Dictionary<CacheKey, long> cache)
+
+    private static ulong SimulateBlinks(int blinks, ulong stone, Dictionary<CacheKey, ulong> cache)
     {
         if (blinks <= 0)
             return 1;
@@ -67,18 +71,20 @@ public class Day11 : ProblemSet
         if (stone == 0)
             return cache[key] = SimulateBlinks(blinks - 1, 1, cache);
 
-        var stoneStr = stone.ToString();
-        if (stoneStr.Length % 2 == 0)
-        {
-            var left = long.Parse(stoneStr[..(stoneStr.Length / 2)]);
-            var right = long.Parse(stoneStr[(stoneStr.Length / 2)..]);
+        var log = MathExtensions.CeilLog10(stone + 1);
+        
+        // If the ceil log 10 is even, the number has an odd number of digits
+        if (log < 1 || log % 2 == 1)
+            return cache[key] = SimulateBlinks(blinks - 1, stone * 2024, cache);    
 
-            return cache[key] = SimulateBlinks(blinks - 1, left, cache) +
-                                 SimulateBlinks(blinks - 1, right, cache);
-        }
+        // ReSharper disable once PossibleLossOfFraction
+        var half = MathExtensions.Pow10(log / 2);
+        var right = stone % half;
+        var left = (stone - right) / half;
 
-        return cache[key] = SimulateBlinks(blinks - 1, stone * 2024, cache);
+        return cache[key] = SimulateBlinks(blinks - 1, left, cache) +
+                            SimulateBlinks(blinks - 1, right, cache);
     }
 
-    private record CacheKey(int Blinks, long Stone);
+    private readonly record struct CacheKey(int Blinks, ulong Stone);
 }

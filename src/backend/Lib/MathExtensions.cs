@@ -1,9 +1,11 @@
-﻿namespace Lib;
+﻿using System.Numerics;
+
+namespace Lib;
 
 public static class MathExtensions
 {
     public const string HexadecimalCharacters = "0123456789ABCDEF";
-    
+
     public static int Remainder(int x, int divisor) =>
         (x % divisor + divisor) % divisor;
 
@@ -32,5 +34,40 @@ public static class MathExtensions
         var val = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
         var max = (int)Math.Pow(2, 4 * hex.Length) - 1;
         return ((float)val) / max;
+    }
+
+    public static T Ten<T>() where T : INumber<T> =>
+        T.One + T.One + T.One + T.One + T.One + T.One + T.One + T.One + T.One + T.One;
+
+    public static T CeilLog10<T>(T number) where T : INumber<T>, IComparisonOperators<T, T, bool>, IBinaryInteger<T>
+    {
+        var n = T.One;
+        var i = T.Zero;
+        var ten = Ten<T>();
+
+        checked
+        {
+            while (n < number)
+            {
+                i++;
+                n *= ten;
+            }
+        }
+
+        return i;
+    }
+
+    public static T Pow10<T>(T power) where T : INumber<T>, IComparisonOperators<T, T, bool>
+    {
+        var n = T.One;
+        var ten = Ten<T>();
+        
+        checked
+        {
+            for (var i = T.Zero; i < power; i++)
+                n *= ten;
+        }
+
+        return n;
     }
 }
