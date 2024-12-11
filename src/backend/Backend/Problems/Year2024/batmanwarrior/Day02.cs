@@ -1,6 +1,7 @@
 using Common;
 using Common.Updates;
 using Lib;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -25,25 +26,11 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Check for safe reports
-            int safeReports = 0;
-            foreach (string report in input.SplitLines())
-            {
-                // Parse levels from report
-                int[] levels = Parser.GetValues<int>(report);
-
-                // Check if levels are safe
-                bool safe = IsSafe(levels) || IsSafe(levels.Reverse());
-
-                // Send to frontend
-                reporter.Report(TextProblemUpdate.FromLine($"{safe,-5} | {report}"));
-
-                // Accumulate safe reports
-                if (safe) safeReports++;
-            }
+            // Create report manager
+            ReportManager reportManager = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(safeReports));
+            reporter.Report(FinishedProblemUpdate.FromSolution(reportManager.SafeReports(tolerateBadLevel: false)));
             return Task.CompletedTask;
         }
     }
@@ -56,66 +43,83 @@ public class Day02 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Check for safe reports
-            int safeReports = 0;
-            foreach (string report in input.SplitLines())
-            {
-                // Parse levels from report
-                int[] levels = Parser.GetValues<int>(report);
-
-                // Remove one level at the time and check for safe report
-                bool safe = false;
-                for (int i = 0; i < levels.Length; i++)
-                {
-                    // Create sub array
-                    int[] subLevels = levels.Where((_, index) => index != i).ToArray();
-
-                    // Check if levels are safe
-                    safe = IsSafe(subLevels) || IsSafe(subLevels.Reverse());
-
-                    // Accumulate safe reports
-                    if (safe)
-                    {
-                        safeReports++;
-                        break;
-                    }
-                }
-
-                // Send to frontend
-                reporter.Report(TextProblemUpdate.FromLine($"{safe,-5} | {report}"));
-            }
+            // Create report manager
+            ReportManager reportManager = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(safeReports));
+            reporter.Report(FinishedProblemUpdate.FromSolution(reportManager.SafeReports(tolerateBadLevel: true)));
             return Task.CompletedTask;
         }
     }
 
-    private static bool IsSafe(IEnumerable<int> levels)
+    public class ReportManager
     {
-        // Loop through levels
-        int? last = null;
-        foreach (int level in levels)
+        private readonly Reporter _reporter;
+        private readonly List<int[]> _reports = [];
+        private const int _maxDelta = 3;
+        private const int _minDelta = 1;
+
+        public ReportManager(string input, Reporter reporter)
         {
-            // Catch first level
-            if (last == null)
+            // Save for frontend printing
+            _reporter = reporter;
+
+            // Retrieve reports from input
+            foreach (string row in input.SplitLines())
             {
-                last = level;
-                continue;
+                // Add report
+                _reports.Add(Parser.GetValues<int>(row));
             }
-
-            // Get difference for each level
-            int difference = level - last.Value;
-
-            // Make sure the difference is within safe specs
-            if (difference > 3 || difference < 1)
-            {
-                return false;
-            }
-
-            last = level;
         }
 
-        return true;
+        public int SafeReports(bool tolerateBadLevel)
+        {
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"Bad level tolerated: {tolerateBadLevel}\n\nSafe  | Report"));
+
+            // Check reports
+            int safeReports = 0;
+            foreach (int[] report in _reports)
+            {
+                // Loop once for each level in report
+                bool safe = false;
+                for (int i = 0; i < report.Length; i++)
+                {
+                    // Copy report but exclude one level if tolerated
+                    int[] reportCopy = report.Where((_, index) => index != i || !tolerateBadLevel).ToArray();
+
+                    // Check if levels are safe
+                    safe = IsSafe(reportCopy) || IsSafe(reportCopy.Reverse().ToArray());
+
+                    // Accumulate safe reports
+                    safeReports += safe ? 1 : 0;
+
+                    // If report is safe or no bad level is tolerated
+                    if (safe || !tolerateBadLevel)
+                        break;
+                }
+
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine($"{safe,-5} | {string.Join(" ", report)}"));
+            }
+
+            return safeReports;
+        }
+
+        private static bool IsSafe(int[] levels)
+        {
+            // Loop through levels
+            for (int i = 1; i < levels.Length; i++)
+            {
+                // Get difference for each level
+                int difference = levels[i] - levels[i - 1];
+
+                // Check if difference is safe
+                if (difference > _maxDelta || difference < _minDelta)
+                    return false;
+            }
+
+            return true;
+        }
     }
 }
