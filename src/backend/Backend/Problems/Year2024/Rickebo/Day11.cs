@@ -22,7 +22,7 @@ public class Day11 : ProblemSet
         new ProblemTwo()
     ];
 
-    public override string Name => "Plutonian Pebbles";
+    public override string Name => "Plutonian Pebbless";
 
     private class ProblemOne : Problem
     {

@@ -24,6 +24,9 @@ public class ProblemService
         _problemCollections = collections
             .ToDictionary(col => col.Year, col => col);
 
+        foreach (var collection in collections)
+            collection.OnUpdate += (_, _) => Load(_problemCollections.Values);
+        
         _indexedProblemCollections = collections.ToDictionary(
             col => col.Year,
             col => new IndexedProblemCollection(col)

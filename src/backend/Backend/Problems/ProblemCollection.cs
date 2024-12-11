@@ -15,6 +15,11 @@ public abstract class ProblemCollection
 
     public EventHandler? OnUpdate = null;
 
+    public ProblemCollection()
+    {
+        FindProblems(Assembly.GetExecutingAssembly());
+    }
+    
     public ProblemCollectionMetadata GetMetadata() => new(
         Year,
         Problems.ToDictionary(
@@ -73,7 +78,18 @@ public abstract class ProblemCollection
             if (!Problems.TryGetValue(inst.Author, out var probList))
                 probList = Problems[inst.Author] = [];
 
-            probList.Add(inst);
+            var added = false;
+            for (var i = 0; i < probList.Count; i++)
+            {
+                if (probList[i].ReleaseTime != inst.ReleaseTime)
+                    continue;
+                
+                probList[i] = inst;
+                added = true;
+            }
+
+            if (!added)
+                probList.Add(inst);
         }
 
         foreach (var probList in Problems.Values)
