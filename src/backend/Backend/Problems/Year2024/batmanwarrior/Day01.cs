@@ -75,7 +75,7 @@ public class Day01 : ProblemSet
             _reporter.Report(TextProblemUpdate.FromLine($"List pair created with {_left.Count} entries.\n"));
         }
 
-        public int Distance()
+        public long Distance()
         {
             // Sort lists
             _left.Sort();
@@ -85,7 +85,7 @@ public class Day01 : ProblemSet
             _reporter.Report(TextProblemUpdate.FromLine($"Left  | Right | Distance | Total Distance"));
 
             // Loop through lists
-            int totalDistance = 0;
+            long totalDistance = 0;
             for (int i = 0; i < _left.Count; i++)
             {
                 // Get distance between numbers
@@ -101,20 +101,20 @@ public class Day01 : ProblemSet
             return totalDistance;
         }
 
-        public int Similarity()
+        public long Similarity()
         {
             // Send to frontend
             _reporter.Report(TextProblemUpdate.FromLine($"Left  | Occurence | Similarity Score | Total Similarity Score"));
 
             // Loop through lists
-            int totalSimilarity = 0;
+            long totalSimilarity = 0;
             for (int i = 0; i < _left.Count; i++)
             {
                 // Count occurences of left in right
                 int occurences = _right.Where(x => x.Equals(_left[i])).Count();
 
                 // Calculate similarity score
-                int similarity = _left[i] * occurences;
+                long similarity = _left[i] * occurences;
 
                 // Accumulate similarity
                 totalSimilarity += similarity;

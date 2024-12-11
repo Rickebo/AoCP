@@ -1,5 +1,6 @@
 using Common;
 using Common.Updates;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
@@ -25,8 +26,11 @@ public class Day03 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
+            // Create multiplicator
+            Multiplicator multiplicator = new(input, conditional: false, reporter);
+
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(Multiplications(input, reporter)));
+            reporter.Report(FinishedProblemUpdate.FromSolution(multiplicator.Mul(input, reporter)));
             return Task.CompletedTask;
         }
     }
@@ -92,38 +96,72 @@ public class Day03 : ProblemSet
         }
     }
 
-    private static int Multiplications(string str, Reporter reporter)
+    
+
+    public class Multiplicator
     {
-        // Extract multipliers
-        Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
-
-        // Check matches
-        int sum = 0;
-        foreach (Match match in Regex.Matches(str))
+        private readonly Reporter _reporter;
+        private readonly string _programMemory;
+        private const string doStr = "do()";
+        private const string dontStr = "don't()";
+        
+        public Multiplicator(string input, bool conditional, Reporter reporter)
         {
-            // Add the mullimulls
-            int num1 = int.Parse(match.Groups[1].Value);
-            int num2 = int.Parse(match.Groups[2].Value);
-            sum += num1 * num2;
+            // Save for frontend printing
+            _reporter = reporter;
 
-            // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine($"mul({num1},{num2})"));
+            // Retrieve program memory
+            bool enabled = true;
+            StringBuilder sb = new();
+            for (;;)
+            {
+                int i = input.IndexOf(enabled ? dontStr : doStr);
+                if (i == -1)
+                {
+                    // If the rest is enabled
+                    if (enabled)
+                        sb.Append(input);
+
+                    // Program memory read
+                    break;
+                }
+                else
+                {
+                    // If enabled
+                    if (enabled)
+                        sb.Append(input[..i]);
+
+                    // Look for more memory
+                    input = input[(i + dontStr.Length)..];
+                }
+
+                // Toggle instruction
+                enabled = !enabled;
+            }
+
+            // Store memory for processing
+            _programMemory = sb.ToString();
         }
 
-        return sum;
-    }
-
-    private static List<string> DivideString(string str, string divider)
-    {
-        // Check if divider is ahead
-        int i = str.IndexOf(divider);
-        if (i != -1)
+        public static int Multiply()
         {
-            // Split string at divider
-            return [str[..i], str[(i + divider.Length)..]];
-        }
+            // Extract multipliers
+            Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
 
-        // No divider found
-        return [str];
+            // Check matches
+            int sum = 0;
+            foreach (Match match in Regex.Matches(str))
+            {
+                // Add the mullimulls
+                int num1 = int.Parse(match.Groups[1].Value);
+                int num2 = int.Parse(match.Groups[2].Value);
+                sum += num1 * num2;
+
+                // Send to frontend
+                reporter.Report(TextProblemUpdate.FromLine($"mul({num1},{num2})"));
+            }
+
+            return sum;
+        }
     }
 }
