@@ -1,7 +1,6 @@
 using Common;
 using Common.Updates;
 using Lib;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
