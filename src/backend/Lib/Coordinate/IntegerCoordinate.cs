@@ -24,6 +24,24 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         }
     }
 
+    public IEnumerable<IntegerCoordinate<T>> HorizontalNeighbours
+    {
+        get
+        {
+            var self = this;
+            return DirectionExtensions.Horizontal.Select(direction => self + direction.ToCoordinate<T>());
+        }
+    }
+
+    public IEnumerable<IntegerCoordinate<T>> VerticalNeighbours
+    {
+        get
+        {
+            var self = this;
+            return DirectionExtensions.Vertical.Select(direction => self + direction.ToCoordinate<T>());
+        }
+    }
+
     public Distance<T> Distance(IntegerCoordinate<T> other)
         => new(other.X - X, other.Y - Y);
 
