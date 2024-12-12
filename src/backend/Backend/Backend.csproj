@@ -3,18 +3,28 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <ImplicitUsings>disable</ImplicitUsings>
         <InvariantGlobalization>true</InvariantGlobalization>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Basic.Reference.Assemblies" Version="1.7.9" />
+        <PackageReference Include="Basic.Reference.Assemblies.Net80" Version="1.7.9" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis" Version="4.12.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.12.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\Common\Common.csproj" />
       <ProjectReference Include="..\Lib\Lib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Problems\Year2024\batmanwarrior\Day03.cs" />
     </ItemGroup>
 
 </Project>

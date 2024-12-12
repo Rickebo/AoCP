@@ -2,6 +2,7 @@
 using Backend.Problems.Year2024;
 using Backend.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend;
 
@@ -20,6 +21,7 @@ public static class Startup
                 }
             )
             .AddSingleton<ProblemService>()
+            .AddHostedService<ProblemLoaderService>()
             .AddYear2023()
             .AddYear2024();
 }

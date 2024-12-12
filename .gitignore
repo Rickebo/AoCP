@@ -52,3 +52,5 @@ repo.txt
 /**/**/__pycache__
 
 dev/
+/**/*.cs~
+/**/*.pdb

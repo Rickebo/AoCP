@@ -1,3 +1,5 @@
-﻿namespace Backend.Problems.Metadata;
+﻿using System.Collections.Generic;
+
+namespace Backend.Problems.Metadata;
 
 public record ProblemCollectionMetadata(int Year, Dictionary<string, List<ProblemSetMetadata>> ProblemSets);

@@ -5,6 +5,18 @@ namespace Lib;
 
 public static class DirectionExtensions
 {
+    public static Direction[] Horizontal =>
+    [
+        Direction.West,
+        Direction.East
+    ];
+
+    public static Direction[] Vertical =>
+    [
+        Direction.North,
+        Direction.South
+    ];
+    
     public static Direction[] Cardinals =>
     [
         Direction.North,

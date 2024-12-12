@@ -1,4 +1,7 @@
-﻿namespace Backend.Problems.Year2024;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Backend.Problems.Year2024;
 
 public static class Year2024Metadata
 {
@@ -7,9 +10,7 @@ public static class Year2024Metadata
 
     public class Year2024Collection : ProblemCollection
     {
-        public override Dictionary<string, List<ProblemSet>> Problems { get; } =
-            FindProblems(typeof(Year2024Metadata));
-
-        public override int Year { get; } = 2024;
+        public override Type ProblemRootType { get; } = typeof(Year2024Metadata);
+        public override int Year => 2024;
     }
 }
