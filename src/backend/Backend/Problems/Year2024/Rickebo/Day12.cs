@@ -26,7 +26,6 @@ public class Day12 : ProblemSet
     {
         public override string Name => "Part One";
 
-
         public override Task Solve(string input, Reporter reporter)
         {
             reporter.ReportSolution(CalculateCost(Parser.ParseCharGrid(input).FlipY(), false, reporter));
@@ -52,54 +51,30 @@ public class Day12 : ProblemSet
         return regions.Sum(
             region =>
             {
-                if (part2)
-                {
-                    var sideCount = region.FindSides().Count();
-                    var sum = region.Area * sideCount;
-                    reporter.ReportLine($"{region.Value}: {region.Area} * {sideCount} = {sum}");
-                    return sum;
-                }
-                else
-                {
-                    var sum = region.Area * region.Perimeter;
-                    reporter.ReportLine($"{region.Value}: {region.Area} * {region.Perimeter} = {sum}");
-                    return sum;
-                }
+                var multiplicand = part2 ? region.FindSides().Count() : region.Perimeter;
+                var sum = region.Area * multiplicand;
+#if DEBUG
+                reporter.ReportLine($"{region.Value}: {region.Area} * {multiplicand} = {sum}");
+#endif
+                return sum;
             }
         );
     }
 
-    private static HashSet<IntegerCoordinate<int>> FindNeighbours(CharGrid grid, HashSet<IntegerCoordinate<int>> region)
-    {
-        var neighbours = new HashSet<IntegerCoordinate<int>>();
-        foreach (var pos in region.SelectMany(p => p.Neighbours))
-        {
-            if (!grid.Contains(pos) || region.Contains(pos))
-                continue;
-
-            neighbours.Add(pos);
-        }
-
-        return neighbours;
-    }
-
     private static List<Region> FindRegions(CharGrid grid)
     {
-        var visited = new HashSet<IntegerCoordinate<int>>();
         var regions = new List<Region>();
+        var coordinates = new HashSet<IntegerCoordinate<int>>(grid.Coordinates);
 
-        foreach (var coordinate in grid.Coordinates)
+        while (coordinates.Count > 0)
         {
-            if (visited.Contains(coordinate))
-                continue;
+            var coordinate = coordinates.Last();
+            coordinates.Remove(coordinate);
 
             var region = new HashSet<IntegerCoordinate<int>>();
             var regionNeighbours = new HashSet<Edge>();
-            SearchRegion(grid, coordinate, region, regionNeighbours);
+            SearchRegion(grid, coordinate, region, regionNeighbours, coordinates);
             regions.Add(new Region(grid[coordinate], region, regionNeighbours));
-
-            foreach (var v in region)
-                visited.Add(v);
         }
 
         return regions;
@@ -109,11 +84,14 @@ public class Day12 : ProblemSet
         CharGrid grid,
         IntegerCoordinate<int> source,
         HashSet<IntegerCoordinate<int>> region,
-        HashSet<Edge> neighbours
+        HashSet<Edge> neighbours,
+        HashSet<IntegerCoordinate<int>> remove
     )
     {
         if (!region.Add(source))
             return;
+
+        remove.Remove(source);
 
         var srcType = grid[source];
         foreach (var neighbour in source.Neighbours)
@@ -121,7 +99,7 @@ public class Day12 : ProblemSet
             if (!grid.Contains(neighbour) || grid[neighbour] != srcType)
                 neighbours.Add(Edge.From(source, neighbour));
             else
-                SearchRegion(grid, neighbour, region, neighbours);
+                SearchRegion(grid, neighbour, region, neighbours, remove);
         }
     }
 
@@ -152,35 +130,32 @@ public class Day12 : ProblemSet
 
         public IEnumerable<HashSet<Edge>> FindSides()
         {
-            var sides = new List<HashSet<Edge>>();
-            var visited = new HashSet<Edge>();
             var outside = FindOutsideNeighbours();
 
-            foreach (var edge in Neighbours)
+            var remaining = new HashSet<Edge>(Neighbours);
+            while (remaining.Count > 0)
             {
-                if (visited.Contains(edge))
-                    continue;
+                var edge = remaining.First();
+                remaining.Remove(edge);
 
                 var side = new HashSet<Edge>();
-                SearchSide(edge, outside, side);
+                SearchSide(edge, outside, side, remaining);
 
-                sides.Add(side);
-
-                foreach (var point in side)
-                    visited.Add(point);
+                yield return side;
             }
-
-            return sides;
         }
 
         private void SearchSide(
             Edge edge,
             HashSet<IntegerCoordinate<int>> outside,
-            HashSet<Edge> side
+            HashSet<Edge> side,
+            HashSet<Edge> remove
         )
         {
             if (!side.Add(edge))
                 return;
+
+            remove.Remove(edge);
 
             var edgeInside = Coordinates.Contains(edge.A) ? edge.A : edge.B;
             var edgeOutside = edge.A == edgeInside ? edge.B : edge.A;
@@ -193,7 +168,7 @@ public class Day12 : ProblemSet
                 if (!Coordinates.Contains(insideNeighbour) || !outside.Contains(outsideNeighbour))
                     continue;
 
-                SearchSide(Edge.From(outsideNeighbour, insideNeighbour), outside, side);
+                SearchSide(Edge.From(outsideNeighbour, insideNeighbour), outside, side, remove);
             }
         }
     }
