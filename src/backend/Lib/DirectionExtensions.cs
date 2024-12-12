@@ -56,6 +56,23 @@ public static class DirectionExtensions
         return next > (int)Direction.West ? Direction.North : (Direction)next;
     }
 
+    public static Direction RotateClockwiseDiagonal(this Direction direction)
+    {
+        switch(direction)
+        {
+            case Direction.North: return Direction.NorthEast;
+            case Direction.NorthEast: return Direction.East;
+            case Direction.East: return Direction.SouthEast;
+            case Direction.SouthEast: return Direction.South;
+            case Direction.South: return Direction.SouthWest;
+            case Direction.SouthWest: return Direction.West;
+            case Direction.West: return Direction.NorthWest;
+            case Direction.NorthWest: return Direction.North;
+        }
+
+        throw new ArgumentException($"Unknown clockwise direction for direction {direction}");
+    }
+
     public static Direction RotateCounterClockwise(this Direction direction)
     {
         var next = (int)direction >> 1;

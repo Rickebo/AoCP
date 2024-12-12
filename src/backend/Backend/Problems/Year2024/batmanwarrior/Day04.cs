@@ -53,11 +53,23 @@ public class Day04 : ProblemSet
         }
     }
 
-    public class WordSearch(string input, Reporter reporter)
+    public class WordSearch
     {
-        private readonly Reporter _reporter = reporter;
-        private readonly CharGrid _grid = new(input);
+        private readonly Reporter _reporter;
+        private readonly CharGrid _grid;
         private const string _find = "MAS";
+
+        public WordSearch(string input, Reporter reporter)
+        {
+            // Save for frontend printing
+            _reporter = reporter;
+
+            // Create grid from input
+            _grid = new(input);
+
+            // Print grid
+            _reporter.Report(GlyphGridUpdate.FromCharGrid(_grid, "#FFFFFF", "#000000"));
+        }
 
         public int XmasCount()
         {
@@ -65,6 +77,16 @@ public class Day04 : ProblemSet
             int count = 0;
             foreach (IntegerCoordinate<int> pos in _grid.FindAll(c => c == 'X'))
             {
+                // Print X in red
+                _reporter.ReportGlyphGridUpdate(
+                    builder => builder.WithEntry(
+                        b => b
+                            .WithCoordinate(pos)
+                            .WithChar('X')
+                            .WithForeground("#FF0000")
+                    )
+                );
+
                 // Look for "MAS" in every direction
                 foreach (Direction dir in DirectionExtensions.All())
                 {
@@ -73,7 +95,11 @@ public class Day04 : ProblemSet
                     foreach (char c in _grid.RetrieveDirection(pos.Move(dir), dir, _find.Length))
                     {
                         // Keep track of matches
-                        if (c == _find[matches]) matches++;
+                        if (c == _find[matches])
+                        {
+                            matches++;
+                        }
+                            
                         else break;
                     }
 
@@ -96,9 +122,19 @@ public class Day04 : ProblemSet
                 if (pos.X == 0 || pos.X == (_grid.Width - 1) || pos.Y == 0 || pos.Y == (_grid.Height - 1))
                     continue;
 
+                // Print A in red
+                _reporter.ReportGlyphGridUpdate(
+                    builder => builder.WithEntry(
+                        b => b
+                            .WithCoordinate(pos)
+                            .WithChar('A')
+                            .WithForeground("#FF0000")
+                    )
+                );
+
                 // Positions to check
                 List<IntegerCoordinate<int>[]> posDiagonals = [
-                    [pos.Move(Direction.NorthWest), pos.Move(Direction.SouthEast)], // '\' 
+                    [pos.Move(Direction.NorthWest), pos.Move(Direction.SouthEast)], // '\'
                     [pos.Move(Direction.NorthEast), pos.Move(Direction.SouthWest)]  // '/'
                 ];
 
@@ -106,16 +142,11 @@ public class Day04 : ProblemSet
                 int validDiagonals = 0;
                 foreach (IntegerCoordinate<int>[] posArr in posDiagonals)
                 {
-                    // Only check points within grid
-                    if (_grid.Contains(posArr[0]) && _grid.Contains(posArr[1]))
-                    {
-                        // Check characters
-                        if ((_grid[posArr[0]] == 'M' && _grid[posArr[1]] == 'S') || (_grid[posArr[0]] == 'S' && _grid[posArr[1]] == 'M'))
-                            validDiagonals++;
-                        else
-                            break;
-                    }
-                    else break;
+                    // Check characters
+                    if ((_grid[posArr[0]] == 'M' && _grid[posArr[1]] == 'S') || (_grid[posArr[0]] == 'S' && _grid[posArr[1]] == 'M'))
+                        validDiagonals++;
+                    else
+                        break;
                 }
 
                 // Check if both diagonals were valid

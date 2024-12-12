@@ -30,7 +30,7 @@ public class Day03 : ProblemSet
             Multiplicator multiplicator = new(input, conditional: false, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(multiplicator.Mul(input, reporter)));
+            reporter.Report(FinishedProblemUpdate.FromSolution(multiplicator.Multiply()));
             return Task.CompletedTask;
         }
     }
@@ -43,60 +43,14 @@ public class Day03 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Multiplication enabled from the start
-            bool enabled = true;
-
-            // Cursed for loop
-            int sum = 0;
-            for (;;)
-            {
-                if (enabled)
-                {
-                    // Divide remaining string at the next "don't()"
-                    List<string> parts = DivideString(input, "don't()");
-
-                    // Check if string got divided properly
-                    if (parts.Count > 1)
-                    {
-                        // Add multiplications
-                        sum += Multiplications(parts[0], reporter);
-                        enabled = false;
-                        input = parts[1];
-                    }
-                    else
-                    {
-                        // Add the rest
-                        sum += Multiplications(input, reporter);
-                        break;
-                    }
-                }
-                else
-                {
-                    // Divide remaining string at the next "do()"
-                    List<string> parts = DivideString(input, "do()");
-
-                    // Check if string got divided properly
-                    if (parts.Count > 1)
-                    {
-                        // Enable multiplications and update remaining string
-                        enabled = true;
-                        input = parts[1];
-                    }
-                    else
-                    {
-                        // The rest is not enabled
-                        break;
-                    }
-                }
-            }
+            // Create multiplicator
+            Multiplicator multiplicator = new(input, conditional: true, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(sum));
+            reporter.Report(FinishedProblemUpdate.FromSolution(multiplicator.Multiply()));
             return Task.CompletedTask;
         }
     }
-
-    
 
     public class Multiplicator
     {
@@ -110,11 +64,19 @@ public class Day03 : ProblemSet
             // Save for frontend printing
             _reporter = reporter;
 
+            // If not conditional, store full input
+            if (!conditional)
+            {
+                _programMemory = input;
+                return;
+            }
+
             // Retrieve program memory
             bool enabled = true;
             StringBuilder sb = new();
             for (;;)
             {
+                // Look ahead for condition
                 int i = input.IndexOf(enabled ? dontStr : doStr);
                 if (i == -1)
                 {
@@ -127,12 +89,12 @@ public class Day03 : ProblemSet
                 }
                 else
                 {
-                    // If enabled
+                    // If enabled, add substring up to condition
                     if (enabled)
                         sb.Append(input[..i]);
 
                     // Look for more memory
-                    input = input[(i + dontStr.Length)..];
+                    input = input[(i + (enabled ? dontStr.Length : doStr.Length))..];
                 }
 
                 // Toggle instruction
@@ -143,22 +105,25 @@ public class Day03 : ProblemSet
             _programMemory = sb.ToString();
         }
 
-        public static int Multiply()
+        public long Multiply()
         {
-            // Extract multipliers
+            // Regex to match multipliers
             Regex Regex = new(@"mul\(([0-9]{1,3}),([0-9]{1,3})\)", RegexOptions.Multiline);
 
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"Multiplication | Accumulated Sum"));
+
             // Check matches
-            int sum = 0;
-            foreach (Match match in Regex.Matches(str))
+            long sum = 0;
+            foreach (Match match in Regex.Matches(_programMemory))
             {
                 // Add the mullimulls
-                int num1 = int.Parse(match.Groups[1].Value);
-                int num2 = int.Parse(match.Groups[2].Value);
+                long num1 = long.Parse(match.Groups[1].Value);
+                long num2 = long.Parse(match.Groups[2].Value);
                 sum += num1 * num2;
 
                 // Send to frontend
-                reporter.Report(TextProblemUpdate.FromLine($"mul({num1},{num2})"));
+                _reporter.Report(TextProblemUpdate.FromLine($"mul({num1},{num2})".PadRight(17) + sum));
             }
 
             return sum;
