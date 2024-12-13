@@ -30,11 +30,11 @@ public class Day07 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Spawn obunga
-            Obunga obunga = new(input, ['+', '*'], reporter);
+            // Create bridge
+            Bridge bridge = new(input, ['+', '*'], reporter);
 
-            // Run from obunga
-            reporter.Report(FinishedProblemUpdate.FromSolution(obunga.Chase()));
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(bridge.CalibrationResult()));
             return Task.CompletedTask;
         }
     }
@@ -47,24 +47,24 @@ public class Day07 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Spawn obunga
-            Obunga obunga = new(input, ['+', '*', '|'], reporter);
+            // Create bridge
+            Bridge bridge = new(input, ['+', '*', '|'], reporter);
 
-            // Run from obunga
-            reporter.Report(FinishedProblemUpdate.FromSolution(obunga.Chase()));
+            // Send solution to frontend (MAKE FASTER)
+            reporter.Report(FinishedProblemUpdate.FromSolution(bridge.CalibrationResult()));
             return Task.CompletedTask;
         }
     }
 
-    public class Obunga
+    public class Bridge
     {
-        private readonly List<Equation> _equations = [];
         private readonly Reporter _reporter;
+        private readonly List<Equation> _equations = [];
         private readonly int _printLen;
 
-        public Obunga(string input, char[] operators, Reporter reporter)
+        public Bridge(string input, char[] operators, Reporter reporter)
         {
-            // Frontend
+            // Save for frontend printing
             _reporter = reporter;
 
             // Parse equations
@@ -75,31 +75,23 @@ public class Day07 : ProblemSet
             }
         }
 
-        public long Chase()
+        public long CalibrationResult()
         {
             // Loop over all equations
-            long _calibrationResult = 0;
+            long result = 0;
             foreach (Equation equation in _equations)
             {
                 // Try to solve the equation
                 equation.TrySolve();
 
-                // Format print text
-                string text = $"{equation.Raw.PadRight(_printLen)} <> {equation.ToPrintStr()}";
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine($"{equation.Raw.PadRight(_printLen)} <> {equation.ToPrintStr()}"));
 
                 // Update calibration result
-                _calibrationResult += equation.Solved ? equation.Target : 0;
-
-                // Send to frontend
-                _reporter.Report(
-                    new TextProblemUpdate()
-                    {
-                        Lines = [text]
-                    }
-                );
+                result += equation.Solved ? equation.Target : 0;
             }
             
-            return _calibrationResult;
+            return result;
         }
     }
 
@@ -164,9 +156,7 @@ public class Day07 : ProblemSet
 
                     // Cancel early if overshooting target
                     if (sum > Target)
-                    {
                         break;
-                    }
                 }
 
                 // Return if target reached with current combination
@@ -188,6 +178,7 @@ public class Day07 : ProblemSet
             {
                 if (++OperatorArray[i] < Operators.Length)
                 {
+                    // New combination achieved
                     break;
                 }
                 else
@@ -208,9 +199,7 @@ public class Day07 : ProblemSet
         {
             // Return ? if not solved
             if (!Solved)
-            {
                 return "?";
-            }
                 
             // Create string builder
             StringBuilder sb = new();

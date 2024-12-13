@@ -34,11 +34,8 @@ public class Day06 : ProblemSet
             // Create lab
             Lab lab = new(input, reporter);
 
-            // Walk with guard
-            lab.GuardWalk();
-
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(lab.WalkedTiles()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(lab.GuardPositions()));
             return Task.CompletedTask;
         }
     }
@@ -54,21 +51,35 @@ public class Day06 : ProblemSet
             // Create lab
             Lab lab = new(input, reporter);
 
-            // Walk with guard
-            lab.GuardWalk();
-
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(lab.LoopCount()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(lab.LoopPositions()));
             return Task.CompletedTask;
         }
     }
 
-    public class Lab(string input, Reporter reporter)
+    public class Lab
     {
-        private readonly CharGrid _grid = new(input);
-        private readonly Reporter _reporter = reporter;
-        private readonly HashSet<IntegerCoordinate<int>> _walked = [];
         private record Guard(IntegerCoordinate<int> Pos, Direction Dir);
+        private readonly Reporter _reporter;
+        private readonly CharGrid _grid;
+        private readonly HashSet<Guard> _guardStates = [];
+
+        public Lab (string input, Reporter reporter)
+        {
+            // Save for frontend printing
+            _reporter = reporter;
+
+            // Create grid
+            _grid = new(input);
+
+            // Color grid
+            _reporter.ReportStringGridUpdate(
+                _grid,
+                (builder, coordinate, val) => builder
+                    .WithCoordinate(coordinate)
+                    .WithText(ColorCell(coordinate))
+            );
+        }
 
         private Guard FindGuard()
         {
@@ -76,10 +87,10 @@ public class Day06 : ProblemSet
             const string guardChars = "<>v^";
 
             // Search grid for guard position
-            var pos = _grid.Find(ch => guardChars.Contains(ch.ToString()));
+            IntegerCoordinate<int> pos = _grid.Find(ch => guardChars.Contains(ch.ToString()));
 
             // Parse direction
-            var dir = DirectionExtensions.Parse(_grid[pos]);
+            Direction dir = DirectionExtensions.Parse(_grid[pos]);
 
             // Send to frontend
             _reporter.Report(TextProblemUpdate.FromLine($"Guard ({dir.Arrow()}) found at [{pos.X},{pos.Y}]"));
@@ -104,33 +115,33 @@ public class Day06 : ProblemSet
             }
         }
 
-        public void GuardWalk()
+        private int GuardWalk(IntegerCoordinate<int> start, Direction dir)
         {
-            // Find guard on lab grid
-            Guard guard = FindGuard();
-            IntegerCoordinate<int> start = guard.Pos;
+            // Create guard
+            Guard guard = new(start, dir);
 
-            // Color grid
-            _reporter.ReportStringGridUpdate(
-                _grid,
-                (builder, coordinate, val) => builder
-                    .WithCoordinate(coordinate)
-                    .WithText(ColorCell(coordinate))
-            );
+            // Visited tiles
+            HashSet<IntegerCoordinate<int>> visited = [];
 
             // Walk until leaving map
             while (_grid.Contains(guard.Pos))
             {
-                // Save walked tiles for later
-                if (_walked.Add(guard.Pos))
+                // Save guard state
+                _guardStates.Add(guard);
+
+                // Check if new tile
+                if (visited.Add(guard.Pos))
                 {
                     // Send to frontend grid (skip guard start pos)
-                    if (!guard.Pos.Equals(start)) _reporter.ReportStringGridUpdate(guard.Pos, "#66FF66");
+                    if (!guard.Pos.Equals(start))
+                        _reporter.ReportStringGridUpdate(guard.Pos, "#66FF66");
                 }
 
                 // Walk forward or rotate
                 guard = Walk(guard);
             }
+
+            return visited.Count;
         }
 
         private string ColorCell(IntegerCoordinate<int> coordinate)
@@ -143,32 +154,53 @@ public class Day06 : ProblemSet
             };
         }
 
-        public int WalkedTiles() => _walked.Count;
+        public int GuardPositions()
+        {
+            // Find guard in lab
+            Guard guard = FindGuard();
 
-        public int LoopCount()
+            // Walk and return walked tiles
+            return GuardWalk(guard.Pos, guard.Dir);
+        }
+
+        public int LoopPositions()
         {
             // Find guard on lab grid
-            Guard guardStart = FindGuard();
+            Guard prevState = FindGuard();
+
+            // Walk with guard to obtain states
+            GuardWalk(prevState.Pos, prevState.Dir);
+
+            // Placed obstructions
+            HashSet<IntegerCoordinate<int>> obstructionTiles = [];
 
             // Place obstacles and check for guard loops
             int loops = 0;
-            foreach (IntegerCoordinate<int> pos in _walked.Skip(1))
+            foreach (Guard currState in _guardStates.Skip(1))
             {
-                // Place obstacle at walked tile
-                _grid[pos] = '#';
+                // If guard is turning around or tile already tried
+                if (currState.Pos == prevState.Pos || !obstructionTiles.Add(currState.Pos))
+                {
+                    // Ignore this state
+                    prevState = currState;
+                    continue;
+                } 
+
+                // Place obstacle at current state
+                _grid[currState.Pos] = '#';
 
                 // Keep track of previous positions and directions
                 HashSet<Guard> visited = [];
 
-                // Create guard and start walking
-                Guard guard = Walk(guardStart);
+                // Create guard from previous state to avoid unnecessary walking
+                Guard guard = Walk(prevState);
                 while (_grid.Contains(guard.Pos))
                 {
-                    // Check if guard has been here before
+                    // Check if guard has looped
                     if (!visited.Add(guard))
                     {
-                        // Color obstacle red
-                        _reporter.ReportStringGridUpdate(pos, "#FF0000");
+                        // Color loop obstacle red
+                        _reporter.ReportStringGridUpdate(currState.Pos, "#FF0000");
 
                         // Increment loop count
                         loops++;
@@ -179,8 +211,11 @@ public class Day06 : ProblemSet
                     guard = Walk(guard);
                 }
 
-                // Remove obstacle for next iteration
-                _grid[pos] = '.';
+                // Remove obstacle for next state
+                _grid[currState.Pos] = '.';
+
+                // Save state for next loop
+                prevState = currState;
             }
 
             return loops;
