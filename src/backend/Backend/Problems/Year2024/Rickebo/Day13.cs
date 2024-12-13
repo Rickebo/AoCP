@@ -82,23 +82,24 @@ public class Day13 : ProblemSet
             var a = Buttons.First(button => button.Type == ClawType.A);
             var b = Buttons.First(button => button.Type == ClawType.B);
 
-            var xn = a.X * Prize.Y - a.Y * Prize.X;
-            var xd = a.X * b.Y - a.Y * b.X;
+            // Online gauss eliminator (https://matrixcalc.org/slu.html) yields:
+            var qn = a.X * Prize.Y - a.Y * Prize.X;
+            var qd = a.X * b.Y - a.Y * b.X;
 
             // If xn is not evenly divisible with xd, no solution exists
-            if (xn % xd != 0)
+            if (qn % qd != 0)
                 return 0;
 
-            var x = xn / xd;
-            var yn = Prize.X - b.X * x;
+            var q = qn / qd;
+            var pn = Prize.X - b.X * q;
 
             // Same for yn and a.X
-            if (yn % a.X != 0)
+            if (pn % a.X != 0)
                 return 0;
 
-            var y = yn / a.X;
+            var p = pn / a.X;
 
-            return y * 3 + x;
+            return p * a.Cost + q * b.Cost;
         }
 
         public ClawMachine Part2() => this with
