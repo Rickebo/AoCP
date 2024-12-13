@@ -93,7 +93,7 @@ public class Day01 : ProblemSet
             for (int i = 0; i < _left.Count; i++)
             {
                 // Get distance between numbers
-                int distance = Math.Abs(_left[i] - _right[i]);
+                long distance = Math.Abs(_left[i] - _right[i]);
 
                 // Accumulate distance
                 totalDistance += distance;
@@ -118,7 +118,7 @@ public class Day01 : ProblemSet
                 int occurences = _right.Where(x => x.Equals(_left[i])).Count();
 
                 // Calculate similarity score
-                long similarity = _left[i] * occurences;
+                long similarity = _left[i] * occurences * 1L;
 
                 // Accumulate similarity
                 totalSimilarity += similarity;

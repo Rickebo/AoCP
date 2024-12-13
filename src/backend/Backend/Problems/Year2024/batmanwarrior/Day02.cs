@@ -69,10 +69,7 @@ public class Day02 : ProblemSet
 
             // Retrieve reports from input
             foreach (string row in input.SplitLines())
-            {
-                // Add report
                 _reports.Add(Parser.GetValues<int>(row));
-            }
         }
 
         public int SafeReports(bool tolerateBadLevel)
