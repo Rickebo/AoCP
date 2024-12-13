@@ -43,13 +43,12 @@ public class Day13 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            
             reporter.ReportSolution(
                 Parse(input)
                     .Select(machine => machine.Part2())
                     .Sum(machine => machine.SolveFast())
             );
-            
+
             return Task.CompletedTask;
         }
     }
@@ -75,8 +74,12 @@ public class Day13 : ProblemSet
         return result;
     }
 
-    public record ClawMachine(List<Claw> Buttons, Claw Prize)
+    public class ClawMachine(List<Claw> buttons, Claw prize)
     {
+        private const long Offset = 10000000000000;
+        public List<Claw> Buttons { get; } = buttons;
+        public Claw Prize { get; } = prize;
+
         public long SolveFast()
         {
             var a = Buttons.First(button => button.Type == ClawType.A);
@@ -102,19 +105,17 @@ public class Day13 : ProblemSet
             return p * a.Cost + q * b.Cost;
         }
 
-        public ClawMachine Part2() => this with
-        {
-            Prize = new Claw(
-                Prize.X + 10000000000000,
-                Prize.Y + 10000000000000,
-                ClawType.Prize
-            )
-        };
+        public ClawMachine Part2() => new(
+            Buttons,
+            new Claw(Prize.X + Offset, Prize.Y + Offset, 0)
+        );
     }
 
-    public record Claw(long X, long Y, ClawType Type)
+    public readonly struct Claw(long x, long y, ClawType type)
     {
-        public IntegerCoordinate<long> Pos => new(X, Y);
+        public long X { get; } = x;
+        public long Y { get; } = y;
+        public ClawType Type { get; } = type;
 
         public static Claw Parse(string text)
         {

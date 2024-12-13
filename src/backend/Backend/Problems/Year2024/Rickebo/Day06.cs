@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
@@ -35,8 +36,10 @@ public class Day06 : ProblemSet
                 new FinishedProblemUpdate
                 {
                     Solution =
-                        SimulateGuard(grid, FindGuard(grid), reporter)?.Item1.Count
-                            .ToString() ?? throw new Exception()
+                        SimulateGuard(grid, FindGuard(grid), reporter)
+                            ?.Item1.Count
+                            .ToString() ??
+                        throw new Exception()
                 }
             );
 
@@ -84,6 +87,7 @@ public class Day06 : ProblemSet
             SimulateGuard(grid, guard, reporter) ?? throw new Exception();
 
         var obstructions = new HashSet<IntegerCoordinate<int>>();
+        var preVisited = new HashSet<GuardPosition>();
 
         for (var i = 1; i < path.Count; i++)
         {
@@ -92,7 +96,12 @@ public class Day06 : ProblemSet
             var before = grid[pos];
             grid[pos] = '#';
 
-            if (SimulateGuard(grid, guard, null) == null)
+            if (i > 1)
+                preVisited.Add(path[i - 2]);
+            
+            var prePos = path[i - 1];
+            
+            if (SimulateGuard(grid, prePos, null, preVisited) == null)
             {
                 obstructions.Add(pos);
                 reporter?.Report(
@@ -115,12 +124,12 @@ public class Day06 : ProblemSet
         return obstructions.Count;
     }
 
-    private static Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>?
-        SimulateGuard(
-            CharGrid grid,
-            GuardPosition guardPosition,
-            Reporter? reporter
-        )
+    private static Tuple<HashSet<IntegerCoordinate<int>>, List<GuardPosition>>? SimulateGuard(
+        CharGrid grid,
+        GuardPosition guardPosition,
+        Reporter? reporter,
+        IEnumerable<GuardPosition>? preVisited = null
+    )
     {
         var pos = guardPosition.Position;
         var dir = guardPosition.Direction;
@@ -141,7 +150,7 @@ public class Day06 : ProblemSet
         {
             var gp = new GuardPosition(pos, dir);
             visited.Add(pos);
-            if (!visitedGuards.Add(gp))
+            if (!visitedGuards.Add(gp) || (preVisited?.Contains(gp) ?? false))
                 return null;
 
             path.Add(gp);
