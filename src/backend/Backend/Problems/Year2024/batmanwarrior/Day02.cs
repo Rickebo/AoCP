@@ -59,8 +59,8 @@ public class Day02 : ProblemSet
     {
         private readonly Reporter _reporter;
         private readonly List<int[]> _reports = [];
-        private const int _maxDelta = 3;
         private const int _minDelta = 1;
+        private const int _maxDelta = 3;
 
         public ReportManager(string input, Reporter reporter)
         {
@@ -115,7 +115,7 @@ public class Day02 : ProblemSet
                 int difference = levels[i] - levels[i - 1];
 
                 // Check if difference is safe
-                if (difference > _maxDelta || difference < _minDelta)
+                if (difference < _minDelta || difference > _maxDelta)
                     return false;
             }
 

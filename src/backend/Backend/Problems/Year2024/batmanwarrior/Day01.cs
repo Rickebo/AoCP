@@ -79,52 +79,52 @@ public class Day01 : ProblemSet
             _reporter.Report(TextProblemUpdate.FromLine($"List pair created with {_left.Count} entries.\n"));
         }
 
-        public long Distance()
+        public int Distance()
         {
             // Sort lists
             _left.Sort();
             _right.Sort();
 
             // Send to frontend
-            _reporter.Report(TextProblemUpdate.FromLine($"Left  | Right | Distance | Total Distance"));
+            _reporter.Report(TextProblemUpdate.FromLine("Left  | Right | Distance | Total Distance"));
 
             // Loop through lists
-            long totalDistance = 0;
+            int totalDistance = 0;
             for (int i = 0; i < _left.Count; i++)
             {
                 // Get distance between numbers
-                long distance = Math.Abs(_left[i] - _right[i]);
+                int distance = Math.Abs(_left[i] - _right[i]);
 
                 // Accumulate distance
                 totalDistance += distance;
 
                 // Send to frontend
-                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -5}   {_right[i], -5}   {distance, -5}      {totalDistance}"));
+                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -8}{_right[i], -8}{distance, -11}{totalDistance}"));
             }
 
             return totalDistance;
         }
 
-        public long Similarity()
+        public int Similarity()
         {
             // Send to frontend
-            _reporter.Report(TextProblemUpdate.FromLine($"Left  | Occurence | Similarity Score | Total Similarity Score"));
+            _reporter.Report(TextProblemUpdate.FromLine("Left  | Occurence | Similarity Score | Total Similarity Score"));
 
             // Loop through lists
-            long totalSimilarity = 0;
+            int totalSimilarity = 0;
             for (int i = 0; i < _left.Count; i++)
             {
                 // Count occurences of left in right
                 int occurences = _right.Where(x => x.Equals(_left[i])).Count();
 
                 // Calculate similarity score
-                long similarity = _left[i] * occurences * 1L;
+                int similarity = _left[i] * occurences;
 
                 // Accumulate similarity
                 totalSimilarity += similarity;
 
                 // Send to frontend
-                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -5}   {occurences, -9}   {similarity, -16}   {totalSimilarity}"));
+                _reporter.Report(TextProblemUpdate.FromLine($"{_left[i], -8}{occurences, -12}{similarity, -19}{totalSimilarity}"));
             }
 
             return totalSimilarity;

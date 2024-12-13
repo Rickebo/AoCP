@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Collections;
 using System.Linq;
 using Common;
 using Common.Updates;
@@ -31,25 +30,10 @@ public class Day05 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create printer
-            Printer printer = new();
-
-            // Prase print instructions
-            foreach (string row in input.SplitLines())
-            {
-                if (row.Contains('|'))
-                {
-                    // Add rule
-                    printer.AddRule(row, reporter);
-                }
-                else
-                {
-                    // Try to print pages
-                    printer.Print(row, reporter);
-                }
-            }
+            Printer printer = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(printer.CorrectlyOrdered));
+            reporter.Report(FinishedProblemUpdate.FromSolution(printer.Print(orderPages: false)));
             return Task.CompletedTask;
         }
     }
@@ -63,46 +47,49 @@ public class Day05 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create printer
-            Printer printer = new();
-
-            // Prase print instructions
-            foreach (string row in input.SplitLines())
-            {
-                if (row.Contains('|'))
-                {
-                    // Add rule
-                    printer.AddRule(row, reporter);
-                }
-                else
-                {
-                    // Try to print pages
-                    printer.OrderedPrint(row, reporter);
-                }
-            }
+            Printer printer = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(printer.CorrectlyOrdered));
+            reporter.Report(FinishedProblemUpdate.FromSolution(printer.Print(orderPages: true)));
             return Task.CompletedTask;
         }
     }
 
     private class Printer
     {
+        private readonly Reporter _reporter;
         private readonly Dictionary<int, List<int>> _printRules = [];
-        public int CorrectlyOrdered = 0;
+        private readonly List<int[]> _printQueue = [];
 
-        public Printer() { }
-
-        public void AddRule(string row, Reporter reporter)
+        public Printer(string input, Reporter reporter)
         {
-            // Parse page values
-            int[] pages = Parser.GetValues<int>(row);
+            // Save for frontend printing
+            _reporter = reporter;
 
-            // Check if rule exists
+            // Parse print instructions
+            foreach (string row in input.SplitLines())
+            {
+                if (row.Contains('|'))
+                {
+                    // Add rule
+                    AddRule(Parser.GetValues<int>(row));
+                }
+                else
+                {
+                    // Add to print queue
+                    _printQueue.Add(Parser.GetValues<int>(row));
+                }
+            }
+        }
+
+        public void AddRule(int[] pages)
+        {
+            // Check if page has rules
             if (_printRules.TryGetValue(pages[1], out List<int>? value))
             {
                 // Add to existing rules
-                if (!value.Contains(pages[0])) value.Add(pages[0]);
+                if (!value.Contains(pages[0]))
+                    value.Add(pages[0]);
             }
             else
             {
@@ -111,92 +98,83 @@ public class Day05 : ProblemSet
             }
 
             // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine($"{row} Rule added"));
+            _reporter.Report(TextProblemUpdate.FromLine($"{pages[0]}|{pages[1]} Rule added"));
         }
 
-        public void Print(string row, Reporter reporter)
+        public int Print(bool orderPages)
         {
-            // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine("\nPrinting pages:"));
-
-            // Try to print pages
-            List<int> printed = [];
-            int[] pages = Parser.GetValues<int>(row);
-            foreach (int page in pages)
+            // Try to print queue
+            int sum = 0;
+            foreach (int[] printQueue in _printQueue)
             {
-                // Check if this page has rules
-                if (_printRules.TryGetValue(page, out List<int>? rules))
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine("\nPrinting pages:"));
+
+                // Keep track of printed pages
+                List<int> printed = [];
+
+                // Create queue
+                Queue<int> queue = [];
+
+                // Enqueue pages from print queue
+                foreach (int page in printQueue)
+                    queue.Enqueue(page);
+
+                // Start printing
+                bool wrongOrder = false;
+                while (queue.TryDequeue(out var page))
                 {
-                    // Make sure all rules are satisfied
-                    foreach (var rule in rules)
+                    // Get print rules for this page
+                    bool canPrint = true;
+                    if (_printRules.TryGetValue(page, out List<int>? rules))
                     {
-                        // Printing this page is against the rules
-                        if (!printed.Contains(rule) && pages.Contains(rule))
+                        // Check if rules are satisfied
+                        foreach (var rule in rules)
                         {
-                            // Send to frontend
-                            reporter.Report(TextProblemUpdate.FromText(" X"));
-                            reporter.Report(TextProblemUpdate.FromLine($"{row} = INCORRECT"));
-                            return;
+                            // Printing this page is against the rules
+                            if (!printed.Contains(rule) && printQueue.Contains(rule))
+                            {
+                                // Put page back into print queue
+                                if (orderPages) queue.Enqueue(page);
+
+                                // Update print state
+                                wrongOrder = true;
+                                canPrint = false;
+                                break;
+                            }
                         }
                     }
-                }
 
-                // Print page
-                printed.Add(page);
+                    // If page is requeued to print later
+                    if (!canPrint && orderPages)
+                        continue;
 
-                // Send to frontend
-                reporter.Report(TextProblemUpdate.FromText($" {page}"));
-            }
-
-            // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine($"{row} = CORRECT"));
-            CorrectlyOrdered += pages[pages.Length / 2];
-        }
-
-        public void OrderedPrint(string row, Reporter reporter)
-        {
-            // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine("\nPrinting pages:"));
-
-            // Try to print pages
-            List<int> printed = [];
-            int[] pages = Parser.GetValues<int>(row);
-            Queue<int> queue = new();
-            foreach (int page in pages) queue.Enqueue(page);
-            bool correct = true;
-            while (queue.TryDequeue(out int page))
-            {
-                // Check if this page has rules
-                bool allowed = true;
-                if (_printRules.TryGetValue(page, out List<int>? rules))
-                {
-                    // Make sure all rules are satisfied
-                    foreach (var rule in rules)
+                    // If wrong order and not set to order pages
+                    if (!canPrint && !orderPages)
                     {
-                        // Printing this page is against the rules
-                        if (!printed.Contains(rule) && pages.Contains(rule))
-                        {
-                            queue.Enqueue(page);
-                            correct = false;
-                            allowed = false;
-                            break;
-                        }
+                        // Send to frontend
+                        _reporter.Report(TextProblemUpdate.FromText(" X"));
+                        break;
                     }
+
+                    // Print page
+                    if (!printed.Contains(page))
+                        printed.Add(page);
+
+                    // Send to frontend
+                    _reporter.Report(TextProblemUpdate.FromText($" {page}"));
                 }
 
-                // Skip if page is requeued to print later
-                if (!allowed) continue;
-
-                // Print page
-                printed.Add(page);
-
                 // Send to frontend
-                reporter.Report(TextProblemUpdate.FromText($" {page}"));
+                _reporter.Report(TextProblemUpdate.FromLine($"{string.Join(",", printQueue)} | {(wrongOrder ? "INCORRECT" : "CORRECT")}"));
+                if (wrongOrder && orderPages) _reporter.Report(TextProblemUpdate.FromLine($"{string.Join(",", printed)} | FIXED"));
+
+                // Add to sum
+                if (wrongOrder && orderPages || !wrongOrder && !orderPages)
+                    sum += printed[printed.Count / 2];
             }
 
-            // Send to frontend
-            reporter.Report(TextProblemUpdate.FromLine($"{row} = {(correct ? "CORRECT" : $"INCORRECT\n{string.Join(",", printed)} (FIXED)")}"));
-            CorrectlyOrdered += !correct ? printed[printed.Count / 2] : 0;
+            return sum;
         }
     }
 }
