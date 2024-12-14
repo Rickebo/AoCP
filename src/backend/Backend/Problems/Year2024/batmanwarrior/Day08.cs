@@ -32,11 +32,8 @@ public class Day08 : ProblemSet
             // Create city
             City city = new(input, reporter);
 
-            // Check for antinodes
-            city.CheckAntinodes(harmonics: false);
-
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(city.CountAntinodes()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(city.CountAntinodes(harmonics: false)));
             return Task.CompletedTask;
         }
     }
@@ -52,21 +49,17 @@ public class Day08 : ProblemSet
             // Create city
             City city = new(input, reporter);
 
-            // Check for antinodes
-            city.CheckAntinodes(harmonics: true);
-
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(city.CountAntinodes()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(city.CountAntinodes(harmonics: true)));
             return Task.CompletedTask;
         }
     }
 
     public class City
     {
-        private readonly CharGrid _grid;
-        private readonly HashSet<IntegerCoordinate<int>> _antinodes = [];
         private readonly Reporter _reporter;
-        private readonly List<AntennaGroup> _antennas = [];
+        private readonly CharGrid _grid;
+        private readonly Dictionary<char, List<IntegerCoordinate<int>>> _antennas = [];
 
         public City(string input, Reporter reporter)
         {
@@ -76,77 +69,54 @@ public class Day08 : ProblemSet
             // Init grid
             _grid = new(input);
 
-            // Scan for antennas
-            ScanForAntennas();
-            
-            // Paint grid with antennas
-            _reporter.ReportStringGridUpdate(
-                _grid,
-                (builder, coordinate, val) => builder
-                    .WithCoordinate(coordinate)
-                    .WithText(ColorCell(coordinate))
-            );
-        }
-
-        private void ScanForAntennas()
-        {
-            // Check all locations
-            for (int y = 0; y < _grid.Height; y++)
+            // Get all antennas
+            foreach (IntegerCoordinate<int> pos in _grid.FindAll(x => x != '.'))
             {
-                for (int x = 0; x < _grid.Width; x++)
+                // Check if more antennas with same freq exist
+                if (_antennas.TryGetValue(_grid[pos], out List<IntegerCoordinate<int>>? value))
                 {
-                    // Get object at pos x y
-                    char c = _grid[x, y];
-
-                    // Check if not empty
-                    if (c != '.')
-                    {
-                        // Search antenna group list
-                        bool exists = false;
-                        foreach (AntennaGroup group in _antennas)
-                        {
-                            // Group for that antenna exists
-                            if (group.Type == c)
-                            {
-                                // Add antenna
-                                group.AddAntenna(new(x, y));
-                                exists = true;
-                                break;
-                            }
-                        }
-
-                        // Antenna group does not exist (yet)
-                        if (!exists)
-                        {
-                            // Create group and add antenna
-                            AntennaGroup group = new(c, _reporter);
-                            group.AddAntenna(new(x, y));
-                            _antennas.Add(group);
-                        }
-                    }
+                    // Add to existing freq group
+                    value.Add(pos);
                 }
+                else
+                {
+                    // Create new freq group
+                    _antennas[_grid[pos]] = [pos];
+                }
+
+                // Send to frontend
+                _reporter.Report(TextProblemUpdate.FromLine($"Antenna with frequency '{_grid[pos]}' found at location [{pos.X},{pos.Y}]"));
             }
+
+            // Send to frontend
+            _reporter.Report(GlyphGridUpdate.FromCharGrid(_grid, "#FFFFFF", "#000000"));
         }
 
-        public void CheckAntinodes(bool harmonics)
+        public int CountAntinodes(bool harmonics)
         {
-            // Check all antenna groups
-            foreach (AntennaGroup group in _antennas)
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"\nCounting antinodes {(harmonics ? "with" : "without")} harmonics:"));
+
+            // Keep track of unique antinode locations
+            HashSet<IntegerCoordinate<int>> antinodes = [];
+
+            // Check all antenna freq groups
+            foreach (KeyValuePair<char, List<IntegerCoordinate<int>>> group in _antennas)
             {
                 // Compare antennas in group
-                for (int i = 0; i < group.Positions.Count; i++)
+                for (int i = 0; i < group.Value.Count; i++)
                 {
                     // Get source antenna
-                    IntegerCoordinate<int> A = group.Positions[i];
+                    IntegerCoordinate<int> A = group.Value[i];
 
                     // Compare to other antennas in group
-                    for (int j = 0; j < group.Positions.Count; j++)
+                    for (int j = 0; j < group.Value.Count; j++)
                     {
                         // Skip source antenna
                         if (j == i) continue;
 
                         // Retrieve pos of second antenna
-                        IntegerCoordinate<int> B = group.Positions[j];
+                        IntegerCoordinate<int> B = group.Value[j];
 
                         // Calculate distance between antennas
                         Distance<int> dist = A.Distance(B);
@@ -155,19 +125,19 @@ public class Day08 : ProblemSet
                         if (!harmonics)
                         {
                             // Place antinode one distance from B
-                            AddAntinode(B.Move(dist));
+                            AddAntinode(antinodes, B.Move(dist));
                         }
                         else
                         {
                             // Place antinode on B
-                            AddAntinode(B);
+                            AddAntinode(antinodes, B);
 
                             // Add antinodes until outside of grid
                             IntegerCoordinate<int> C = B.Move(dist);
                             while (_grid.Contains(C))
                             {
                                 // Place antinode on C
-                                AddAntinode(C);
+                                AddAntinode(antinodes, C);
 
                                 // Update antinode position
                                 C = C.Move(dist);
@@ -176,50 +146,31 @@ public class Day08 : ProblemSet
                     }
                 }
             }
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"\nTotal antinodes found: {antinodes.Count}"));
+
+            return antinodes.Count;
         }
 
-        private void AddAntinode(IntegerCoordinate<int> pos)
+        private void AddAntinode(HashSet<IntegerCoordinate<int>> antinodes, IntegerCoordinate<int> pos)
         {
             // Check if not previously added and within grid
-            if (_grid.Contains(pos) && _antinodes.Add(pos))
+            if (_grid.Contains(pos) && antinodes.Add(pos))
             {
-                // Only print when needed
-                _reporter.ReportStringGridUpdate(pos, "#66FF66");
+                // Print antinode as red '#'
+                _reporter.ReportGlyphGridUpdate(
+                    builder => builder.WithEntry(
+                        b => b
+                            .WithCoordinate(pos)
+                            .WithChar('#')
+                            .WithForeground("#FF0000")
+                            .WithBackground("#000000")
+                    )
+                );
 
                 // Send to frontend
-                _reporter.Report(TextProblemUpdate.FromLine($"New antinode at pos [{pos.X},{pos.Y}]"));
-            }
-        }
-
-        public int CountAntinodes() => _antinodes.Count;
-
-        private string ColorCell(IntegerCoordinate<int> coordinate)
-        {
-            // Coloring city grid
-            return _grid[coordinate] switch
-            {
-                '.' => "#B3B3B3", // Nothing
-                _ => "#0066FF" // Antenna
-            };
-        }
-    }
-
-    public class AntennaGroup(char type, Reporter reporter)
-    {
-        private readonly Reporter _reporter = reporter;
-        public char Type = type;
-        public List<IntegerCoordinate<int>> Positions = [];
-
-        public void AddAntenna(IntegerCoordinate<int> pos)
-        {
-            // Check if antenna is added already
-            if (!Positions.Contains(pos))
-            {
-                // Add antenna
-                Positions.Add(pos);
-
-                // Send to frontend
-                _reporter.Report(TextProblemUpdate.FromLine($"Group '{Type}': New antenna at pos [{pos.X},{pos.Y}]"));
+                _reporter.Report(TextProblemUpdate.FromLine($"Antinode found at location [{pos.X},{pos.Y}]"));
             }
         }
     }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Common;
 using Common.Updates;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
@@ -29,13 +28,10 @@ public class Day09 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create drive
-            Drive drive = new(input, MemoryMode.Partial, reporter);
-
-            // Compact memory
-            drive.Compact();
+            Drive drive = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum(fragmented: true)));
             return Task.CompletedTask;
         }
     }
@@ -49,51 +45,60 @@ public class Day09 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create drive
-            Drive drive = new(input, MemoryMode.Full, reporter);
-
-            // Compact memory
-            drive.Compact();
+            Drive drive = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(drive.Checksum(fragmented: false)));
             return Task.CompletedTask;
         }
     }
 
     public class Drive
     {
-        private readonly MemoryMode _mode;
-        private readonly LinkedList<Memory> _memory = [];
         private readonly Reporter _reporter;
+        private readonly LinkedList<Memory> _memory = [];
 
-        public Drive(string data, MemoryMode mode, Reporter reporter)
+        public Drive(string data, Reporter reporter)
         {
-            // Save reporter for frontend printing
+            // Save for frontend printing
             _reporter = reporter;
 
-            // Set operation mode
-            _mode = mode;
+            // Save file information for printing
+            Dictionary<int, int> spaces = new() { { 0, 0 }, { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 }, { 6, 0 }, { 7, 0 }, { 8, 0 }, { 9, 0 } };
+            Dictionary<int, int> files = new() { { 0, 0 }, { 1, 0 }, { 2, 0 }, { 3, 0 }, { 4, 0 }, { 5, 0 }, { 6, 0 }, { 7, 0 }, { 8, 0 }, { 9, 0 } };
 
-            // Create and store memory from data
+            // Store files or free space in memory
             int fileID = 0;
             bool free = false;
             for (int i = 0; i < data.Length; i++)
             {
+                // If anything else than digits
+                if (!char.IsDigit(data[i]))
+                    continue;
+
                 // Memory size
                 int size = data[i] - '0';
 
-                // Create and link memory
-                for (int j = 0; j < size; j++)
+                // If memory has size
+                if (size > 0)
                 {
                     // Create new memory
-                    Memory memory = new(free ? -1 : fileID, _mode == MemoryMode.Full ? size : 1);
+                    Memory memory = new(free ? -1 : fileID, size);
 
                     // Store memory
                     _memory.AddLast(memory);
+                }
 
-                    // Break if operating in full memory mode
-                    if (_mode == MemoryMode.Full)
-                        break;
+                // Store memory information
+                if (free)
+                {
+                    // Free space
+                    spaces[size]++;
+                }
+                else
+                {
+                    // File
+                    files[size]++;
                 }
 
                 // Increment file ID if memory not free
@@ -105,29 +110,36 @@ public class Day09 : ProblemSet
             }
 
             // Send to frontend
-            _reporter.Report(TextProblemUpdate.FromLine(MemoryToStr()));
+            _reporter.Report(TextProblemUpdate.FromLine($"{fileID} files added to drive\n\nFILES:\nSize | Count"));
+            foreach (KeyValuePair<int, int> pair in files) _reporter.Report(TextProblemUpdate.FromLine($"{pair.Key,-7}{pair.Value}"));
+            _reporter.Report(TextProblemUpdate.FromLine($"\nFREE SPACE:\nSize | Count"));
+            foreach (KeyValuePair<int, int> pair in spaces) _reporter.Report(TextProblemUpdate.FromLine($"{pair.Key,-7}{pair.Value}"));
         }
 
-        private string MemoryToStr()
-        {
-            StringBuilder sb = new();
-            foreach (Memory memory in _memory)
-            {
-                for (int i = 0; i < memory.Size; i++)
-                {
-                    if (sb.Length > 0) sb.Append('|');
-                    sb.Append(memory.Value == -1 ? "." : memory.Value);
-                }
-            }
-
-            return sb.ToString();
-        }
-
-        public void Compact()
+        public void Compact(bool fragmented)
         {
             // No memory to compact
             if (_memory.First == null || _memory.Last == null)
                 return;
+
+            // Fragment memory
+            if (fragmented)
+            {
+                // Fragment all memory
+                LinkedListNode<Memory>? node = _memory.First;
+                while (node != null)
+                {
+                    // Push memory ahead but leave one size behind
+                    if (node.Value.Size > 1)
+                    {
+                        _memory.AddAfter(node, new Memory(node.Value.Value, node.Value.Size - 1));
+                        node.Value.Size = 1;
+                    }
+
+                    // Get next memory
+                    node = node.Next;
+                }
+            }
 
             // Retrieve first and last memory
             LinkedListNode<Memory> left = _memory.First;
@@ -136,8 +148,6 @@ public class Day09 : ProblemSet
             // Compact loop
             for (;;)
             {
-                string memoryStr = MemoryToStr();
-
                 // Go to first memory that is not free from right
                 while (right.Value.Value == -1)
                 {
@@ -178,7 +188,7 @@ public class Day09 : ProblemSet
                 if (right.Value.Value != -1)
                 {
                     // Skip this memory
-                    if (right.Previous == null || right.Previous == left || left == right)
+                    if (right.Previous == null || right.Previous == left)
                         return;
                     else
                         right = right.Previous;
@@ -200,32 +210,37 @@ public class Day09 : ProblemSet
             b.Value.Value = -1;
         }
 
-        public long Checksum()
+        public long Checksum(bool fragmented)
         {
             // No memory to checksum
             if (_memory.First == null)
                 return 0;
 
+            // Compact memory
+            Compact(fragmented);
+
             // Calculate checksum
             long sum = 0;
             long memoryIndex = 0;
-            for (LinkedListNode<Memory> node = _memory.First; node.Next != null; node = node.Next, memoryIndex++)
+            for (LinkedListNode<Memory> node = _memory.First; node.Next != null; node = node.Next)
             {
-                // Skip empty
-                if (node.Value.Value == -1)
-                    continue;
+                // Retrieve the correct memory indexes for checksum
+                for (int i = 0; i < node.Value.Size; i++)
+                {
+                    // Only count memory with value
+                    if (node.Value.Value != -1)
+                        sum += node.Value.Value * memoryIndex;
 
-                // Add to sum
-                sum += node.Value.Value * memoryIndex;
+                    // Increment index
+                    memoryIndex++;
+                }
             }
+
+            // Send to frontend
+            _reporter.Report(TextProblemUpdate.FromLine($"\nCompacted memory checksum with {(fragmented ? "file blocks" : "whole files")}: {sum}"));
+
             return sum;
         }
-    }
-
-    public enum MemoryMode
-    {
-        Full,
-        Partial
     }
 
     public class Memory(int val, int size)
