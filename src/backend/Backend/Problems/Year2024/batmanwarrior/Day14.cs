@@ -159,10 +159,10 @@ public class Day14 : ProblemSet
 
                     // Send to frontend
                     _reporter.Report(GlyphGridUpdate.FromCharGrid(grid, "#FFFFFF", "#000000"));
+                    _reporter.Report(TextProblemUpdate.FromLine($"\nEaster egg found after {elapsed} seconds"));
 
                     return elapsed;
                 }
-                    
             }
         }
 
