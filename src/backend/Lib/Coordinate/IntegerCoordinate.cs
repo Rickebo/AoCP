@@ -29,7 +29,9 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         get
         {
             var self = this;
-            return DirectionExtensions.Horizontal.Select(direction => self + direction.ToCoordinate<T>());
+            return DirectionExtensions.Horizontal.Select(
+                direction => self + direction.ToCoordinate<T>()
+            );
         }
     }
 
@@ -38,7 +40,9 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         get
         {
             var self = this;
-            return DirectionExtensions.Vertical.Select(direction => self + direction.ToCoordinate<T>());
+            return DirectionExtensions.Vertical.Select(
+                direction => self + direction.ToCoordinate<T>()
+            );
         }
     }
 
@@ -81,6 +85,16 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
         for (var src = this; src != other; src += src.DirectionOf(other))
             yield return src;
     }
+
+    public IntegerCoordinate<T> Modulo(IntegerCoordinate<T> other) => new(
+        MathExtensions.Modulo(X, other.X),
+        MathExtensions.Modulo(Y, other.Y)
+    );
+
+    public static IntegerCoordinate<T> operator %(
+        IntegerCoordinate<T> left,
+        IntegerCoordinate<T> right
+    ) => new(left.X % right.X, left.Y % right.Y);
 
     public static IntegerCoordinate<T> operator -(IntegerCoordinate<T> coordinate) =>
         new(-coordinate.X, -coordinate.Y);

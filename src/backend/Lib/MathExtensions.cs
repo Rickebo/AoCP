@@ -9,6 +9,15 @@ public static class MathExtensions
     public static int Remainder(int x, int divisor) =>
         (x % divisor + divisor) % divisor;
 
+    public static T Modulo<T>(T left, T right) where T : INumber<T>, IBinaryInteger<T>
+    {
+        var result = left % right;
+        if ((result < T.Zero && right > T.Zero) || (result > T.Zero && right < T.Zero))
+            result += right;
+
+        return result;
+    }
+    
     /// <summary>
     /// Converts a hex value to a float value
     /// </summary>

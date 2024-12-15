@@ -74,7 +74,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     return elapsed > startCooldown
   }
 
-  const solveElapsedTime = (problemName: string | undefined): string => mgr.elapsed(problemName) ?? ''
+  const solveElapsedTime = (problemName: string | undefined): string =>
+    mgr.elapsed(problemName) ?? ''
 
   const isSolvingAny = props.set.problems
     .map((problem) => isSolving(problem.name))
