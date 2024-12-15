@@ -32,10 +32,10 @@ public class Day15 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create warehouse
-            Warehouse warehouse = new(input, reporter);
+            Warehouse warehouse = new(input, wide: false, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround(wide: false, -1)));
             return Task.CompletedTask;
         }
     }
@@ -49,22 +49,21 @@ public class Day15 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Create warehouse
-            Warehouse warehouse = new(input, reporter);
+            Warehouse warehouse = new(input, wide: true, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(""));
+            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround(wide: true, -1)));
             return Task.CompletedTask;
         }
     }
 
     public class Warehouse
     {
-        private record Robot(IntegerCoordinate<int> Pos, Direction dir);
         private readonly Reporter _reporter;
         private readonly CharGrid _map;
         private readonly string _moves;
 
-        public Warehouse(string input, Reporter reporter)
+        public Warehouse(string input, bool wide, Reporter reporter)
         {
             // Save for frontend printing
             _reporter = reporter;
@@ -72,11 +71,10 @@ public class Day15 : ProblemSet
             // Split map and moves
             StringBuilder sb1 = new();
             StringBuilder sb2 = new();
-
             foreach (string row in input.SplitLines())
             {
                 if (row.Contains('#'))
-                    sb1.AppendLine(row);
+                    sb1.AppendLine(!wide ? row : row.Replace("#", "##").Replace("O", "[]").Replace(".", "..").Replace("@", "@."));
                 else
                     sb2.Append(row);
             }
@@ -91,66 +89,73 @@ public class Day15 : ProblemSet
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_map, "#FFFFFF", "#000000"));
         }
 
-        public int MoveAround()
+        public int MoveAround(bool wide, int steps)
         {
             // Move around with robot
-            int i;
-            for (i = 0; i < _moves.Length; i++)
+            for (int i = 0; i < _moves.Length; i++)
             {
                 // Find robot
-                IntegerCoordinate<int> robot = _map.Find(ch => ch == '@');
+                IntegerCoordinate<int> pos = _map.Find(ch => ch == '@');
 
                 // Get direction
                 Direction dir = DirectionExtensions.Parse(_moves[i]);
 
-                // If nothing is ahead of robot
-                if (_map[robot.Move(dir)] == '.')
+                // Check if push possible
+                List<IntegerCoordinate<int>> tiles = [];
+                Dictionary<IntegerCoordinate<int>, char> result = [];
+                if (Possible(pos, dir, tiles, result))
                 {
-                    _map[robot.Move(dir)] = '@';
-                    _map[robot] = '.';
-                    continue;
+                    // Erase all tiles
+                    foreach (IntegerCoordinate<int> tilePos in tiles)
+                        _map[tilePos] = '.';
+
+                    // Perform push result
+                    foreach (KeyValuePair<IntegerCoordinate<int>, char> pair in result)
+                        _map[pair.Key] = pair.Value;
                 }
 
-                // If wall is ahead of robot
-                if (_map[robot.Move(dir)] == '#')
-                    continue;
-
-                // Move until wall or empty space
-                IntegerCoordinate<int> checkPos = robot.Move(dir);
-                while (_map[checkPos] == 'O')
-                    checkPos = checkPos.Move(dir);
-
-                // Check if empty space or wall
-                if (_map[checkPos] == '.')
-                {
-                    // Move back to robot and push objects
-                    checkPos = checkPos.Move(dir.Opposite());
-                    while (_map[checkPos] != '@')
-                    {
-                        _map[checkPos.Move(dir)] = 'O';
-                        _map[checkPos] = '.';
-
-                        checkPos = checkPos.Move(dir.Opposite());
-                    }
-
-                    _map[robot.Move(dir)] = '@';
-                    _map[robot] = '.';
-                }
-                else
-                {
-                    // Cant be pushed further
-                    continue;
-                }
+                // For debugging
+                steps--;
+                if (steps == 0)
+                    break;
             }
 
             // Print grid
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_map, "#FFFFFF", "#000000"));
 
             int sum = 0;
-            foreach (IntegerCoordinate<int> pos in _map.FindAll(x => x == 'O'))
+            foreach (IntegerCoordinate<int> pos in _map.FindAll(x => x == 'O' || x == '['))
                 sum += 100 * (_map.Height - 1 - pos.Y) + pos.X;
 
             return sum;
+        }
+
+        private bool Possible(IntegerCoordinate<int> pos, Direction dir, List<IntegerCoordinate<int>> tiles, Dictionary<IntegerCoordinate<int>, char> result)
+        {
+            // If wall ahead
+            if (_map[pos.Move(dir)] == '#')
+                return false;
+
+            // Store tile
+            tiles.Add(pos);
+
+            // Store move
+            result[pos.Move(dir)] = _map[pos];
+
+            // If nothing ahead
+            if (_map[pos.Move(dir)] == '.')
+                return true;
+
+            // If large box ahead, going vertically
+            if (_map[pos.Move(dir)] == '[' && (dir == Direction.North || dir == Direction.South))
+                return Possible(pos.Move(dir), dir, tiles, result) && Possible(pos.Move(dir).Move(Direction.East), dir, tiles, result);
+
+            // If large box ahead, go deeper
+            if (_map[pos.Move(dir)] == ']' && (dir == Direction.North || dir == Direction.South))
+                return Possible(pos.Move(dir), dir, tiles, result) && Possible(pos.Move(dir).Move(Direction.West), dir, tiles, result);
+
+            // Small and wide boxes are treated the same horizontally
+            return Possible(pos.Move(dir), dir, tiles, result);
         }
     }
 }
