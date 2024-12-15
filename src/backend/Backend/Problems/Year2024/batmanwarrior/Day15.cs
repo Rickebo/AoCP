@@ -7,6 +7,7 @@ using Lib.Grid;
 using System.Text;
 using Lib;
 using Lib.Coordinate;
+using System.Linq;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -35,7 +36,7 @@ public class Day15 : ProblemSet
             Warehouse warehouse = new(input, wide: false, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround(wide: false, -1)));
+            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround()));
             return Task.CompletedTask;
         }
     }
@@ -52,7 +53,7 @@ public class Day15 : ProblemSet
             Warehouse warehouse = new(input, wide: true, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround(wide: true, -1)));
+            reporter.Report(FinishedProblemUpdate.FromSolution(warehouse.MoveAround()));
             return Task.CompletedTask;
         }
     }
@@ -73,7 +74,8 @@ public class Day15 : ProblemSet
             StringBuilder sb2 = new();
             foreach (string row in input.SplitLines())
             {
-                if (row.Contains('#'))
+                // Map rows always start with '#'
+                if (row[0] == '#')
                     sb1.AppendLine(!wide ? row : row.Replace("#", "##").Replace("O", "[]").Replace(".", "..").Replace("@", "@."));
                 else
                     sb2.Append(row);
@@ -89,73 +91,74 @@ public class Day15 : ProblemSet
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_map, "#FFFFFF", "#000000"));
         }
 
-        public int MoveAround(bool wide, int steps)
+        public int MoveAround()
         {
+            // Get robot initial position
+            IntegerCoordinate<int> robotPos = _map.Find(ch => ch == '@');
+
             // Move around with robot
             for (int i = 0; i < _moves.Length; i++)
             {
-                // Find robot
-                IntegerCoordinate<int> pos = _map.Find(ch => ch == '@');
-
-                // Get direction
-                Direction dir = DirectionExtensions.Parse(_moves[i]);
-
                 // Check if push possible
-                List<IntegerCoordinate<int>> tiles = [];
+                HashSet<IntegerCoordinate<int>> pushed = [];
                 Dictionary<IntegerCoordinate<int>, char> result = [];
-                if (Possible(pos, dir, tiles, result))
+                Direction dir = DirectionExtensions.Parse(_moves[i]);
+                if (Possible(robotPos, dir, pushed, result))
                 {
-                    // Erase all tiles
-                    foreach (IntegerCoordinate<int> tilePos in tiles)
-                        _map[tilePos] = '.';
-
                     // Perform push result
                     foreach (KeyValuePair<IntegerCoordinate<int>, char> pair in result)
+                    {
+                        // Result of push
                         _map[pair.Key] = pair.Value;
-                }
 
-                // For debugging
-                steps--;
-                if (steps == 0)
-                    break;
+                        // Result tile does not need to be cleared
+                        pushed.Remove(pair.Key);
+                    }
+
+                    // Clear the remaining pushed tiles
+                    foreach (IntegerCoordinate<int> pos in pushed)
+                        _map[pos] = '.';
+
+                    // Move robot pos
+                    robotPos = robotPos.Move(dir);
+                }
             }
 
             // Print grid
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_map, "#FFFFFF", "#000000"));
 
-            int sum = 0;
-            foreach (IntegerCoordinate<int> pos in _map.FindAll(x => x == 'O' || x == '['))
-                sum += 100 * (_map.Height - 1 - pos.Y) + pos.X;
-
-            return sum;
+            // Return result to frontend
+            return _map.FindAll(ch => ch == 'O' || ch == '[').Aggregate(0, (sum, pos) => sum += 100 * (_map.Height - 1 - pos.Y) + pos.X);
         }
 
-        private bool Possible(IntegerCoordinate<int> pos, Direction dir, List<IntegerCoordinate<int>> tiles, Dictionary<IntegerCoordinate<int>, char> result)
+        private bool Possible(IntegerCoordinate<int> pos, Direction dir, HashSet<IntegerCoordinate<int>> pushed, Dictionary<IntegerCoordinate<int>, char> result)
         {
             // If wall ahead
             if (_map[pos.Move(dir)] == '#')
                 return false;
 
-            // Store tile
-            tiles.Add(pos);
+            // Store pushed tile
+            pushed.Add(pos);
 
-            // Store move
+            // Store push result
             result[pos.Move(dir)] = _map[pos];
 
             // If nothing ahead
             if (_map[pos.Move(dir)] == '.')
                 return true;
 
-            // If large box ahead, going vertically
-            if (_map[pos.Move(dir)] == '[' && (dir == Direction.North || dir == Direction.South))
-                return Possible(pos.Move(dir), dir, tiles, result) && Possible(pos.Move(dir).Move(Direction.East), dir, tiles, result);
-
-            // If large box ahead, go deeper
-            if (_map[pos.Move(dir)] == ']' && (dir == Direction.North || dir == Direction.South))
-                return Possible(pos.Move(dir), dir, tiles, result) && Possible(pos.Move(dir).Move(Direction.West), dir, tiles, result);
+            // If pushing large boxes vertically
+            if (dir == Direction.North || dir == Direction.South)
+            {
+                // Make sure the whole box can be pushed
+                if (_map[pos.Move(dir)] == '[')
+                    return Possible(pos.Move(dir), dir, pushed, result) && Possible(pos.Move(dir).Move(Direction.East), dir, pushed, result);
+                else if (_map[pos.Move(dir)] == ']')
+                    return Possible(pos.Move(dir), dir, pushed, result) && Possible(pos.Move(dir).Move(Direction.West), dir, pushed, result);
+            }
 
             // Small and wide boxes are treated the same horizontally
-            return Possible(pos.Move(dir), dir, tiles, result);
+            return Possible(pos.Move(dir), dir, pushed, result);
         }
     }
 }
