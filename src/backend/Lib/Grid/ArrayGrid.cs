@@ -64,6 +64,17 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         set => _values[x, y] = value;
     }
 
+    public void Apply(Func<TValue, TValue> modifier)
+    {
+        foreach (var coordinate in Coordinates)
+            this[coordinate] = modifier(this[coordinate]);
+    }
+
+    public void Replace(TValue from, TValue to) => Replace(x => x != null ? x.Equals(from) : to == null, to);
+
+    public void Replace(Func<TValue, bool> predicate, TValue value) =>
+        Apply(v => predicate(v) ? value : v);
+
     public IEnumerable<TValue> Row(int y)
     {
         for (var x = 0; x < Width; x++)

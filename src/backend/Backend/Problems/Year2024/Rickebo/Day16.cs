@@ -82,15 +82,7 @@ public class Day16 : ProblemSet
 
                 bestScore = currentScore;
 
-                var path = new List<DirectionPosition>();
-                var c = current;
-                while (c != null)
-                {
-                    path.Add(c.Pos);
-                    c = c.Previous;
-                }
-
-                yield return (currentScore, path.ToArray());
+                yield return (currentScore, current.GetPath().Select(x => x.Pos).ToArray());
 
                 if (all)
                     continue;
@@ -101,20 +93,12 @@ public class Day16 : ProblemSet
             cache[current.Pos] = currentScore;
 
             var direction = current.Pos.Direction;
-
-            var applicableDirections = new[]
-            {
-                direction.RotateCounterClockwise(),
-                direction,
-                direction.RotateClockwise()
-            };
-
-            foreach (var dir in applicableDirections)
+            foreach (var dir in direction.Neighbours())
             {
                 var penalty = 1 + (dir != direction ? 1000 : 0);
                 var nextPos = current.Pos.Position.Move(dir);
                 var nextDp = new DirectionPosition(nextPos, dir);
-                
+
                 if (!grid.Contains(nextPos) || grid[nextPos] == '#')
                     continue;
 
@@ -168,6 +152,7 @@ public class Day16 : ProblemSet
         public static Data Parse(string input)
         {
             var grid = Parser.ParseCharGrid(input).FlipY();
+            grid.Replace('.', ' ');
             var src = grid.Find(cell => cell == 'S');
             var dst = grid.Find(cell => cell == 'E');
 

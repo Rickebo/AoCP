@@ -78,7 +78,7 @@ public static class DirectionExtensions
         var result = direction;
         if ((direction & Lib.Direction.East) != 0)
             direction = Lib.Direction.West | (direction & ~Lib.Direction.East);
-        
+
         if ((direction & Lib.Direction.West) != 0)
             result = Lib.Direction.East | (direction & ~Lib.Direction.West);
 
@@ -88,10 +88,10 @@ public static class DirectionExtensions
     public static Direction FlipY(this Direction direction)
     {
         var result = direction;
-        
+
         if ((direction & Lib.Direction.North) != 0)
             result = Lib.Direction.South | (direction & ~Lib.Direction.North);
-        
+
         if ((direction & Lib.Direction.South) != 0)
             result = Lib.Direction.North | (direction & ~Lib.Direction.South);
 
@@ -122,6 +122,13 @@ public static class DirectionExtensions
                 $"Unknown clockwise diagonal direction for direction {direction}"
             ),
         };
+
+    public static IEnumerable<Direction> Neighbours(this Direction direction) =>
+    [
+        direction.RotateCounterClockwise(),
+        direction,
+        direction.RotateClockwise()
+    ];
 
     public static Direction RotateCounterClockwise(this Direction direction)
     {
