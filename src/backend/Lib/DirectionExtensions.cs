@@ -52,7 +52,9 @@ public static class DirectionExtensions
     {
         '-' => Lib.Direction.East | Lib.Direction.West,
         '|' => Lib.Direction.North | Lib.Direction.South,
-        '+' => Lib.Direction.North | Lib.Direction.East | Lib.Direction.South |
+        '+' => Lib.Direction.North |
+               Lib.Direction.East |
+               Lib.Direction.South |
                Lib.Direction.West,
         '>' => Lib.Direction.East,
         '<' => Lib.Direction.West,
@@ -70,6 +72,31 @@ public static class DirectionExtensions
         '.' => Lib.Direction.None,
         _ => throw new ArgumentException($"Unknown direction for character {character}")
     };
+
+    public static Direction FlipX(this Direction direction)
+    {
+        var result = direction;
+        if ((direction & Lib.Direction.East) != 0)
+            direction = Lib.Direction.West | (direction & ~Lib.Direction.East);
+        
+        if ((direction & Lib.Direction.West) != 0)
+            result = Lib.Direction.East | (direction & ~Lib.Direction.West);
+
+        return result;
+    }
+
+    public static Direction FlipY(this Direction direction)
+    {
+        var result = direction;
+        
+        if ((direction & Lib.Direction.North) != 0)
+            result = Lib.Direction.South | (direction & ~Lib.Direction.North);
+        
+        if ((direction & Lib.Direction.South) != 0)
+            result = Lib.Direction.North | (direction & ~Lib.Direction.South);
+
+        return result;
+    }
 
     public static Direction[] All() => Enum.GetValues<Direction>();
 

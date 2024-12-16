@@ -38,6 +38,16 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         Construct
     );
 
+    public static GlyphGridUpdate FromCharGrid(
+        CharGrid grid,
+        Color foregroundColor,
+        Color backgroundColor
+    ) => FromGrid(
+        grid,
+        ch => new Cell(null, ch.ToString(), foregroundColor.ToString(), backgroundColor.ToString()),
+        Construct
+    );
+
     public static GlyphGridUpdateBuilder Builder() => new();
 
     public class GlyphBuilder
@@ -77,7 +87,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             Background = color.ToRgbaString();
             return this;
         }
-        
+
         public GlyphBuilder WithForeground(string foreground)
         {
             Foreground = foreground;
@@ -143,7 +153,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
 
                 if (x == null || y == null)
                     throw new Exception("X and Y cannot be null.");
-                
+
                 if (!rows.TryGetValue(y, out var row))
                     row = rows[y] = new Dictionary<string, Cell>();
 
