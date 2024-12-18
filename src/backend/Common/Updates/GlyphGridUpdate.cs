@@ -70,6 +70,9 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             return this;
         }
 
+        public GlyphBuilder WithGlyph(char glyph) =>
+            WithGlyph(glyph.ToString());
+
         public GlyphBuilder WithGlyph(string glyph)
         {
             Glyph = glyph;
@@ -107,6 +110,48 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         private int? Width { get; set; }
         private int? Height { get; set; }
         private List<GlyphBuilder> Glyphs { get; } = [];
+
+        public GlyphGridUpdateBuilder WithPath(
+            IEnumerable<IntegerCoordinate<int>> coordinates,
+            Color? foreground = null,
+            Color? background = null
+        )
+        {
+            var all = coordinates as IList<IntegerCoordinate<int>> ?? coordinates.ToArray();
+            for (var i = 0; i < all.Count; i++)
+            {
+                IntegerCoordinate<int>? last = i > 0 ? all[i - 1] : null;
+                IntegerCoordinate<int>? next = i < all.Count - 1 ? all[i + 1] : null;
+                var pos = all[i];
+
+                var neighbours = (last, next);
+                var dir = Direction.None;
+
+                if (last != null)
+                    dir |= (pos - last.Value).Direction();
+
+                if (next != null)
+                    dir |= (pos - next.Value).Direction();
+
+                dir = dir.FlipX();
+                
+                WithEntry(
+                    builder =>
+                    {
+                        if (foreground.HasValue)
+                            builder = builder.WithForeground(foreground.Value);
+                        if (background.HasValue)
+                            builder = builder.WithBackground(background.Value);
+
+                        return builder
+                            .WithCoordinate(pos)
+                            .WithGlyph(dir.ToGlyph());
+                    }
+                );
+            }
+
+            return this;
+        }
 
         public GlyphGridUpdateBuilder WithWidth(int width)
         {

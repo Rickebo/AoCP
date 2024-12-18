@@ -33,6 +33,23 @@ public static class DirectionExtensions
         Lib.Direction.NorthWest
     ];
 
+    public static char ToGlyph(this Direction direction) =>
+        direction switch
+        {
+            Lib.Direction.North => 'N',
+            Lib.Direction.East => 'E',
+            Lib.Direction.South => 'S',
+            Lib.Direction.West => 'W',
+            Lib.Direction.NorthWest => 'J',
+            Lib.Direction.NorthEast => 'L',
+            Lib.Direction.SouthWest => '7',
+            Lib.Direction.SouthEast => 'F',
+            Lib.Direction.North | Lib.Direction.South => '|',
+            Lib.Direction.East | Lib.Direction.West => '-',
+            Lib.Direction.None => '*',
+            _ => throw new ArgumentException(null, nameof(direction))
+        };
+
     public static Direction Max { get; } = (Direction)All().Max(d => (int)d);
 
     public static Direction Opposite(this Direction direction) => direction switch
@@ -75,9 +92,13 @@ public static class DirectionExtensions
 
     public static Direction FlipX(this Direction direction)
     {
+        const Direction both = Lib.Direction.East | Lib.Direction.West;
+        if ((direction & both) == both)
+            return direction;
+        
         var result = direction;
         if ((direction & Lib.Direction.East) != 0)
-            direction = Lib.Direction.West | (direction & ~Lib.Direction.East);
+            result = Lib.Direction.West | (direction & ~Lib.Direction.East);
 
         if ((direction & Lib.Direction.West) != 0)
             result = Lib.Direction.East | (direction & ~Lib.Direction.West);
@@ -87,6 +108,10 @@ public static class DirectionExtensions
 
     public static Direction FlipY(this Direction direction)
     {
+        const Direction both = Lib.Direction.North | Lib.Direction.South;
+        if ((direction & both) == both)
+            return direction;
+        
         var result = direction;
 
         if ((direction & Lib.Direction.North) != 0)

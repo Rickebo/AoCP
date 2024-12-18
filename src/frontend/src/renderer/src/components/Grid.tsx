@@ -51,7 +51,11 @@ const Glyphs: Record<string, Glyph> = {
   'O': glyph('111', '101', '111'),
   'X': glyph('101', '010', '101'),
   '9': glyph('111', '111', '111'),
-  '#': glyph('111', '111', '111')
+  '#': glyph('1'),
+  'W': glyph('000', '110', '000'),
+  'N': glyph('010', '010', '000'),
+  'E': glyph('000', '011', '000'),
+  'S': glyph('000', '010', '010')
 }
 
 function fillRectangle(
@@ -65,7 +69,13 @@ function fillRectangle(
 ): void {
   context.fillStyle = color
   const [dx, dy] = transform.transform(x, y)
-  context.fillRect(dx, dy, transform.scale(width), transform.scale(height))
+  const margin = 0.5 // Add some overlap so the border isn't visible in some zooms
+  context.fillRect(
+    dx - margin,
+    dy - margin,
+    transform.scale(width) + margin * 2,
+    transform.scale(height) + margin * 2
+  )
 }
 
 function fillGlyph(
@@ -313,6 +323,9 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
         ref={canvasRef}
         width={100}
         height={100}
+        style={{
+          imageRendering: 'crisp-edges'
+        }}
         onWheel={(e) => {
           zoom(-e.deltaY / 100)
         }}

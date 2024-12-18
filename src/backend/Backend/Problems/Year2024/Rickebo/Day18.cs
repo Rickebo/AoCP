@@ -129,13 +129,7 @@ public class Day18 : ProblemSet
 
             reporter?.ReportGlyphGridUpdate(
                 builder => builder
-                    .WithEntries(
-                        path,
-                        (glyphBuilder, pos) => glyphBuilder
-                            .WithCoordinate(pos)
-                            .WithGlyph("*")
-                            .WithForeground(Color.From(green: 1, blue: 1))
-                    )
+                    .WithPath(path, foreground: Color.From(green: 1, blue: 1))
                     .WithEntry(
                         e => e
                             .WithCoordinate(Source)
@@ -187,13 +181,7 @@ public class Day18 : ProblemSet
                                     .WithGlyph("#")
                                     .WithForeground(Color.White * 0.5)
                             )
-                            .WithEntries(
-                                prevPath,
-                                (gb, pos) => gb
-                                    .WithCoordinate(pos)
-                                    .WithForeground(Color.From(green: 1, blue: 1))
-                                    .WithGlyph("*")
-                            )
+                            .WithPath(prevPath, foreground: Color.From(green: 1, blue: 1))
                             .WithEntry(
                                 b => b
                                     .WithCoordinate(blocker)

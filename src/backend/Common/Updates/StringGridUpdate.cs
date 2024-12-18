@@ -68,7 +68,7 @@ public class StringGridUpdate : GridUpdate<string>
         private int? Width { get; set; }
         private int? Height { get; set; }
         private List<StringCoordinateBuilder> Texts { get; } = [];
-
+        
         public StringGridUpdateBuilder WithWidth(int width)
         {
             Width = width;
