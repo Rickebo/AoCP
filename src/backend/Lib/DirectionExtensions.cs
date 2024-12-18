@@ -44,6 +44,11 @@ public static class DirectionExtensions
             Lib.Direction.NorthEast => 'L',
             Lib.Direction.SouthWest => '7',
             Lib.Direction.SouthEast => 'F',
+            Lib.Direction.East | Lib.Direction.South | Lib.Direction.West => '\u2533',
+            Lib.Direction.East | Lib.Direction.North | Lib.Direction.West => '\u253b',
+            Lib.Direction.South | Lib.Direction.North | Lib.Direction.West => '\u252b',
+            Lib.Direction.South | Lib.Direction.North | Lib.Direction.East => '\u2523',
+            Lib.Direction.NorthEast | Lib.Direction.SouthWest => '+',
             Lib.Direction.North | Lib.Direction.South => '|',
             Lib.Direction.East | Lib.Direction.West => '-',
             Lib.Direction.None => '*',
@@ -95,7 +100,7 @@ public static class DirectionExtensions
         const Direction both = Lib.Direction.East | Lib.Direction.West;
         if ((direction & both) == both)
             return direction;
-        
+
         var result = direction;
         if ((direction & Lib.Direction.East) != 0)
             result = Lib.Direction.West | (direction & ~Lib.Direction.East);
@@ -111,7 +116,7 @@ public static class DirectionExtensions
         const Direction both = Lib.Direction.North | Lib.Direction.South;
         if ((direction & both) == both)
             return direction;
-        
+
         var result = direction;
 
         if ((direction & Lib.Direction.North) != 0)

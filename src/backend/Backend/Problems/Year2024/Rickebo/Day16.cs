@@ -63,7 +63,8 @@ public class Day16 : ProblemSet
     {
         var frontier = new PriorityQueue<SearchEntry, int>(
             [
-                (new SearchEntry(new DirectionPosition(position, initialDirection), null), 0)
+                (new SearchEntry(new DirectionPosition(position, initialDirection), null),
+                    0)
             ]
         );
 
@@ -82,7 +83,8 @@ public class Day16 : ProblemSet
 
                 bestScore = currentScore;
 
-                yield return (currentScore, current.GetPath().Select(x => x.Pos).ToArray());
+                yield return (currentScore,
+                    current.GetPath().Select(x => x.Pos).ToArray());
 
                 if (all)
                     continue;
@@ -103,7 +105,8 @@ public class Day16 : ProblemSet
                     continue;
 
                 var nextScore = currentScore + penalty;
-                if (cache.TryGetValue(nextDp, out var cachedNextScore) && cachedNextScore < nextScore)
+                if (cache.TryGetValue(nextDp, out var cachedNextScore) &&
+                    cachedNextScore < nextScore)
                     continue;
 
                 var ne = new SearchEntry(
@@ -166,19 +169,22 @@ public class Day16 : ProblemSet
 
             var (score, path) = solution.First();
 
-            reporter?.Report(GlyphGridUpdate.FromCharGrid(Grid, Color.White, Color.Black));
-
-            foreach (var pos in path)
-                reporter?.ReportGlyphGridUpdate(
-                    b => b.WithEntry(
-                        builder => builder
-                            .WithBackground(Color.Black)
-                            .WithForeground(Color.From(red: 1))
-                            .WithCoordinate(pos.Position)
-                            .WithChar(pos.Direction.FlipY().Arrow())
+            reporter?.ReportGlyphGridUpdate(
+                builder => builder
+                    .WithWidth(Grid.Width)
+                    .WithHeight(Grid.Height)
+                    .WithEntries(
+                        Grid.Coordinates.Where(c => Grid[c] == '#'),
+                        (gb, c) => gb
+                            .WithForeground(Color.White * 0.5)
+                            .WithCoordinate(c)
+                            .WithGlyph("#")
                     )
-                );
-
+                    .WithPath(
+                        path.Select(dp => dp.Position),
+                        foreground: Color.From(red: 1)
+                    )
+            );
 
             return score;
         }
@@ -195,17 +201,21 @@ public class Day16 : ProblemSet
                     positions.Add(pos.Position);
             }
 
-            reporter?.Report(GlyphGridUpdate.FromCharGrid(Grid, Color.White, Color.Black));
-
             reporter?.ReportGlyphGridUpdate(
-                b => b.WithEntries(
-                    positions,
-                    (builder, currentPos) => builder
-                        .WithBackground(Color.Black)
-                        .WithForeground(Color.From(red: 1))
-                        .WithCoordinate(currentPos)
-                        .WithChar('O')
-                )
+                builder => builder
+                    .WithWidth(Grid.Width)
+                    .WithHeight(Grid.Height)
+                    .WithEntries(
+                        Grid.Coordinates.Where(c => Grid[c] == '#'),
+                        (gb, c) => gb
+                            .WithForeground(Color.White * 0.5)
+                            .WithCoordinate(c)
+                            .WithGlyph("#")
+                    )
+                    .WithPath(
+                        positions,
+                        foreground: Color.From(red: 1)
+                    )
             );
 
 

@@ -44,7 +44,12 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         Color backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell(null, ch.ToString(), foregroundColor.ToString(), backgroundColor.ToString()),
+        ch => new Cell(
+            null,
+            ch.ToString(),
+            foregroundColor.ToString(),
+            backgroundColor.ToString()
+        ),
         Construct
     );
 
@@ -117,24 +122,22 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             Color? background = null
         )
         {
-            var all = coordinates as IList<IntegerCoordinate<int>> ?? coordinates.ToArray();
-            for (var i = 0; i < all.Count; i++)
+            var set = coordinates as HashSet<IntegerCoordinate<int>> ??
+                      coordinates.ToHashSet();
+
+            foreach (var coordinate in set)
             {
-                IntegerCoordinate<int>? last = i > 0 ? all[i - 1] : null;
-                IntegerCoordinate<int>? next = i < all.Count - 1 ? all[i + 1] : null;
-                var pos = all[i];
-
-                var neighbours = (last, next);
-                var dir = Direction.None;
-
-                if (last != null)
-                    dir |= (pos - last.Value).Direction();
-
-                if (next != null)
-                    dir |= (pos - next.Value).Direction();
-
-                dir = dir.FlipX();
+                var dir = DirectionExtensions.Cardinals
+                    .Aggregate(
+                        Direction.None,
+                        (current, offset) =>
+                            set.Contains(coordinate.Move(offset))
+                                ? current | offset
+                                : current
+                    );
                 
+                dir = dir.FlipY();
+
                 WithEntry(
                     builder =>
                     {
@@ -144,7 +147,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
                             builder = builder.WithBackground(background.Value);
 
                         return builder
-                            .WithCoordinate(pos)
+                            .WithCoordinate(coordinate)
                             .WithGlyph(dir.ToGlyph());
                     }
                 );
