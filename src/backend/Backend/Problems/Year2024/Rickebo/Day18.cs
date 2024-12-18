@@ -133,8 +133,8 @@ public class Day18 : ProblemSet
                         path,
                         (glyphBuilder, pos) => glyphBuilder
                             .WithCoordinate(pos)
-                            .WithGlyph(".")
-                            .WithForeground(Color.From(red: 1, blue: 1))
+                            .WithGlyph("*")
+                            .WithForeground(Color.From(green: 1, blue: 1))
                     )
                     .WithEntry(
                         e => e

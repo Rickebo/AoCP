@@ -50,7 +50,8 @@ const Glyphs: Record<string, Glyph> = {
   '+': glyph('010', '111', '010'),
   'O': glyph('111', '101', '111'),
   'X': glyph('101', '010', '101'),
-  '9': glyph('111', '111', '111')
+  '9': glyph('111', '111', '111'),
+  '#': glyph('111', '111', '111')
 }
 
 function fillRectangle(
