@@ -23,7 +23,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
     public static readonly Color White = new(0xFFFFFFFF);
     public static readonly Color TransparentBlack = new(0x00000000);
     public static readonly Color TransparentWhite = new(0xFFFFFF00);
-    
+
     public uint Value => value;
 
     public const uint RedMask = 0xFFu << RedShift;
@@ -200,7 +200,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
 
     public static IEnumerable<Color> Generate(int count, double saturation = 0.5, double vibrancy = 0.9) =>
         Generate(Random.Shared.NextDouble(), count, saturation, vibrancy);
-    
+
     public static IEnumerable<Color> Generate(double seed, int count, double saturation = 0.5, double vibrancy = 0.9)
     {
         var goldenRatio = (1 + Math.Sqrt(5)) / 2 - 1;
@@ -211,7 +211,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
             yield return FromHsv(h, saturation, vibrancy);
         }
     }
-    
+
     public new string ToString() => ToRgbaString();
     public string ToRgbaString() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
     public string ToRgbString() => $"#{R:X2}{G:X2}{B:X2}";
@@ -233,6 +233,32 @@ public readonly struct Color(uint value) : IEquatable<Color>
             blue: op(left.Blue, right.Blue),
             alpha: op(left.Alpha, right.Alpha)
         );
+
+    private static Color ApplyOperator(Color left, double right, Func<double, double, double> op) =>
+        left.With(
+            red: op(left.Red, right),
+            green: op(left.Green, right),
+            blue: op(left.Blue, right),
+            alpha: left.Alpha
+        );
+
+    private static Color ApplyOperator(double left, Color right, Func<double, double, double> op) =>
+        right.With(
+            red: op(left, right.Red),
+            green: op(left, right.Green),
+            blue: op(left, right.Blue),
+            alpha: right.Alpha
+        );
+
+    public static Color operator +(Color left, double right) => ApplyOperator(left, right, (a, b) => a + b);
+    public static Color operator -(Color left, double right) => ApplyOperator(left, right, (a, b) => a - b);
+    public static Color operator *(Color left, double right) => ApplyOperator(left, right, (a, b) => a * b);
+    public static Color operator /(Color left, double right) => ApplyOperator(left, right, (a, b) => a / b);
+
+    public static Color operator +(double left, Color right) => ApplyOperator(left, right, (a, b) => a + b);
+    public static Color operator -(double left, Color right) => ApplyOperator(left, right, (a, b) => a - b);
+    public static Color operator *(double left, Color right) => ApplyOperator(left, right, (a, b) => a * b);
+    public static Color operator /(double left, Color right) => ApplyOperator(left, right, (a, b) => a / b);
 
     public static Color operator +(Color left, Color right) => ApplyOperator(left, right, (a, b) => a + b);
     public static Color operator -(Color left, Color right) => ApplyOperator(left, right, (a, b) => a - b);

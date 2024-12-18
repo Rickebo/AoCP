@@ -54,6 +54,12 @@ public class StringGridUpdate : GridUpdate<string>
             Text = text;
             return this;
         }
+
+        public StringCoordinateBuilder WithColor(Color color)
+        {
+            Text = color.ToRgbaString();
+            return this;
+        }
     }
 
     public class StringGridUpdateBuilder

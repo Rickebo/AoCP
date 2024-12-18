@@ -3,7 +3,9 @@
 namespace Lib.Coordinate;
 
 public readonly struct IntegerCoordinate<T>(T x, T y)
-    : ICoordinate<IntegerCoordinate<T>, T>, IStringCoordinate
+    : ICoordinate<IntegerCoordinate<T>, T>,
+        IStringCoordinate,
+        IEquatable<IntegerCoordinate<T>>
     where T : INumber<T>, IBinaryInteger<T>
 {
     public T X { get; } = x;
@@ -45,6 +47,8 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
             );
         }
     }
+
+    public T ManhattanLength() => T.Abs(X) + T.Abs(Y);
 
     public Distance<T> Distance(IntegerCoordinate<T> other)
         => new(other.X - X, other.Y - Y);
