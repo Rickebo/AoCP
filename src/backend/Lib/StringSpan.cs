@@ -2,39 +2,32 @@ using System.Text;
 
 namespace Lib;
 
-public readonly record struct StringSpan
+public readonly struct StringSpan : IEquatable<StringSpan>
 {
     public string Full { get; }
     public int Start { get; }
     public int Length { get; }
     public int End => Start + Length;
+    private readonly int _hash;
 
     public StringSpan(string full, int start = 0, int length = -1)
     {
         Full = full;
         Start = start;
-        Length = length < 0 ? full.Length - Start : length;
+
+        var remaining = Full.Length - start;
+        Length = length < 0 ? remaining : Math.Min(remaining, length);
+
+        _hash = HashCode.Combine(start, Length);
+        for (var i = 0; i < Length; i++)
+            _hash ^= Full[Start + i].GetHashCode();
     }
 
     public StringSpan Substring(int start, int length = -1)
     {
         var newStart = Start + start;
 
-        if (newStart >= Length)
-            newStart = Length;
-
-        if (length < 0)
-            length = Length - start;
-
-        if (start + length > Length)
-            length = Math.Max(0, Length - start);
-
-        var res = new StringSpan(Full, newStart, length);
-
-        if (res.ToString() != Full.Substring(newStart, length))
-            throw new Exception();
-
-        return res;
+        return new StringSpan(Full, newStart, length);
     }
 
     public char this[int index]
@@ -52,9 +45,9 @@ public readonly record struct StringSpan
     {
         if (text.Length > Length)
             return false;
-        
+
         for (var i = 0; i < text.Length; i++)
-            if (this[i] != text[i])
+            if (Full[Start + i] != text[i])
                 return false;
 
         return true;
@@ -64,14 +57,11 @@ public readonly record struct StringSpan
     {
         if (span.Length > Length)
             return false;
-        
+
         for (var i = 0; i < span.Length; i++)
             if (this[i] != span[i])
                 return false;
 
-        if (!Full.Substring(Start, Length).StartsWith(span.Full))
-            throw new Exception();
-        
         return true;
     }
 
@@ -82,4 +72,21 @@ public readonly record struct StringSpan
             sb.Append(this[i]);
         return sb.ToString();
     }
+
+    public override bool Equals(object? other) =>
+        other is StringSpan span && Equals(span);
+
+    public bool Equals(StringSpan other)
+    {
+        if (other.Length != Length)
+            return false;
+        
+        for (var i = 0; i < Length; i++)
+            if (this[i] != other[i])
+                return false;
+
+        return true;
+    }
+
+    public override int GetHashCode() => _hash;
 }
