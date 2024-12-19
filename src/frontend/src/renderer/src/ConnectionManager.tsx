@@ -77,7 +77,7 @@ export function useConnectionManager(
     const micros = (elapsed * 1000) % 1000
     const nanos = (elapsed * 1000000) % 1000
     const millis = elapsed % 1000
-    const seconds = Math.floor(elapsed / 1000)
+    const seconds = Math.floor(elapsed / 1000) % 60
     const minutes = Math.floor(seconds / 60)
 
     const unitMap: [number, string][] = [
