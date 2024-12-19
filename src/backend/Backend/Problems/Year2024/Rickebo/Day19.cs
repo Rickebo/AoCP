@@ -63,16 +63,16 @@ public class Day19 : ProblemSet
         public int CountSolvable()
         {
             var cache = new Dictionary<string, bool>();
-            return Desired.Count(d => IsOption(d, cache));
+            return Desired.Count(d => IsOption(d, Available.Where(d.Contains).ToArray(), cache));
         }
 
         public long CountSolvableOptions()
         {
             var cache = new Dictionary<string, long>();
-            return Desired.Sum(d => CountOptions(d, cache));
+            return Desired.Sum(d => CountOptions(d, Available.Where(d.Contains).ToArray(), cache));
         }
 
-        public bool IsOption(string text, Dictionary<string, bool> cache)
+        private static bool IsOption(string text, string[] available, Dictionary<string, bool> cache)
         {
             if (text.Length == 0)
                 return true;
@@ -80,11 +80,13 @@ public class Day19 : ProblemSet
             if (cache.TryGetValue(text, out var value))
                 return value;
 
-            return cache[text] = Available
-                .Any(a => text.StartsWith(a) && IsOption(text[a.Length..], cache));
+            return cache[text] = available
+                .Any(
+                    a => text.StartsWith(a) && (text.Length == a.Length || IsOption(text[a.Length..], available, cache))
+                );
         }
 
-        public long CountOptions(string text, Dictionary<string, long> cache)
+        private static long CountOptions(string text, string[] available, Dictionary<string, long> cache)
         {
             if (text.Length == 0)
                 return 1;
@@ -92,9 +94,9 @@ public class Day19 : ProblemSet
             if (cache.TryGetValue(text, out var value))
                 return value;
 
-            return cache[text] = Available
+            return cache[text] = available
                 .Where(text.StartsWith)
-                .Sum(available => CountOptions(text[available.Length..], cache));
+                .Sum(ava => ava.Length == text.Length ? 1 : CountOptions(text[ava.Length..], available, cache));
         }
     }
 }
