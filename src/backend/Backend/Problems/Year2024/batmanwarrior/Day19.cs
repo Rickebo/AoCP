@@ -77,47 +77,40 @@ public class Day19 : ProblemSet
             _designs = rows[1..];
         }
 
-        public long Possible() => _designs.Where((x, _) => Spelunker(x).Item1).Count();
+        public long Possible() => _designs.Where((design, _) => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()) > 0).Count();
 
-        public long Ways() => _designs.Sum(x => Spelunker(x).Item2);
+        public long Ways() => _designs.Sum(design => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()));
 
-        public (bool, long) Spelunker(string design)
+        public long Spelunker(string design, string[] patterns)
         {
             // Check if remaining design exist in memory
             if (_memory.TryGetValue(design, out long value))
-                return (true, value);
+                return value;
 
             // If end of design reached
             if (design.Length == 0)
             {
-                _memory[design] = 1;
-                return (true, 1);
+                _memory[design] = 1L;
+                return 1L;
             }
 
             // Check all patterns
             long combinations = 0;
-            foreach (string pattern in _patterns)
+            foreach (string pattern in patterns)
             {
                 // Check if remaining design starts with pattern
                 if (design.StartsWith(pattern))
                 {
                     // Spelunk further
                     string remaining = design[pattern.Length..];
-                    (bool possible, long ways) = Spelunker(remaining);
-                    if (possible)
-                    {
-                        _memory[remaining] = ways;
-                        combinations += ways;
-                    }
+                    long ways = Spelunker(remaining, patterns);
+                    _memory[remaining] = ways;
+                    combinations += ways;
                 }
             }
 
-            // If design is possible
-            if (combinations > 0)
-                return (true, combinations);
-
-            // If design has no possible combination
-            return (false, 0);
+            // Return possible combinations
+            return combinations;
         }
     }
 }
