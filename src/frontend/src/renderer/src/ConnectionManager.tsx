@@ -78,7 +78,7 @@ export function useConnectionManager(
     const nanos = (elapsed * 1000000) % 1000
     const millis = elapsed % 1000
     const seconds = Math.floor(elapsed / 1000) % 60
-    const minutes = Math.floor(seconds / 60)
+    const minutes = Math.floor(elapsed / (60 * 1000))
 
     const unitMap: [number, string][] = [
       [minutes, 'm'],
@@ -93,11 +93,14 @@ export function useConnectionManager(
     for (const [value, unit] of unitMap) {
       if (usedUnits >= 2) break
 
-      if (value < 1) continue
+      if (value < 1) {
+        if (usedUnits > 0) break
+        continue
+      }
 
-      const valueStr = usedUnits == 0 ? Math.floor(value).toString() : Math.floor(value).toString().padStart(3, '0')
+      const valueStr = usedUnits == 0 ? Math.floor(value).toString() : Math.floor(value).toString().padStart(unit != 's' ? 3 : 0, '0')
       usedUnits++
-      result += valueStr + ' ' + unit + ' '
+      result += valueStr + unit + ' '
     }
 
     return result.trimEnd()
