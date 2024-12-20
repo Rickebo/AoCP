@@ -90,9 +90,6 @@ public class Day20 : ProblemSet
             
             foreach (var src in visited)
             {
-                if (!Grid.Contains(src) || Grid[src] == '#')
-                    continue;
-
                 if (!cache.TryGetValue(src, out var score) || score == null)
                     continue;
 
