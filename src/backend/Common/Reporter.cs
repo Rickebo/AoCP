@@ -83,13 +83,18 @@ public class Reporter
     public void ReportGlyphGridUpdate<T>(
         ArrayGrid<T> grid,
         Func<GlyphGridUpdate.GlyphBuilder, IntegerCoordinate<int>, T,
-            GlyphGridUpdate.GlyphBuilder> configure
+            GlyphGridUpdate.GlyphBuilder> configure,
+        Func<IntegerCoordinate<int>, T, bool>? predicate = null,
+        bool clear = false
     ) => ReportGlyphGridUpdate(
         builder => builder
+            .WithClear(clear)
             .WithWidth(grid.Width)
             .WithHeight(grid.Height)
             .WithEntries(
-                grid.Coordinates,
+                predicate != null 
+                    ? grid.Coordinates.Where(p => predicate.Invoke(p, grid[p])) 
+                    : grid.Coordinates,
                 (glyphBuilder, coordinate) => configure(
                     glyphBuilder,
                     coordinate,
