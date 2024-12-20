@@ -5,3 +5,9 @@
 .hover-btn {
   opacity: 0.5;
 }
+
+.dropdown .dropdown-menu {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
