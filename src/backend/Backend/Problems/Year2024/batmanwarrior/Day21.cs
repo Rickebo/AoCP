@@ -3,11 +3,7 @@ using Common.Updates;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using Lib.Coordinate;
-using Lib.Grid;
-using System.Text;
 using Lib;
-using System.Linq;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -36,7 +32,7 @@ public class Day21 : ProblemSet
             Starship starship = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(starship.Complexitites()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(starship.Complexitites(robots: 2)));
             return Task.CompletedTask;
         }
     }
@@ -53,24 +49,15 @@ public class Day21 : ProblemSet
             Starship starship = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution("?"));
+            reporter.Report(FinishedProblemUpdate.FromSolution(starship.Complexitites(robots: 25)));
             return Task.CompletedTask;
         }
     }
 
     public class Starship
     {
-        // WRONG1: 259336 (too high)
-        // WRONG2: 254554 (too high)
         private readonly Reporter _reporter;
         private readonly List<string> _codes = [];
-        private readonly Dictionary<string, string> _compare = new Dictionary<string, string>() {
-            {"029A", "<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A"},
-            {"980A", "<v<A>>^AAAvA^A<vA<AA>>^AvAA<^A>A<v<A>A>^AAAvA<^A>A<vA>^A<A>A"},
-            {"179A", "<v<A>>^A<vA<A>>^AAvAA<^A>A<v<A>>^AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"},
-            {"456A", "<v<A>>^AA<vA<A>>^AAvAA<^A>A<vA>^A<A>A<vA>^A<A>A<v<A>A>^AAvA<^A>A"},
-            {"379A", "<v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A"},
-        };
 
         public Starship(string input, Reporter reporter)
         {
@@ -82,180 +69,313 @@ public class Day21 : ProblemSet
                 _codes.Add(row);
         }
 
-        public long Complexitites()
+        public long Complexitites(int robots)
         {
+            // Create cache
+            Dictionary<(string, int), long> cache = [];
+
+            // Accumulate the complexity for all door codes
             long totalComplexity = 0;
             foreach (string code in _codes)
             {
-                string sequence = Dirpad.Sequence(Dirpad.Sequence(Numpad.Sequence(code)));
-                long codeVal = long.Parse(code[.. (code.Length - 1)]);
-                int presses = sequence.Count(c => c == 'A');
-                int dirs = sequence.Count(c => c == '<' || c == '^' || c == '>' || c == 'v');
-                int pressCompare = _compare[code].Count(c => c == 'A');
-                int dirCompare = _compare[code].Count(c => c == '<' || c == '^' || c == '>' || c == 'v');
-                totalComplexity += sequence.Length * codeVal;
+                // Calculate the complexity for each code
+                char prev = 'A';
+                long codeSequenceLength = 0;
+                foreach (char c in code)
+                {
+                    // Accumulate the shortest sequence length for each button in code
+                    long shortestLength = Int64.MaxValue;
+                    foreach (string seq in NumpadLookup(prev, c))
+                    {
+                        // Get length
+                        long length = SequenceLength(seq, robots, cache);
+
+                        // If this length is the shortest
+                        if (length < shortestLength)
+                            shortestLength = length;
+                    }
+
+                    // Add to code sequence length and update prev for next button
+                    codeSequenceLength += shortestLength;
+                    prev = c;
+                }
+
+                // Retrieve the numeric val of code
+                long codeNumericVal = long.Parse(code[.. (code.Length - 1)]);
+
+                // Add code complexity to total
+                totalComplexity += codeSequenceLength * codeNumericVal;
             }
 
+            // Return the total complexity of all door codes
             return totalComplexity;
         }
-    }
 
-    public class Robot(RobotKeypad keyPad)
-    {
-        public readonly RobotKeypad KeyPad = keyPad;
-    }
-
-    public enum RobotKeypad
-    {
-        Numeric,
-        Directional
-    }
-
-    public static class Numpad
-    {
-        // 7 8 9
-        // 4 5 6
-        // 1 2 3
-        // # 0 A
-        private static readonly CharGrid _grid = new(new char[,] {
-            { '#', '1', '4', '7' },
-            { '0', '2', '5', '8' },
-            { 'A', '3', '6', '9' },
-        });
-
-        public static string Sequence(string seq)
+        private static long SequenceLength(string sequence, int robotDepth, Dictionary<(string, int), long> cache)
         {
-            // Create stringbuilder
-            StringBuilder sb = new();
+            // If robot depth reached the human operator
+            if (robotDepth == 0)
+                return sequence.Length;
 
-            // Get start position
-            IntegerCoordinate<int> pos = _grid.Find(val => val == 'A');
+            // If cache already has the sequence length for this sequence at this robot depth
+            if (cache.ContainsKey((sequence, robotDepth)))
+                return cache[(sequence, robotDepth)];
 
-            foreach (char c in seq)
+            // Check sequence length of all buttons in sequence up to the human operator
+            char prev = 'A';
+            long totalLength = 0;
+            foreach (char c in sequence)
             {
-                // Get target position
-                IntegerCoordinate<int> target = _grid.Find(val => val == c);
+                // Accumulate the shortest sequence length
+                long shortestLength  = Int64.MaxValue;
+                foreach (string seq in DirpadLookup(prev, c))
+                {
+                    // Get length
+                    long length = SequenceLength(seq, robotDepth - 1, cache);
 
-                // If already on target, press
-                if (target == pos)
-                {
-                    sb.Append('A');
-                    continue;
-                }
-
-                // Go to target
-                if (target.Y == pos.Y)
-                {
-                    // Target on same row, go horizontal
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                }
-                else if (target.X == pos.X)
-                {
-                    // Target on same col, go vertical
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
-                }
-                else if (pos.Y == 0 && target.X == 0)
-                {
-                    // Start vertical to avoid gap
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                }
-                else
-                {
-                    // All other paths can start horizontal
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
+                    // If this length is the shortest
+                    if (length < shortestLength)
+                        shortestLength = length;
                 }
 
-                // Press and update position
-                sb.Append('A');
-                pos = target;
+                // Add to total sequence length and update prev for next move
+                totalLength += shortestLength;
+                prev = c;
             }
 
-            // Return sequence string
-            return sb.ToString();
+            // Store the sequence length for this sequence at this robot depth for later
+            cache[(sequence, robotDepth)] = totalLength;
+
+            // Return total sequence length
+            return totalLength;
         }
-    }
 
-    public static class Dirpad
-    {
-        // # ^ A
-        // < v >
-        private static readonly CharGrid _grid = new(new char[,] {
-            { '<', '#' },
-            { 'v', '^' },
-            { '>', 'A' },
-        });
-
-        public static string Sequence(string seq)
+        private static string[] NumpadLookup(char from, char to)
         {
-            // Create stringbuilder
-            StringBuilder sb = new();
-            
-            // Optimize order (group moves)
-            string[] moveSequences = seq.Split('A');
-            foreach (string moveSeq in moveSequences)
+            // Wonderful lookup table of DOOM^2
+            return from switch
             {
-                sb.Append(new string('<', moveSeq.Count(c => c == '<')));
-                sb.Append(new string('^', moveSeq.Count(c => c == '^')));
-                sb.Append(new string('v', moveSeq.Count(c => c == 'v')));
-                sb.Append(new string('>', moveSeq.Count(c => c == '>')));
-                sb.Append('A');
-            }
+                'A' => to switch
+                {
+                    'A' => ["A"],
+                    '0' => ["<A"],
+                    '1' => ["^<<A"],
+                    '2' => ["<^A", "^<A"],
+                    '3' => ["^A"],
+                    '4' => ["^^<<A"],
+                    '5' => ["<^^A", "^^<A"],
+                    '6' => ["^^A"],
+                    '7' => ["^^^<<A"],
+                    '8' => ["<^^^A", "^^^<A"],
+                    '9' => ["^^^A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '0' => to switch
+                {
+                    'A' => [">A"],
+                    '0' => ["A"],
+                    '1' => ["^<A"],
+                    '2' => ["^A"],
+                    '3' => [">^A", "^>A"],
+                    '4' => ["^^<A"],
+                    '5' => ["^^A"],
+                    '6' => [">^^A", "^^>A"],
+                    '7' => ["^^^<A"],
+                    '8' => ["^^^A"],
+                    '9' => [">^^^A", "^^^>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '1' => to switch
+                {
+                    'A' => [">>vA"],
+                    '0' => [">vA"],
+                    '1' => ["A"],
+                    '2' => [">A"],
+                    '3' => [">>A"],
+                    '4' => ["^A"],
+                    '5' => [">^A", "^>A"],
+                    '6' => [">>^A", "^>>A"],
+                    '7' => ["^^A"],
+                    '8' => [">^^A", "^^>A"],
+                    '9' => [">>^^A", "^^>>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '2' => to switch
+                {
+                    'A' => [">vA"],
+                    '0' => ["vA"],
+                    '1' => ["<A"],
+                    '2' => ["A"],
+                    '3' => [">A"],
+                    '4' => ["<^A", "^<A"],
+                    '5' => ["^A"],
+                    '6' => [">^A", "^>A"],
+                    '7' => ["<^^A", "^^<A"],
+                    '8' => ["^^A"],
+                    '9' => [">^^A", "^^>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '3' => to switch
+                {
+                    'A' => ["vA"],
+                    '0' => ["<vA", "v<A"],
+                    '1' => ["<<A"],
+                    '2' => ["<A"],
+                    '3' => ["A"],
+                    '4' => ["<<^A", "^<<A"],
+                    '5' => ["<^A", "^<A"],
+                    '6' => ["^A"],
+                    '7' => ["<<^^A", "^^<<A"],
+                    '8' => ["<^^A", "^^<A"],
+                    '9' => ["^^A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '4' => to switch
+                {
+                    'A' => [">>vvA"],
+                    '0' => [">vvA"],
+                    '1' => ["vA"],
+                    '2' => [">vA", "v>A"],
+                    '3' => [">>vA", "v>>A"],
+                    '4' => ["A"],
+                    '5' => [">A"],
+                    '6' => [">>A"],
+                    '7' => ["^A"],
+                    '8' => [">^A", "^>A"],
+                    '9' => [">>^A", "^>>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '5' => to switch
+                {
+                    'A' => [">vvA", "vv>A"],
+                    '0' => ["vvA"],
+                    '1' => ["<vA", "v<A"],
+                    '2' => ["vA"],
+                    '3' => [">vA", "v>A"],
+                    '4' => ["<A"],
+                    '5' => ["A"],
+                    '6' => [">A"],
+                    '7' => ["<^A", "^<A"],
+                    '8' => ["^A"],
+                    '9' => [">^A", "^>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '6' => to switch
+                {
+                    'A' => ["vvA"],
+                    '0' => ["<vvA", "vv<A"],
+                    '1' => ["<<vA", "v<<A"],
+                    '2' => ["<vA", "v<A"],
+                    '3' => ["vA"],
+                    '4' => ["<<A"],
+                    '5' => ["<A"],
+                    '6' => ["A"],
+                    '7' => ["<<^A", "^<<A"],
+                    '8' => ["<^A", "^<A"],
+                    '9' => ["^A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '7' => to switch
+                {
+                    'A' => [">>vvvA"],
+                    '0' => [">vvvA"],
+                    '1' => ["vvA"],
+                    '2' => [">vvA", "vv>A"],
+                    '3' => [">>vvA", "vv>>A"],
+                    '4' => ["vA"],
+                    '5' => [">vA", "v>A"],
+                    '6' => [">>vA", "v>>A"],
+                    '7' => ["A"],
+                    '8' => [">A"],
+                    '9' => [">>A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '8' => to switch
+                {
+                    'A' => [">vvvA", "vvv>A"],
+                    '0' => ["vvvA"],
+                    '1' => ["<vvA", "vv<A"],
+                    '2' => ["vvA"],
+                    '3' => [">vvA", "vv>A"],
+                    '4' => ["<vA", "v<A"],
+                    '5' => ["vA"],
+                    '6' => [">vA", "v>A"],
+                    '7' => ["<A"],
+                    '8' => ["A"],
+                    '9' => [">A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '9' => to switch
+                {
+                    'A' => ["vvvA"],
+                    '0' => ["<vvvA", "vvv<A"],
+                    '1' => ["<<vvA", "vv<<A"],
+                    '2' => ["<vvA", "vv<A"],
+                    '3' => ["vvA"],
+                    '4' => ["<<vA", "v<<A"],
+                    '5' => ["<vA", "v<A"],
+                    '6' => ["vA"],
+                    '7' => ["<<A"],
+                    '8' => ["<A"],
+                    '9' => ["A"],
+                    _ => throw new NotImplementedException(),
+                },
+                _ => throw new NotImplementedException(),
+            };
+        }
 
-            // Create new seq BUGGED BRUH
-            //string temp = sb.ToString();
-            //seq = temp[.. (temp.Length - 1)];
-
-            // Clear stringbuilder
-            sb.Clear();
-
-            // Get start position
-            IntegerCoordinate<int> pos = _grid.Find(val => val == 'A');
-
-            foreach (char c in seq)
+        private static string[] DirpadLookup(char from, char to)
+        {
+            // Wonderful lookup table of DOOM
+            return from switch
             {
-                // Get target position
-                IntegerCoordinate<int> target = _grid.Find(val => val == c);
-
-                // If already on target, press
-                if (target == pos)
+                'A' => to switch
                 {
-                    sb.Append('A');
-                    continue;
-                }
-
-                // Go to target
-                if (target.Y == pos.Y)
+                    'A' => ["A"],
+                    '^' => ["<A"],
+                    '>' => ["vA"],
+                    'v' => ["<vA", "v<A"],
+                    '<' => ["v<<A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '^' => to switch
                 {
-                    // Target on same row, go horizontal
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                }
-                else if (target.X == pos.X)
+                    'A' => [">A"],
+                    '^' => ["A"],
+                    '>' => [">vA", "v>A"],
+                    'v' => ["vA"],
+                    '<' => ["v<A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '>' => to switch
                 {
-                    // Target on same col, go vertical
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
-                }
-                else if (pos.Y == 1 && target.X == 0)
+                    'A' => ["^A"],
+                    '^' => ["<^A", "^<A"],
+                    '>' => ["A"],
+                    'v' => ["<A"],
+                    '<' => ["<<A"],
+                    _ => throw new NotImplementedException(),
+                },
+                'v' => to switch
                 {
-                    // Start vertical to avoid gap
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                }
-                else
+                    'A' => [">^A", "^>A"],
+                    '^' => ["^A"],
+                    '>' => [">A"],
+                    'v' => ["A"],
+                    '<' => ["<A"],
+                    _ => throw new NotImplementedException(),
+                },
+                '<' => to switch
                 {
-                    // All other paths can start horizontal
-                    sb.Append(new string(target.X > pos.X ? '>' : '<', Math.Abs(target.X - pos.X)));
-                    sb.Append(new string(target.Y > pos.Y ? '^' : 'v', Math.Abs(target.Y - pos.Y)));
-                }
-
-                // Press and update position
-                sb.Append('A');
-                pos = target;
-            }
-
-            // Return sequence string
-            return sb.ToString();
+                    'A' => [">>^A"],
+                    '^' => [">^A"],
+                    '>' => [">>A"],
+                    'v' => [">A"],
+                    '<' => ["A"],
+                    _ => throw new NotImplementedException(),
+                },
+                _ => throw new NotImplementedException(),
+            };
         }
     }
 }
