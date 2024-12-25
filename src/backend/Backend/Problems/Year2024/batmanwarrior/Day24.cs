@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Lib;
+using System.Linq;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -49,7 +50,7 @@ public class Day24 : ProblemSet
             System system = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution("?"));
+            reporter.Report(FinishedProblemUpdate.FromSolution(system.GetWrongGates()));
             return Task.CompletedTask;
         }
     }
@@ -57,9 +58,9 @@ public class Day24 : ProblemSet
     public class System
     {
         private readonly Reporter _reporter;
-        Dictionary<string, State> _wires = [];
-        Dictionary<string, (string, string)> _gates = [];
-        Dictionary<string, string> _gateType = [];
+        private readonly Dictionary<string, State> _wires = [];
+        private readonly Dictionary<string, (string, string)> _gates = [];
+        private readonly Dictionary<string, string> _gateType = [];
 
         public System(string input, Reporter reporter)
         {
@@ -111,6 +112,52 @@ public class Day24 : ProblemSet
             }
 
             return value;
+        }
+
+        public string GetWrongGates()
+        {
+            // Get highest z gate
+            string highestZ = "z00";
+            foreach (var pair in _gates)
+            {
+                // Compare gates that start with z
+                if (pair.Key.StartsWith('z') && int.Parse(pair.Key[1..]) > int.Parse(highestZ[1..]))
+                    highestZ = pair.Key;
+            }
+
+            // Save wrong gates
+            List<string> wrongGates = [];
+
+            // Check through all gates for wrong ones
+            foreach (var pair in _gates)
+            {
+                // Boom
+                if (pair.Key.StartsWith('z') && _gateType[pair.Key] != "XOR" && pair.Key != highestZ)
+                    wrongGates.Add(pair.Key);
+                
+                // Boom
+                if (_gateType[pair.Key] == "XOR" && !"xyz".Contains(pair.Key[0]) && !"xyz".Contains(pair.Value.Item1[0]) && !"xyz".Contains(pair.Value.Item2[0]))
+                    wrongGates.Add(pair.Key);
+
+                // Boom
+                if (_gateType[pair.Key] == "AND" && pair.Value.Item1 != "x00" && pair.Value.Item2 != "x00")
+                    foreach (var subPair in _gates)
+                        if ((pair.Key == subPair.Value.Item1 || pair.Key == subPair.Value.Item2) && _gateType[subPair.Key] != "OR")
+                            wrongGates.Add(pair.Key);
+
+                // Boom
+                if (_gateType[pair.Key] == "XOR")
+                    foreach (var subPair in _gates)
+                        if ((pair.Key == subPair.Value.Item1 || pair.Key == subPair.Value.Item2) && _gateType[subPair.Key] == "OR")
+                            wrongGates.Add(pair.Key);
+
+                // (I want you in my room)
+            }
+
+            // Remove duplicates, sort and return (ez)
+            wrongGates = wrongGates.Distinct().ToList();
+            wrongGates.Sort();
+            return string.Join(",", wrongGates);
         }
 
         private State GetState(string name)
