@@ -121,7 +121,7 @@ public class Day24 : ProblemSet
             foreach (var pair in _gates)
             {
                 // Compare gates that start with z
-                if (pair.Key.StartsWith('z') && int.Parse(pair.Key[1..]) > int.Parse(highestZ[1..]))
+                if (pair.Key[0] == 'z' && int.Parse(pair.Key[1..]) > int.Parse(highestZ[1..]))
                     highestZ = pair.Key;
             }
 
@@ -132,11 +132,11 @@ public class Day24 : ProblemSet
             foreach (var pair in _gates)
             {
                 // Boom
-                if (pair.Key.StartsWith('z') && _gateType[pair.Key] != "XOR" && pair.Key != highestZ)
+                if (pair.Key[0] == 'z' && _gateType[pair.Key] != "XOR" && pair.Key != highestZ)
                     wrongGates.Add(pair.Key);
                 
                 // Boom
-                if (_gateType[pair.Key] == "XOR" && !"xyz".Contains(pair.Key[0]) && !"xyz".Contains(pair.Value.Item1[0]) && !"xyz".Contains(pair.Value.Item2[0]))
+                if (_gateType[pair.Key] == "XOR" && pair.Key[0] != 'z' && pair.Value.Item1[0] != 'x' && pair.Value.Item1[0] != 'y' && pair.Value.Item2[0] != 'x' && pair.Value.Item2[0] != 'y')
                     wrongGates.Add(pair.Key);
 
                 // Boom
