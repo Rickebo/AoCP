@@ -45,11 +45,8 @@ public class Day25 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            // Create office floor
-            OfficeFloor officeFloor = new(input, reporter);
-
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution("?"));
+            reporter.Report(FinishedProblemUpdate.FromSolution("Boom ez"));
             return Task.CompletedTask;
         }
     }
