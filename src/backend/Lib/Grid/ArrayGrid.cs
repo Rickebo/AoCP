@@ -12,7 +12,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public ArrayGrid(int width, int height)
     {
         _values = new TValue[width, height];
-    }
+    } 
 
     public ArrayGrid(TValue[,] values)
     {

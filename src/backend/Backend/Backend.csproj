@@ -23,4 +23,8 @@
       <ProjectReference Include="..\Lib\Lib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Problems\Year2025\Rickebo\" />
+    </ItemGroup>
+
 </Project>
