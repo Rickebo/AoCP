@@ -21,6 +21,11 @@ public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode
     {
     }
 
+    public bool IsConnected(TNode source, TNode destination) =>
+        GetSourceEdges(source).Any(edge => edge.Equals(destination));
+
+    public IEnumerable<TNode> GetNeighbours(TNode node) => GetSourceEdges(node).Select(edge => edge.To);
+
     public IReadOnlySet<TEdge> GetSourceEdges(TNode node) =>
         _nodeSource.GetValueOrDefault(node, _noEdge);
 

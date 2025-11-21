@@ -168,9 +168,9 @@ public class GlyphGridUpdate : GridUpdate<Cell>
             return this;
         }
 
-        public GlyphGridUpdateBuilder WithClear()
+        public GlyphGridUpdateBuilder WithClear(bool clear = true)
         {
-            Clear = true;
+            Clear = clear;
             return this;
         }
 

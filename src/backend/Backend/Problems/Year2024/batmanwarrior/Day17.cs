@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Lib;
-using System.Reflection;
-using static Backend.Problems.Year2024.batmanwarrior.Day17;
-using System.Reflection.Emit;
-using Microsoft.AspNetCore.Hosting;
 using System.Linq;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
@@ -54,7 +50,7 @@ public class Day17 : ProblemSet
             Computer computer = new(input, reporter);
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(computer.LowestPossibleA()));
+            reporter.Report(FinishedProblemUpdate.FromSolution(computer.LowestCopyA()));
             return Task.CompletedTask;
         }
     }
@@ -86,171 +82,125 @@ public class Day17 : ProblemSet
 
         public string ProgramResult()
         {
+            // Run program
             _program.Run();
+
+            // Return output
             return _program.OutputToStr();
         }
 
-        public long LowestPossibleA()
+        public long LowestCopyA()
         {
-            string target = _program.OpCodesToStr();
+            // Get program opcodes
+            long[] opcodes = [.. _program.OpCodes];
 
-            long currA = 0;
-            for (int i = _program.OpCodes.Length - 1; i >= 0; i--)
+            // Reverse opcodes
+            long[] reversed = opcodes.Reverse().ToArray();
+
+            // Go backwards
+            List<long> validVals = [0];
+            for (int i = 0; i < reversed.Length; i++)
             {
-                while (true)
+                // Calculate new possible values of A
+                List<long> newValsA = [];
+                foreach (long val in validVals)
                 {
-                    _program.Reset((int)currA);
-                    _program.Run();
-                    if (_program.Output.Count == _program.OpCodes.Length && _program.Output[i] == _program.OpCodes[i])
-                        break;
+                    for (int j = 0; j < 8; j++)
+                    {
+                        // Make room for bits
+                        long newA = val << 3;
 
-                    currA <<= (3 + _program.OpCodes.Length - 1 - i);
+                        // Add bits
+                        newA += j;
+
+                        // Re-run program
+                        _program.Reset(newA);
+                        _program.Run();
+
+                        // Check if program output number match reversed opcode array
+                        if (_program.Output[0] == reversed[i])
+                            newValsA.Add(newA);
+                    }
                 }
+                
+                // Store possible values of A for next opcode number
+                validVals = [.. newValsA];
             }
 
-            return currA;
-            //int currA = 0;
-
-            /*
-            int i = _program.A & 7;
-            for (; ; )
-            {
-                _program.Reset(i);
-                _program.Run();
-
-                if (_program.OutputToStr() == target)
-                    return i;
-
-                i += 8;
-            }*/
-
-            /*
-            [0] B = A & 7
-            [2] B = B ^ 1
-            [4] C = A >> B
-            [6] A = A >> 3
-            [8] B = B ^ 4
-            [10] B = B ^ C
-            [12] out B & 7
-            [14] jnz A to 0
-            */
-
-            // B = A & 7
-            // B = (A & 7) ^ 1
-            // C = A >> ((A & 7) ^ 1)
-            // A = A >> 3
-            // B = (A & 7) ^ 4
-            // B = ((A & 7) ^ 4) ^ (A >> ((A & 7) ^ 1))
-            // out (((A & 7) ^ 4) ^ (A >> ((A & 7) ^ 1))) & 7
-
-            _program.RunTest();
-            //_program.Run();
-
-            _reporter.Report(TextProblemUpdate.FromLine(_program.OutputToStr()));
-
-            // Print instructions performed
-            foreach (string str in _program.Instructions)
-                _reporter.Report(TextProblemUpdate.FromLine(str));
-
-            return 0;
+            // Return lowest possible A for a copy
+            return validVals.Order().First();
         }
     }
 
     public class Program(int a, int b, int c, int[] opCodes)
     {
         public readonly int[] OpCodes = opCodes;
-        public int A = a;
-        public int B = b;
-        public int C = c;
+        public long A = a;
+        public long B = b;
+        public long C = c;
         public int pointer = 0;
-        public List<string> Instructions = [];
-        public List<int> Output = [];
+        public List<long> Output = [];
 
         public string OpCodesToStr() => string.Join(",", OpCodes);
 
-        public void Reset(int a)
+        public void Reset(long a)
         {
+            // Reset program values for a new run
             A = a;
             B = 0;
             C = 0;
             pointer = 0;
-            Instructions.Clear();
             Output.Clear();
         }
 
         public void Run()
         {
+            // While program not finished
             while (pointer >= 0 && pointer < OpCodes.Length)
             {
+                // Check what operation to perform
                 switch (OpCodes[pointer])
                 {
                     case 0: // Division adv
-                        A >>= ComboOperand(pointer);
-                        Instructions.Add($"[{pointer}] A = A >> {ComboToStr(pointer)}");
+                        A = (long)Math.Floor(A / Math.Pow(2, ComboOperand(pointer)));
                         break;
                     case 1: // Bitwise XOR bxl
                         B ^= OpCodes[pointer + 1];
-                        Instructions.Add($"[{pointer}] B = B ^ {OpCodes[pointer + 1]}");
                         break;
                     case 2: // Modulo 8 bst
                         B = ComboOperand(pointer) & 7;
-                        Instructions.Add($"[{pointer}] B = {ComboToStr(pointer)} & 7");
                         break;
                     case 3: // Jump if A != 0 jnz
-                        Instructions.Add($"[{pointer}] jnz A to {OpCodes[pointer + 1]}");
                         if (A != 0) pointer = OpCodes[pointer + 1] - 2;
                         break;
                     case 4: // Bitwise XOR bxc
                         B ^= C;
-                        Instructions.Add($"[{pointer}] B = B ^ C");
                         break;
                     case 5: // Output out
                         Output.Add(ComboOperand(pointer) & 7);
-                        Instructions.Add($"[{pointer}] out {ComboToStr(pointer)} & 7");
                         break;
                     case 6: // Division bdv
-                        B = A >> ComboOperand(pointer);
-                        Instructions.Add($"[{pointer}] B = A >> {ComboToStr(pointer)}");
+                        B = (long)Math.Floor(A / Math.Pow(2, ComboOperand(pointer)));
                         break;
                     case 7: // Division cdv
-                        C = A >> ComboOperand(pointer);
-                        Instructions.Add($"[{pointer}] C = A >> {ComboToStr(pointer)}");
+                        C = (long)Math.Floor(A / Math.Pow(2, ComboOperand(pointer)));
                         break;
                 }
 
+                // Go to next operation
                 pointer += 2;
-            }
-        }
-
-        public void RunTest()
-        {
-            while (A != 0)
-            {
-                C = A >> ((A & 7) ^ 1);
-                B = (((A & 7) ^ 1) ^ 4) ^ C;
-                Output.Add(((((A & 7) ^ 4) ^ (A >> ((A & 7) ^ 1))) & 7));
-                A >>= 3;
             }
         }
 
         public string OutputToStr() => string.Join(",", Output);
 
-        private int ComboOperand(int pointer) => OpCodes[pointer + 1] switch
+        private long ComboOperand(int pointer) => OpCodes[pointer + 1] switch
         {
             0 or 1 or 2 or 3 => OpCodes[pointer + 1],
             4 => A,
             5 => B,
             6 => C,
-            _ => throw new ArgumentException(),
-        };
-
-        private string ComboToStr(int pointer) => OpCodes[pointer + 1] switch
-        {
-            0 or 1 or 2 or 3 => OpCodes[pointer + 1].ToString(),
-            4 => "A",
-            5 => "B",
-            6 => "C",
-            _ => throw new ArgumentException(),
+            _ => throw new NotImplementedException(),
         };
     }
 }
