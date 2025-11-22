@@ -130,6 +130,9 @@ public static class DirectionExtensions
 
     public static Direction[] All() => Enum.GetValues<Direction>();
 
+    public static Direction Right(this Direction direction) => direction.RotateClockwise();
+    public static Direction Left(this Direction direction) => direction.RotateCounterClockwise();
+
     public static Direction RotateClockwise(this Direction direction)
     {
         var next = (int)direction << 1;
