@@ -127,6 +127,11 @@ export function useConnectionManager(
     })
 
     setSolving((current) => [...current.filter((x) => x != update.id.problemName)])
+
+    const gridRef = grids.current[update.id.problemName]
+    if (gridRef?.stopRender != null) {
+      void gridRef.stopRender()
+    }
   }
 
   const handleStart = (): void => {
@@ -190,7 +195,7 @@ export function useConnectionManager(
 
   const solve = async (problem: ProblemMetadata, input: string): Promise<void> => {
     if (problem.name == null) throw new Error('Cannot solve unnamed problem.')
-    setSolving((current) => [...current, problem.name])
+    setSolving((current) => [...current, problem.name!])
 
     const id: ProblemId = {
       year: year,

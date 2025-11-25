@@ -22,6 +22,31 @@ if (process.contextIsolated) {
       (year: number, day: number, token: string): Promise<string> =>
         ipcRenderer.invoke('get-input', year, day, token)
     )
+    contextBridge.exposeInMainWorld(
+      'getArticle',
+      (year: number, day: number, token: string): Promise<string> =>
+        ipcRenderer.invoke('get-article', year, day, token)
+    )
+    contextBridge.exposeInMainWorld(
+      'getRawDescription',
+      (year: number, day: number, token: string, partIndex: number): Promise<string> =>
+        ipcRenderer.invoke('get-raw-description', year, day, token, partIndex)
+    )
+    contextBridge.exposeInMainWorld(
+      'getProcessedDescription',
+      (article: string, openRouterToken: string): Promise<string | undefined> =>
+        ipcRenderer.invoke('get-processed-description', article, openRouterToken)
+    )
+    contextBridge.exposeInMainWorld(
+      'getDescription',
+      (year: number, day: number, token: string, openRouterToken: string): Promise<{article: string, processed: string | undefined} | undefined> => 
+        ipcRenderer.invoke('get-description', year, day, token, openRouterToken)
+    )
+    contextBridge.exposeInMainWorld(
+      'saveGif',
+      (defaultFileName: string, bytes: Uint8Array): Promise<boolean> =>
+        ipcRenderer.invoke('save-gif', defaultFileName, bytes)
+    )
   } catch (error) {
     console.error(error)
   }

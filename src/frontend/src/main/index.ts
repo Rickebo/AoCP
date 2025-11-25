@@ -1,7 +1,126 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as path from 'node:path'
+import * as fs from 'node:fs/promises'
+
+async function fetchAocArticle(
+  year: number,
+  day: number,
+  token: string,
+  partIndex?: number
+): Promise<string> {
+  const resp = await fetch(`https://adventofcode.com/${year}/day/${day}`, {
+    headers: {
+      cookie: `session=${token}`
+    }
+  })
+
+  const html = await resp.text()
+
+  const firstArticleIndex = html.indexOf('<article')
+  if (firstArticleIndex === -1) {
+    return html
+  }
+
+  if (partIndex == null || partIndex < 0) {
+    const lastArticleEndIndex = html.lastIndexOf('</article>')
+    if (lastArticleEndIndex === -1) {
+      return html
+    }
+
+    return html.slice(firstArticleIndex, lastArticleEndIndex + '</article>'.length)
+  }
+
+  const articles: string[] = []
+  let searchIndex = 0
+
+  while (true) {
+    const openIndex = html.indexOf('<article', searchIndex)
+    if (openIndex === -1) {
+      break
+    }
+
+    const closeIndex = html.indexOf('</article>', openIndex)
+    if (closeIndex === -1) {
+      break
+    }
+
+    const articleHtml = html.slice(openIndex, closeIndex + '</article>'.length)
+    articles.push(articleHtml)
+    searchIndex = closeIndex + '</article>'.length
+  }
+
+  if (articles.length === 0) {
+    return html
+  }
+
+  const dayDescArticles = articles.filter((articleHtml) => {
+    const openingTagEnd = articleHtml.indexOf('>')
+    if (openingTagEnd === -1) {
+      return false
+    }
+
+    const openingTag = articleHtml.slice(0, openingTagEnd)
+    return (
+      openingTag.includes('day-desc') ||
+      openingTag.includes('class="day-desc"') ||
+      openingTag.includes("class='day-desc'")
+    )
+  })
+
+  const candidates = dayDescArticles.length > 0 ? dayDescArticles : articles
+  const clampedIndex = Math.min(Math.max(partIndex, 0), candidates.length - 1)
+
+  return candidates[clampedIndex]
+}
+
+async function summarizeDescriptionWithOpenRouter(
+  article: string,
+  openRouterToken: string
+): Promise<string | undefined> {
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openRouterToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-5',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You summarize Advent of Code problem descriptions into concise HTML while preserving important formatting such as code blocks and distinct input examples.'
+          },
+          {
+            role: 'user',
+            content:
+              'Summarize the following Advent of Code problem description HTML into a shorter HTML explanation that keeps the essential details needed to solve the puzzle:\n\n' +
+              article
+          }
+        ]
+      })
+    })
+
+    if (!response.ok) {
+      console.error('OpenRouter API request failed', response.status, await response.text())
+      return undefined
+    }
+
+    const data: any = await response.json()
+    const content = data?.choices?.[0]?.message?.content
+    if (typeof content !== 'string') {
+      return undefined
+    }
+
+    return content
+  } catch (error) {
+    console.error('Failed to call OpenRouter API', error)
+    return undefined
+  }
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -65,6 +184,55 @@ function createWindow(): void {
     })
 
     return resp.text()
+  })
+
+  ipcMain.handle('get-article', async (_, year, day, token): Promise<string> => {
+    return await fetchAocArticle(year, day, token)
+  })
+
+  ipcMain.handle(
+    'get-raw-description',
+    async (_, year, day, token, partIndex): Promise<string> => {
+      return await fetchAocArticle(year, day, token, partIndex)
+    }
+  )
+
+  ipcMain.handle(
+    'get-processed-description',
+    async (_, article: string, openRouterToken: string): Promise<string | undefined> => {
+      try {
+        if (openRouterToken == null || openRouterToken.trim().length === 0) {
+          return undefined
+        }
+
+        const processed = await summarizeDescriptionWithOpenRouter(article, openRouterToken)
+        return processed ?? undefined
+      } catch (error) {
+        console.error('Failed to handle get-processed-description', error)
+        return undefined
+      }
+    }
+  )
+
+  ipcMain.handle('save-gif', async (_, defaultFileName: string, bytes: Uint8Array): Promise<boolean> => {
+    const result = await dialog.showSaveDialog(mainWindow, {
+      title: 'Save grid animation',
+      defaultPath: defaultFileName,
+      filters: [
+        {
+          name: 'WebM Video',
+          extensions: ['webm']
+        }
+      ]
+    })
+
+    if (result.canceled || !result.filePath) {
+      return false
+    }
+
+    await fs.writeFile(result.filePath, Buffer.from(bytes))
+
+    return true
   })
 
   // HMR for renderer base on electron-vite cli.

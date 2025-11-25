@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Transform } from '../lib/Transform'
+import { GifRenderSession, GridGifContext, RenderSettings } from '../services/GifService'
 import '../assets/grid.scss'
 
 export interface GridCell {
@@ -16,6 +17,8 @@ export interface GridRef {
   draw: ((grid: GridData) => void) | undefined
   clear: () => void
   setSize: (w: number, h: number) => void
+  startRender: (context: GridGifContext, settings: RenderSettings) => void
+  stopRender: () => Promise<void>
 }
 
 export interface Glyph {
@@ -159,6 +162,7 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
   const [clickPos, setClickPos] = useState<[number, number] | undefined>(undefined)
   const [clickOffset, setClickOffset] = useState<[number, number] | undefined>(undefined)
   const [mousePos, setMousePos] = useState<[number, number] | undefined>(undefined)
+  const renderSessionRef = useRef<GifRenderSession | null>(null)
 
   const resizeCanvas = (width: number, height: number): void => {
     if (canvasRef.current == null) return
@@ -238,6 +242,14 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
 
       return result
     })
+
+    if (!clear && renderSessionRef.current != null && canvas != null) {
+      try {
+        renderSessionRef.current.addFrame(canvas)
+      } catch {
+        // Ignore frame capture failures (e.g. context lost)
+      }
+    }
   }
 
   const clear = (): void => {
@@ -303,6 +315,18 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
     ]
   }
 
+  const startRender = (context: GridGifContext, settings: RenderSettings): void => {
+    renderSessionRef.current = new GifRenderSession(context, settings)
+  }
+
+  const stopRender = async (): Promise<void> => {
+    if (renderSessionRef.current == null) return
+
+    const session = renderSessionRef.current
+    renderSessionRef.current = null
+    await session.finish()
+  }
+
   useImperativeHandle(ref, (): GridRef => {
     return {
       draw: draw,
@@ -310,6 +334,12 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
       setSize: (w: number, h: number): void => {
         setW(w)
         setH(h)
+      },
+      startRender: (context: GridGifContext, settings: RenderSettings): void => {
+        startRender(context, settings)
+      },
+      stopRender: async (): Promise<void> => {
+        await stopRender()
       }
     }
   }, [draw, clear, canvasRef.current])

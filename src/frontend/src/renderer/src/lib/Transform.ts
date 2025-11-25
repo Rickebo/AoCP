@@ -19,9 +19,9 @@ export class Transform {
 
   public scale<T extends number | [number, number]>(value: T): ScaleResult<T> {
     if (typeof value === 'number') {
-      return value * this.scaleFactor[0]
+      return value * this.scaleFactor[0] as ScaleResult<T>
     } else {
-      return [value[0] * this.scaleFactor[0], value[1] * this.scaleFactor[1]]
+      return [value[0] * this.scaleFactor[0], value[1] * this.scaleFactor[1]] as ScaleResult<T>
     }
   }
 }

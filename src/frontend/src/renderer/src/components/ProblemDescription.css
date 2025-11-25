@@ -680,3 +680,22 @@
         margin: 1em 0;
     }
 }
+
+.problem-container {
+    position: relative;
+}
+
+.problem-summary-toggle {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 5;
+}
+
+.problem-summary-toggle i {
+    pointer-events: none;
+}
+
+.problem {
+    overflow-y: auto;
+}

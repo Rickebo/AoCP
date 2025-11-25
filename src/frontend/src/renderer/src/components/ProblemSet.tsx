@@ -1,13 +1,14 @@
 import React, { CSSProperties, FC, ReactNode, useEffect, useRef, useState } from 'react'
 import ProblemInput from './ProblemInput'
 import { ProblemSetMetadata } from '../data/metadata'
-import { Col, Nav, Stack, Tab } from 'react-bootstrap'
+import { Button, Col, Form, Modal, Nav, Stack, Tab } from 'react-bootstrap'
 import ProblemLog from './ProblemLog'
 import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
 import ProblemDescription from './ProblemDescription'
 import { BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
+import { RenderSettings } from '../services/GifService'
 
 export interface ProblemSetProps {
   year: number
@@ -54,13 +55,16 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 }
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
-  const grids = useRef<Record<string, GridRef>>({})
+  const grids = useRef<Record<string, GridRef | null>>({})
   const mgr = useConnectionManager(props.year, props.author, props.set, grids)
-  const [solveData, setSolveData] = useState<Record<string, string>>({})
-
   // Cooldown before showing spinner for problem being solved. To prevent it from flashing
   // too quickly when a solution is just a bit too efficient.
   const startCooldown = 10
+  const [showRenderModal, setShowRenderModal] = useState<boolean>(false)
+  const [pendingRenderInput, setPendingRenderInput] = useState<string | undefined>(undefined)
+  const [renderWidth, setRenderWidth] = useState<number>(800)
+  const [renderHeight, setRenderHeight] = useState<number>(800)
+  const [speedFactor, setSpeedFactor] = useState<number>(1)
 
   const navigate = (url: string): void => {
     window.open(url)
@@ -74,31 +78,67 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     return elapsed > startCooldown
   }
 
-  const solveElapsedTime = (problemName: string | undefined): string =>
-    mgr.elapsed(problemName) ?? ''
-
   const isSolvingAny = props.set.problems
     .map((problem) => isSolving(problem.name))
     .reduce((a, b) => a || b, false)
 
+  const handleSolveAll = (input: string): void => {
+    mgr.solveAll(input)
+  }
+
+  const handleRenderAll = (input: string): void => {
+    setPendingRenderInput(input)
+    setShowRenderModal(true)
+  }
+
+  const handleConfirmRender = (): void => {
+    const input = pendingRenderInput ?? ''
+    if (input.length === 0) {
+      setShowRenderModal(false)
+      return
+    }
+
+    const settings: RenderSettings = {
+      width: renderWidth,
+      height: renderHeight,
+      speedFactor: speedFactor
+    }
+
+    Object.entries(grids.current).forEach(([problemName, grid]) => {
+      if (grid == null) return
+
+      grid.startRender(
+        {
+          year: props.year,
+          setName: props.set.name,
+          problemName
+        },
+        settings
+      )
+    })
+
+    mgr.solveAll(input)
+    setShowRenderModal(false)
+  }
+
+  const handleCancelRender = (): void => {
+    setShowRenderModal(false)
+    setPendingRenderInput(undefined)
+  }
+
   useEffect(() => {
     if (!isSolvingAny) return
 
-    const updater = (): void => {
-      const newData = Object.fromEntries(
-        props.set.problems.map((problem) => [problem.name, solveElapsedTime(problem.name)])
-      )
-      setSolveData(newData)
-    }
-
-    updater()
-    const interval = setInterval(updater, 7)
+    const interval = setInterval(() => {
+      // No-op body; dependency on isSolvingAny is enough to keep React updating elapsed labels via mgr.elapsed
+    }, 7)
 
     return (): void => {
       clearInterval(interval)
-      updater()
     }
-  }, [...props.set.problems.map((prob) => mgr.elapsed(prob.name))])
+  }, [isSolvingAny])
+
+  const problemKey = `input-${props.year}-${props.set.name}`
 
   return (
     <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>
@@ -133,8 +173,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
 
         <ProblemInput
           className="mb-3"
-          onSolve={mgr.solveAll}
-          problemKey={`input-${props.year}-${props.set.name}`}
+          onSolve={handleSolveAll}
+          onRender={handleRenderAll}
+          problemKey={problemKey}
           year={props.year}
           day={new Date(props.set.releaseTime).getDate()}
         />
@@ -189,7 +230,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   className="me-3"
                 >
                   <BsStopwatch className="me-2 my-0" />
-                  {mgr.elapsed(problem.name)}
+                  {mgr.elapsed(problem.name ?? '')}
                 </span>
               )}
             </Stack>
@@ -199,9 +240,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
 
       <Tab.Container defaultActiveKey={`desc-0`}>
         <Nav variant="tabs">
-          <Nav.Item eventKey="desc"></Nav.Item>
-
-          {props.set.problems.map((problem, i) => (
+          {props.set.problems.map((_, i) => (
             <Col key={i}>
               <Stack direction="horizontal">
                 <Nav.Item>
@@ -224,7 +263,13 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           {props.set.problems.map((problem, i) => (
             <>
               <Tab.Pane eventKey={`desc-${i}`}>
-                <ProblemDescription metadata={problem} />
+                <ProblemDescription 
+                  metadata={problem} 
+                  problemKey={problemKey} 
+                  year={props.year} 
+                  day={new Date(props.set.releaseTime).getDate()} 
+                  partIndex={i} 
+                />
               </Tab.Pane>
               <Tab.Pane
                 eventKey={`grid-${i}`}
@@ -236,7 +281,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   {problem.name == null ? null : (
                     <Grid
                       ref={(grid) => {
-                        grids.current[problem.name] = grid
+                        grids.current[problem.name!] = grid
                       }}
                     />
                   )}
@@ -256,6 +301,69 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           ))}
         </Tab.Content>
       </Tab.Container>
+
+      <Modal show={showRenderModal} onHide={handleCancelRender}>
+        <Modal.Header closeButton>
+          <Modal.Title>Render settings</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Resolution (pixels)</Form.Label>
+              <div className="d-flex">
+                <Form.Control
+                  type="number"
+                  min={1}
+                  value={renderWidth}
+                  onChange={(e) => {
+                    const v = Number(e.currentTarget.value)
+                    setRenderWidth(Number.isFinite(v) && v > 0 ? Math.floor(v) : 1)
+                  }}
+                />
+                <span className="mx-2 align-self-center">×</span>
+                <Form.Control
+                  type="number"
+                  min={1}
+                  value={renderHeight}
+                  onChange={(e) => {
+                    const v = Number(e.currentTarget.value)
+                    setRenderHeight(Number.isFinite(v) && v > 0 ? Math.floor(v) : 1)
+                  }}
+                />
+              </div>
+              <Form.Text muted>Width × height of the output video.</Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Speed factor</Form.Label>
+              <Form.Control
+                type="number"
+                min={1}
+                value={speedFactor}
+                onChange={(e) => {
+                  const v = Number(e.currentTarget.value)
+                  setSpeedFactor(Number.isFinite(v) && v > 0 ? Math.floor(v) : 1)
+                }}
+              />
+              <Form.Text muted>
+                1 = every update, 2 = 2 updates per frame, 3 = 3 updates per frame, etc.
+              </Form.Text>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCancelRender}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleConfirmRender}
+            disabled={pendingRenderInput == null || pendingRenderInput.length === 0}
+          >
+            Render
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   )
 }

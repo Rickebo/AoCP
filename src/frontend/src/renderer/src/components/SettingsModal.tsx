@@ -60,6 +60,21 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
               />
             </Form.Group>
             <Form.Group>
+              <Form.Label>OpenRouter API token</Form.Label>
+              <Form.Control
+                type="text"
+                value={settings.state.openRouterToken ?? ''}
+                placeholder="sk-or-..."
+                onChange={(e) => {
+                  const newToken = e.currentTarget.value
+                  settings.update((current) => {
+                    current.openRouterToken = newToken
+                    settings.save(current)
+                  })
+                }}
+              />
+            </Form.Group>
+            <Form.Group>
               <Form.Label>Backend</Form.Label>
               <ListGroup>
                 {backend.urls.map((url) => (

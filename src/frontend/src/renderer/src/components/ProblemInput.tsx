@@ -1,9 +1,10 @@
-﻿import { FC, useState } from 'react'
-import { Button, Form, Spinner, Stack } from 'react-bootstrap'
+﻿import { FC, useEffect, useState } from 'react'
+import { Button, ButtonGroup, Dropdown, Form, Spinner, Stack } from 'react-bootstrap'
 import { usePersistentState } from '../StateUtils'
 import { v4 as uuid } from 'uuid'
 import { BsCloudDownload } from 'react-icons/bs'
 import { useAocService } from '../AocUtils'
+import { ProblemDescriptionData } from '@renderer/data/ProblemDescriptionData'
 
 export interface ProblemInputProps {
   year: number
@@ -11,12 +12,14 @@ export interface ProblemInputProps {
   className?: string
   problemKey: string
   onSolve: (input: string) => void
+  onRender?: (input: string) => void
 }
 
 interface ProblemInputData {
   selected: string | undefined
   inputs: Record<string, string>
 }
+
 
 const ProblemInput: FC<ProblemInputProps> = (props) => {
   const aocService = useAocService()
@@ -71,9 +74,31 @@ const ProblemInput: FC<ProblemInputProps> = (props) => {
         {!loadingInput ? <BsCloudDownload /> : <Spinner size="sm" />}
       </Button>
       <div className="vr" />
-      <Button onClick={() => props.onSolve(getInput() ?? '')} disabled={!hasInput}>
-        Run
-      </Button>
+      {props.onRender == null ? (
+        <Button onClick={() => props.onSolve(getInput() ?? '')} disabled={!hasInput}>
+          Run
+        </Button>
+      ) : (
+        <Dropdown as={ButtonGroup}>
+          <Button onClick={() => props.onSolve(getInput() ?? '')} disabled={!hasInput}>
+            Run
+          </Button>
+          <Dropdown.Toggle
+            split
+            id="problem-input-run-dropdown"
+            disabled={!hasInput}
+          />
+          <Dropdown.Menu>
+            <Dropdown.Item
+              onClick={() => {
+                props.onRender?.(getInput() ?? '')
+              }}
+            >
+              Render
+            </Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      )}
     </Stack>
   )
 }
