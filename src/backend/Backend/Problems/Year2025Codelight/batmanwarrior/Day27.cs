@@ -1,0 +1,168 @@
+﻿using Common;
+using Common.Updates;
+using Lib;
+using Lib.Coordinate;
+using Lib.Grid;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Backend.Problems.Year2025Codelight.batmanwarrior;
+public class Day27 : ProblemSet
+{
+    public override DateTime ReleaseTime { get; } =
+        new(2025, 11, 27);
+
+    public override List<Problem> Problems { get; } =
+    [
+        new ProblemOne()
+    ];
+
+    public override string Name => "Storage Crisis";
+
+    private class ProblemOne : Problem
+    {
+        public override string Name => "Part One";
+
+        public override string Description => "";
+
+        public override Task Solve(string input, Reporter reporter)
+        {
+            // Create storage
+            Storage storage = new(input, reporter);
+
+            // Get largest rectangular free shelf space
+            int maxProfit = storage.LargestSpace();
+
+            // Send solution to frontend
+            reporter.Report(FinishedProblemUpdate.FromSolution(maxProfit.ToString()));
+            return Task.CompletedTask;
+        }
+
+        private class Storage
+        {
+            private readonly Reporter _reporter;
+            private readonly CharGrid _grid;
+
+            public Storage(string input, Reporter reporter)
+            {
+                // Save for prints
+                _reporter = reporter;
+
+                // Parse input to grid
+                _grid = new CharGrid(input).Flip(Axis.Y);
+
+                // Print storage matrix
+                _reporter.ReportStringGridUpdate(
+                    _grid,
+                    (builder, coordinate, val) => builder
+                        .WithCoordinate(coordinate)
+                        .WithText(ColorCell(coordinate))
+                );
+            }
+
+            public int LargestSpace()
+            {
+                // Check for rectangle spaces everywhere on the grid
+                TotalMax totalMax = new(new(0, 0), 0, 0, 0);
+                foreach (IntegerCoordinate<int> pos in _grid.Coordinates)
+                {
+                    // Skip occupied spots
+                    if (_grid[pos] == '#')
+                        continue;
+
+                    // Get maximum possible space for this coord
+                    bool predicate(char c) => c == _grid[pos];
+                    int localMaxWidth = _grid.CountRepeating(pos, Direction.East, predicate);
+                    int localMaxHeight = _grid.CountRepeating(pos, Direction.North, predicate);
+
+                    // Check if worth looking
+                    if (localMaxWidth * localMaxHeight <= totalMax.Area)
+                        continue;
+
+                    // Local vars
+                    var area = Math.Max(localMaxWidth, localMaxHeight);
+                    var width = localMaxWidth > localMaxHeight ? localMaxWidth : 1;
+                    var height = localMaxHeight > localMaxWidth ? localMaxHeight : 1;
+                    LocalMax localMax = new(area, width, height);
+
+                    // Calculate possible rectangles
+                    bool keepLooking = true;
+                    for (int y = 1; y < localMaxHeight; y++)
+                    {
+                        for (int x = 1; x < localMaxWidth; x++)
+                        {
+                            if (_grid[pos.X + x, pos.Y + y] == '#')
+                            {
+                                localMaxWidth = x;
+
+                                // Local max area got smaller, check if less than total max
+                                if (localMaxWidth * localMaxHeight <= totalMax.Area)
+                                    keepLooking = false;
+
+                                break;
+                            }
+
+                            // Determine area and check against local max
+                            var w = x + 1;
+                            var h = y + 1;
+                            var a = w * h;
+                            if (a > localMax.Area)
+                            {
+                                localMax.Area = a;
+                                localMax.Width = w;
+                                localMax.Height = h;
+                            }
+                        }
+
+                        if (!keepLooking)
+                            break;
+                    }
+
+                    // Check against total max
+                    if (localMax.Area > totalMax.Area)
+                    {
+                        totalMax.Pos = pos;
+                        totalMax.Area = localMax.Area;
+                        totalMax.Width = localMax.Width;
+                        totalMax.Height = localMax.Height;
+                    }
+                }
+
+                // Paint the largest rectangle
+                foreach (var pos in _grid.SectionCoordinates(totalMax.Pos, totalMax.Width, totalMax.Height))
+                   _reporter.ReportStringGridUpdate(pos, "#FF0000");
+
+                // Paint rectangle origin
+                _reporter.ReportStringGridUpdate(totalMax.Pos, "#00FF00");
+
+                return totalMax.Area;
+            }
+
+            private string ColorCell(IntegerCoordinate<int> coordinate)
+            {
+                // Color formating
+                return _grid[coordinate] switch
+                {
+                    '#' => "#000000",   // Occupied
+                    _ => "#444444",     // Free
+                };
+            }
+
+            private struct TotalMax(IntegerCoordinate<int> pos, int area, int width, int height)
+            {
+                public IntegerCoordinate<int> Pos = pos;
+                public int Area = area;
+                public int Width = width;
+                public int Height = height;
+            }
+
+            private struct LocalMax(int area, int width, int height)
+            {
+                public int Area = area;
+                public int Width = width;
+                public int Height = height;
+            }
+        }
+    }
+}
