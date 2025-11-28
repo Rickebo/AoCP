@@ -1,12 +1,16 @@
-﻿namespace Lib.Grid;
+﻿using Lib.Coordinate;
+using Lib.Enums;
+using Lib.Extensions;
+
+namespace Lib.Grid;
 
 public class CharGrid : ArrayGrid<char>
 {
-    public CharGrid(string input) : base(ParseFromString(input)) { }
+    public CharGrid(string input) : base(ParseFromString(input)) {}
 
-    public CharGrid(char c, int width, int height) : base(Fill(c, width, height)) { }
+    public CharGrid(char c, int width, int height) : base(Fill(c, width, height)) {}
 
-    public CharGrid(char[,] values) : base(values) { }
+    public CharGrid(char[,] values) : base(values) {}
 
     private static char[,] ParseFromString(string str)
     {
@@ -34,6 +38,12 @@ public class CharGrid : ArrayGrid<char>
 
         return arr;
     }
+
+    public int CountRepeating(IntegerCoordinate<int> pos, Direction dir) =>
+        CountRepeating(pos, dir, this[pos]);
+
+    public int CountRepeating(IntegerCoordinate<int> pos, Direction dir, char source) =>
+        RetrieveDirection(pos, dir).TakeWhile(val => val == source).Count();
 
     public override CharGrid Flip(Axis axis) => Flip(values => new CharGrid(values), axis);
 }

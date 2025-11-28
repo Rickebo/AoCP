@@ -1,15 +1,16 @@
-﻿namespace Lib.Grid;
+﻿using Lib.Coordinate;
+using Lib.Enums;
+using Lib.Extensions;
+
+namespace Lib.Grid;
 
 public class IntGrid : ArrayGrid<int>
 {
-    public IntGrid(string input, int? defaultValue = null)
-        : base(ParseFromString(input, defaultValue)) {}
+    public IntGrid(string input, int? defaultValue = null) : base(ParseFromString(input, defaultValue)) {}
 
-    public IntGrid(int num, int width, int height)
-        : base(Fill(num, width, height)) {}
+    public IntGrid(int num, int width, int height) : base(Fill(num, width, height)) {}
 
-    public IntGrid(int[,] values)
-        : base(values) {}
+    public IntGrid(int[,] values) : base(values) {}
 
     private static int[,] ParseFromString(string str, int? defaultValue)
     {
@@ -45,6 +46,12 @@ public class IntGrid : ArrayGrid<int>
 
         return arr;
     }
+
+    public int CountRepeating(IntegerCoordinate<int> pos, Direction dir) =>
+        CountRepeating(pos, dir, this[pos]);
+
+    public int CountRepeating(IntegerCoordinate<int> pos, Direction dir, int source) =>
+        RetrieveDirection(pos, dir).TakeWhile(val => val == source).Count();
 
     public override IntGrid Flip(Axis axis) => Flip(values => new IntGrid(values), axis);
 }
