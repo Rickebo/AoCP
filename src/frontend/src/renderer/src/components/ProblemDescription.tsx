@@ -3,6 +3,7 @@ import './ProblemDescription.css'
 import { ProblemMetadata } from '../data/metadata'
 import { usePersistentState } from '@renderer/StateUtils'
 import { ProblemDescriptionData } from '@renderer/data/ProblemDescriptionData'
+import { useSettings } from '../context/SettingsContext'
 import { useAocService } from '@renderer/AocUtils'
 import { BsStars } from 'react-icons/bs'
 
@@ -16,9 +17,10 @@ export interface ProblemDescriptionProps {
 
 const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   const aocService = useAocService()
+  const settings = useSettings()
   const [loadingRaw, setLoadingRaw] = useState<boolean>(false)
   const [loadingProcessed, setLoadingProcessed] = useState<boolean>(false)
-  const [showSummary, setShowSummary] = useState<boolean>(true)
+  const [showSummary, setShowSummary] = useState<boolean>(settings.state.summarizeWithAI)
 
   const cacheKey = `${props.problemKey}-part-${props.partIndex}`
 
@@ -31,8 +33,10 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   const hasRaw = descriptionData?.raw != null
   const hasProcessed = descriptionData?.processed != null
 
+  const summaryEnabled = settings.state.summarizeWithAI && hasProcessed
+
   const downloadRawDescription = async (): Promise<void> => {
-    if (loadingRaw || hasRaw) {
+    if (!settings.state.retrieveDescription || loadingRaw || hasRaw) {
       return
     }
 
@@ -50,7 +54,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   }
 
   const downloadProcessedDescription = async (): Promise<void> => {
-    if (loadingProcessed || !hasRaw || hasProcessed) {
+    if (!settings.state.summarizeWithAI || !settings.state.retrieveDescription || loadingProcessed || !hasRaw || hasProcessed) {
       return
     }
 
@@ -75,22 +79,22 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   }
 
   useEffect(() => {
-    if (!hasRaw) {
+    if (settings.state.retrieveDescription && !hasRaw) {
       void downloadRawDescription()
     }
-  }, [hasRaw])
+  }, [hasRaw, settings.state.retrieveDescription])
 
   useEffect(() => {
-    if (hasRaw && !hasProcessed) {
+    if (settings.state.retrieveDescription && settings.state.summarizeWithAI && hasRaw && !hasProcessed) {
       void downloadProcessedDescription()
     }
-  }, [hasRaw, hasProcessed])
+  }, [hasRaw, hasProcessed, settings.state.retrieveDescription, settings.state.summarizeWithAI])
 
   let html: string | undefined
 
-  if (showSummary && hasProcessed) {
+  if (settings.state.summarizeWithAI && showSummary && hasProcessed) {
     html = descriptionData?.processed ?? undefined
-  } else if (descriptionData?.raw != null) {
+  } else if (settings.state.retrieveDescription && descriptionData?.raw != null) {
     html = descriptionData.raw
   } else if (props.metadata.description != null) {
     html = props.metadata.description
@@ -98,8 +102,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
 
   const innerHtml = html != null ? { __html: html } : undefined
 
-  const showSummaryButton = hasRaw
-  const summaryEnabled = hasProcessed
+  const showSummaryButton = settings.state.summarizeWithAI && hasRaw
 
   return (
     <div className="problem-container">

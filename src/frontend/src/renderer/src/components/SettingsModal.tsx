@@ -74,6 +74,40 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                 }}
               />
             </Form.Group>
+
+            <Form.Group>
+              <Form.Check
+                type="switch"
+                label="Retrieve description"
+                checked={settings.state.retrieveDescription}
+                onChange={(e) => {
+                  const enabled = e.currentTarget.checked
+                  settings.update((current) => {
+                    current.retrieveDescription = enabled
+                    if (!enabled) {
+                      current.summarizeWithAI = false
+                    }
+                    settings.save(current)
+                  })
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group>
+              <Form.Check
+                type="switch"
+                label="Summarize with AI"
+                checked={settings.state.summarizeWithAI}
+                disabled={!settings.state.retrieveDescription}
+                onChange={(e) => {
+                  settings.update((current) => {
+                    current.summarizeWithAI = e.currentTarget.checked
+                    settings.save(current)
+                  })
+                }}
+              />
+            </Form.Group>
+
             <Form.Group>
               <Form.Label>Backend</Form.Label>
               <ListGroup>
