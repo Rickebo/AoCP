@@ -1,4 +1,5 @@
 ﻿using Lib.Coordinate;
+using Lib.Enums;
 
 namespace Lib.Grid;
 
@@ -59,7 +60,8 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             var yDir = Math.Sign(y.End.Value - y.Start.Value);
             for (var cx = x.Start.Value; cx < x.End.Value; cx += xDir)
                 for (var cy = y.Start.Value; cy < y.End.Value; cy += yDir)
-                    yield return _values[cx, cy];
+                    if (Contains(cx, cy))
+                        yield return _values[cx, cy];
         }
     }
 
@@ -108,33 +110,18 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         }
     }
 
-    public IntegerCoordinate<int>? SearchDirection(IntegerCoordinate<int> pos, Direction dir, Func<TValue, bool> predicate)
+    public IEnumerable<TValue> RetrieveSection(IntegerCoordinate<int> pos, int width, int height)
     {
-        pos = pos.Move(dir);
-        while (Contains(pos))
-        {
-            if (predicate(this[pos]))
-                return pos;
-
-            pos = pos.Move(dir);
-        }
-        return null;
+        for (int y = pos.Y; y < pos.Y + height && y < Height; y++)
+            for (int x = pos.X; x < pos.X + width && x < Width; x++)
+                yield return _values[x, y];
     }
 
-    public int CountRepeating(IntegerCoordinate<int> pos, Direction dir, Func<TValue, bool> predicate)
-    {
-        var count = 0;
-        while (Contains(pos) && predicate(this[pos]))
-        {
-            count++;
-            pos = pos.Move(dir);
-        }
-        return count;
-    }
+    public bool Contains(int x, int y) =>
+        x >= 0 && x < Width && y >= 0 && y < Height;
 
     public bool Contains(IntegerCoordinate<int> coordinate) =>
-        coordinate.X >= 0 && coordinate.X < Width &&
-        coordinate.Y >= 0 && coordinate.Y < Height;
+        Contains(coordinate.X, coordinate.Y);
 
     public void Fill(IntegerCoordinate<int> coordinate, int width, int height, TValue value)
     {
