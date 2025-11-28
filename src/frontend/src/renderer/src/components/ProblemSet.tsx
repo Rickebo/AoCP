@@ -262,7 +262,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
         >
           {props.set.problems.map((problem, i) => (
             <React.Fragment key={`problem-group-${i}`}>
-              <Tab.Pane eventKey={`desc-${i}`}>
+              <Tab.Pane eventKey={`desc-${i}`} style={{flexGrow: '1'}}>
                 <ProblemDescription 
                   metadata={problem} 
                   problemKey={problemKey} 
@@ -271,12 +271,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   partIndex={i} 
                 />
               </Tab.Pane>
-              <Tab.Pane
-                eventKey={`grid-${i}`}
-                style={{
-                  flexGrow: '1'
-                }}
-              >
+              <Tab.Pane eventKey={`grid-${i}`} style={{flexGrow: '1'}}>
                 <div className="w-100 h-100 d-flex">
                   {problem.name == null ? null : (
                     <Grid
@@ -287,12 +282,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   )}
                 </div>
               </Tab.Pane>
-              <Tab.Pane
-                eventKey={`log-${i}`}
-                style={{
-                  flexGrow: '1'
-                }}
-              >
+              <Tab.Pane eventKey={`log-${i}`} style={{flexGrow: '1'}}>
                 <div className="w-100 h-100 d-flex flex">
                   {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
                 </div>
