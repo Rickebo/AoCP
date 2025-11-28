@@ -1,6 +1,8 @@
-﻿using Lib;
-using Lib.Coordinate;
+﻿using Lib.Coordinate;
+using Lib.Enums;
+using Lib.Extensions;
 using Lib.Grid;
+using Lib.Printing;
 
 namespace Common.Updates;
 

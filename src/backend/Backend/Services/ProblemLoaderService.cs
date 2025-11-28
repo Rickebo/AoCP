@@ -18,6 +18,7 @@ using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Hosting;
 using static System.Threading.Tasks.Task;
+using Lib.Extensions;
 
 namespace Backend.Services;
 
@@ -38,7 +39,7 @@ public class ProblemLoaderService : IHostedService
         var srcs = new List<Assembly>
         {
             typeof(Common.Reporter).Assembly,
-            typeof(Lib.StringExtensions).Assembly,
+            typeof(StringExtensions).Assembly,
             typeof(ProblemLoaderService).Assembly
         };
 

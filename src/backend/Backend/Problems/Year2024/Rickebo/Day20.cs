@@ -9,6 +9,7 @@ using Common;
 using Common.Updates;
 using Lib;
 using Lib.Coordinate;
+using Lib.Enums;
 using Lib.Grid;
 
 namespace Backend.Problems.Year2024.Rickebo;

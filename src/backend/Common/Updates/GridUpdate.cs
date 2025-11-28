@@ -6,10 +6,10 @@ public abstract class GridUpdate<T> : OngoingProblemUpdate
 {
     public override string Type => "grid";
 
-    public int? Width { get; set; }
-    public int? Height { get; set; }
-    public bool? Clear { get; set; }
-    public Dictionary<string, Dictionary<string, T>> Rows { get; set; }
+    public int? Width { get; set; } = null;
+    public int? Height { get; set; } = null;
+    public bool? Clear { get; set; } = null;
+    public Dictionary<string, Dictionary<string, T>> Rows { get; set; } = [];
 
     public static TGridUpdate FromGrid<TGridUpdate, TCell, TGridCell>(
         ArrayGrid<TGridCell> grid,
@@ -23,9 +23,7 @@ public abstract class GridUpdate<T> : OngoingProblemUpdate
             var row = new Dictionary<string, TCell>();
 
             for (var x = 0; x < grid.Width; x++)
-            {
                 row[x.ToString()] = cellConverter(grid[x, y]);
-            }
 
             rows[y.ToString()] = row;
         }

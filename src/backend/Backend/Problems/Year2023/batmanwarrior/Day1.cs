@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib;
+using Lib.Extensions;
 
 namespace Backend.Problems.Year2023.batmanwarrior;
 

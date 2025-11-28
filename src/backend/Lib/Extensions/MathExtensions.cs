@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Lib;
+namespace Lib.Extensions;
 
 public static class MathExtensions
 {

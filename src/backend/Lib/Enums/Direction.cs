@@ -1,4 +1,4 @@
-﻿namespace Lib;
+﻿namespace Lib.Enums;
 
 [Flags]
 public enum Direction

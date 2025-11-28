@@ -1,23 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 
 namespace Lib.Search
 {
-    public class BreadthFirstSearch<TSource, TElement, TCost> : ISearchAlgorithm<TSource, TElement, TCost> 
+    public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISearchAlgorithm<TSource, TElement, TCost> 
         where TSource : ISearchSource<TElement, TCost>
         where TElement : ISearchElement<TCost>
         where TCost : INumber<TCost>
     {
-        public TSource Dataset { get; init; }
-
-        public BreadthFirstSearch(TSource dataset)
-        {
-            Dataset = dataset;
-        }
+        public TSource Dataset { get; init; } = dataset;
 
         public ISearchResult Find(TElement start, TCost initialCost, TElement end)
         {
@@ -48,7 +38,7 @@ namespace Lib.Search
 
         public class SuccessfulBreadthFirstSearchResult : BreadthFirstSearchResult
         {
-            public TCost Cost { get; init; }
+            public required TCost Cost { get; init; }
         }
 
         public class UnsuccessfulBreadthFirstSearchResult : BreadthFirstSearchResult

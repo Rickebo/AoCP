@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using Lib.Enums;
+using Lib.Extensions;
+using System.Numerics;
 
 namespace Lib.Coordinate;
 

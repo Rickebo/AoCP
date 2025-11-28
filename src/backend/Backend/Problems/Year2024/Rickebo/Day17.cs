@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 using Lib;
+using Lib.Extensions;
 
 namespace Backend.Problems.Year2024.Rickebo;
 

@@ -6,6 +6,7 @@ using System;
 using Lib.Grid;
 using Lib.Coordinate;
 using Lib;
+using Lib.Extensions;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 

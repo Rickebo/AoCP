@@ -1,4 +1,4 @@
-﻿namespace Lib.Grid
+﻿namespace Lib.Enums
 {
     [Flags]
     public enum Axis

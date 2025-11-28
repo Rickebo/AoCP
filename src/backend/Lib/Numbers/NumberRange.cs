@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
-namespace Lib;
+namespace Lib.Numbers;
 
 public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
 {

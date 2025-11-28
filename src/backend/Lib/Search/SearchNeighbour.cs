@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Lib.Search
+﻿namespace Lib.Search
 {
     public class SearchNeighbour<TNeighbour, TCost> 
         where TNeighbour : ISearchElement<TCost>
     {
-        public TNeighbour Element { get; init; }
-        public TCost Cost { get; init; }
+        public required TNeighbour Element { get; init; }
+        public required TCost Cost { get; init; }
     }
 }

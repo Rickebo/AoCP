@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using System;
 using Lib.Grid;
 using Lib.Coordinate;
-using Lib;
+using Lib.Extensions;
+using Lib.Enums;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 

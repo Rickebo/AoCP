@@ -3,7 +3,8 @@ using Lib.Coordinate;
 
 namespace Lib.Grid;
 
-public class InfiniteGrid<TValue, TCoordinateNumber> : IGrid<TValue, IntegerCoordinate<TCoordinateNumber>, TCoordinateNumber>
+public class InfiniteGrid<TValue, TCoordinateNumber>
+    : IGrid<TValue, IntegerCoordinate<TCoordinateNumber>, TCoordinateNumber>
     where TCoordinateNumber : INumber<TCoordinateNumber>, IBinaryInteger<TCoordinateNumber>
 {
     public IntegerCoordinate<TCoordinateNumber> Min { get; private set; } = new();

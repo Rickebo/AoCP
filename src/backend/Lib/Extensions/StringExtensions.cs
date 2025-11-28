@@ -1,4 +1,4 @@
-﻿namespace Lib;
+﻿namespace Lib.Extensions;
 
 public static class StringExtensions
 {
