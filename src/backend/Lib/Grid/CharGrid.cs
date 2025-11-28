@@ -2,52 +2,38 @@
 
 public class CharGrid : ArrayGrid<char>
 {
-    public CharGrid(string input, OriginPosition originPosition = OriginPosition.BottomLeft) : base(ArrFromStr(input, originPosition)) { }
+    public CharGrid(string input) : base(ParseFromString(input)) { }
 
-    public CharGrid(char c, int width, int height) : base(ArrFromValSize(c, width, height)) { }
+    public CharGrid(char c, int width, int height) : base(Fill(c, width, height)) { }
 
     public CharGrid(char[,] values) : base(values) { }
 
-    private static char[,] ArrFromStr(string str, OriginPosition originPosition = OriginPosition.BottomLeft)
+    private static char[,] ParseFromString(string str)
     {
         // Parse string input
         var rows = str.SplitLines();
         var height = rows.Length;
         var width = rows[0].Length;
 
-        // Init array of chars
+        // Fill 2D-array with chars (Y mapped to bottom left origin)
         var arr = new char[width, height];
-
-        // Fill 2D-array with chars
         for (var y = 0; y < height; y++)
-        {
             for (var x = 0; x < width; x++)
-            {
-                var mappedY = originPosition == OriginPosition.BottomLeft ? height - 1 - y : y;
-                arr[x, y] = rows[mappedY][x];
-            }
-        }
+                arr[x, y] = rows[^(y + 1)][x];
 
         return arr;
     }
 
-    private static char[,] ArrFromValSize(char c, int width, int height)
+    private static char[,] Fill(char c, int width, int height)
     {
-        // Init array of chars
-        var arr = new char[width, height];
-
         // Fill 2D-array with chars
+        var arr = new char[width, height];
         for (var y = 0; y < height; y++)
-        {
             for (var x = 0; x < width; x++)
-            {
                 arr[x, y] = c;
-            }
-        }
 
         return arr;
     }
 
-    public override CharGrid FlipX() => FlipX(values => new CharGrid(values));
-    public override CharGrid FlipY() => FlipY(values => new CharGrid(values));
+    public override CharGrid Flip(Axis axis) => Flip(values => new CharGrid(values), axis);
 }

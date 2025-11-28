@@ -154,7 +154,7 @@ public class Day16 : ProblemSet
     {
         public static Data Parse(string input)
         {
-            var grid = Parser.ParseCharGrid(input).FlipY();
+            var grid = new CharGrid(input).Flip(Axis.Y);
             grid.Replace('.', ' ');
             var src = grid.Find(cell => cell == 'S');
             var dst = grid.Find(cell => cell == 'E');

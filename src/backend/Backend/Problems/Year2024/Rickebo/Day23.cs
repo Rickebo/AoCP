@@ -177,10 +177,9 @@ public class Day23 : ProblemSet
 
         public IEnumerable<Computer> Explore(Computer source, HashSet<Computer>? visited = null)
         {
-            visited ??= new HashSet<Computer>();
+            visited ??= [];
 
             var frontier = new Queue<Computer>([source]);
-            var count = 0;
 
             while (frontier.TryDequeue(out var current))
             {
@@ -242,7 +241,7 @@ public class Day23 : ProblemSet
         {
             Name = name;
             Neighbours = neighbours;
-            Group = new HashSet<Computer>(neighbours);
+            Group = [.. neighbours];
             Group.Add(this);
         }
 

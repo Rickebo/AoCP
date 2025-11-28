@@ -46,7 +46,7 @@ public class Day10 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            var grid = Parser.ParseCharGrid(input);
+            var grid = new CharGrid(input);
             ReportGrid(grid, reporter);
 
             reporter.ReportSolution(
@@ -65,7 +65,7 @@ public class Day10 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            var grid = Parser.ParseCharGrid(input);
+            var grid = new CharGrid(input);
             ReportGrid(grid, reporter);
 
             reporter.ReportSolution(

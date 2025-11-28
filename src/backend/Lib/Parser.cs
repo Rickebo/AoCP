@@ -59,20 +59,7 @@ public static partial class Parser
         return numbers ?? [];
     }
 
-    public static IntGrid ParseIntGrid(
-        string text,
-        OriginPosition originPosition = OriginPosition.BottomLeft
-    ) => new(text);
-
-    public static CharGrid ParseCharGrid(
-        string text,
-        OriginPosition originPosition = OriginPosition.BottomLeft
-    ) => new(text);
-
-    public static ArrayGrid<Direction> ParseDirectionGrid(
-        string text,
-        OriginPosition originPosition = OriginPosition.BottomLeft
-    )
+    public static ArrayGrid<Direction> ParseDirectionGrid(string text)
     {
         var lines = SplitLines(text);
         var width = lines[0].Length;
@@ -81,7 +68,7 @@ public static partial class Parser
 
         for (var y = 0; y < height; y++)
         {
-            var yIndex = new Index(y, fromEnd: originPosition == OriginPosition.BottomLeft);
+            var yIndex = new Index(y, fromEnd: true);
             var line = lines[yIndex];
             for (var x = 0; x < width; x++)
                 grid[x, y] = DirectionExtensions.Parse(line[x]);

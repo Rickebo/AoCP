@@ -1,10 +1,5 @@
 ﻿using Lib.Coordinate;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lib.Grid
 {
@@ -12,7 +7,7 @@ namespace Lib.Grid
         where TCoordinate : ICoordinate<TCoordinate, TCoordinateNumber>, IStringCoordinate
         where TCoordinateNumber : INumber<TCoordinateNumber>
     {
-        TValue Value { get; init; }
-        TCoordinate Coordinate { get; init; }
+        TValue? Value { get; init; }
+        TCoordinate? Coordinate { get; init; }
     }
 }

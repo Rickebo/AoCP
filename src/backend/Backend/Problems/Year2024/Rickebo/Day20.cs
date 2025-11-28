@@ -59,7 +59,7 @@ public class Day20 : ProblemSet
     {
         public static RaceTrack Parse(string input)
         {
-            var grid = Parser.ParseCharGrid(input).FlipY();
+            var grid = new CharGrid(input).Flip(Axis.Y);
             return new RaceTrack(
                 grid,
                 grid.Find(x => x == 'S'),

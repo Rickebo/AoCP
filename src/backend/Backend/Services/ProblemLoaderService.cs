@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
-using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Loader;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,7 +14,6 @@ using Backend.Problems;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.CSharp;
 using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Hosting;
@@ -29,13 +27,10 @@ public class ProblemLoaderService : IHostedService
     private readonly DirectoryInfo _monitorRoot;
     private readonly FileSystemWatcher _fileSystemWatcher;
     private readonly HashAlgorithm _hashAlgorithm = SHA256.Create();
-    private IReadOnlyCollection<MetadataReference> _references;
-    private Task? _watchTask;
-    private Task? _loadTask;
-    private List<DirectoryInfo> _rootDirectories;
-
-    private ConcurrentDictionary<string, string> _fileHash = new();
-    private SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+    private readonly IReadOnlyCollection<MetadataReference> _references;
+    private readonly List<DirectoryInfo> _rootDirectories;
+    private readonly ConcurrentDictionary<string, string> _fileHash = new();
+    private readonly SemaphoreSlim _lock = new(1, 1);
 
     public unsafe ProblemLoaderService(IEnumerable<ProblemCollection> problemCollections)
     {
@@ -68,17 +63,18 @@ public class ProblemLoaderService : IHostedService
             Path.Combine(Environment.CurrentDirectory, "Problems")
         );
 
-        _rootDirectories = _monitorRoot
+        _rootDirectories = [.. _monitorRoot
             .GetDirectories("Year*")
-            .SelectMany(yearDir => yearDir.GetDirectories())
-            .ToList();
+            .SelectMany(yearDir => yearDir.GetDirectories())];
 
 
-        _fileSystemWatcher = new FileSystemWatcher();
-        _fileSystemWatcher.Path = _monitorRoot.FullName;
-        _fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
+        _fileSystemWatcher = new FileSystemWatcher
+        {
+            Path = _monitorRoot.FullName,
+            NotifyFilter = NotifyFilters.LastWrite,
 
-        _fileSystemWatcher.IncludeSubdirectories = true;
+            IncludeSubdirectories = true
+        };
 
         _fileSystemWatcher.Created += (_, e) => Run(() => UpdateFile(e.FullPath));
         _fileSystemWatcher.Changed += (_, e) => Run(() => UpdateFile(e.FullPath));
@@ -122,7 +118,7 @@ public class ProblemLoaderService : IHostedService
 
         var compilation = CSharpCompilation.Create(
             "aocp.Problem",
-            new[] { parsedSyntaxTree },
+            [parsedSyntaxTree],
             references: _references,
             options: new CSharpCompilationOptions(
                 OutputKind.DynamicallyLinkedLibrary,

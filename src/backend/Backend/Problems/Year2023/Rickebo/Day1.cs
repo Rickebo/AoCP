@@ -93,7 +93,6 @@ public class Day1 : ProblemSet
 
     private static string ReplaceNumbers(string line)
     {
-        var placeholder = '_';
         var mappings = new[]
         {
             ("one", "1"),

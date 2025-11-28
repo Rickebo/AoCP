@@ -83,7 +83,7 @@ public class Day06 : ProblemSet
     private static int CountObstacles(CharGrid grid, Reporter reporter)
     {
         var guard = FindGuard(grid);
-        var (visited, path) =
+        var (_, path) =
             SimulateGuard(grid, guard, reporter) ?? throw new Exception();
 
         var obstructions = new HashSet<IntegerCoordinate<int>>();
@@ -197,5 +197,5 @@ public class Day06 : ProblemSet
     private record GuardPosition(IntegerCoordinate<int> Position, Direction Direction);
 
     private static CharGrid Parse(string input) =>
-        Parser.ParseCharGrid(input, OriginPosition.TopLeft);
+        new CharGrid(input).Flip(Axis.Y);
 }

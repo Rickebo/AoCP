@@ -60,7 +60,7 @@ public class Day04 : ProblemSet
         }
     }
 
-    private static CharGrid Parse(string input) => Parser.ParseCharGrid(input);
+    private static CharGrid Parse(string input) => new(input);
 
     public static int CountOccurrences(ArrayGrid<char> grid, string characters)
     {

@@ -101,7 +101,7 @@ public class Day15 : ProblemSet
                 gridLines = sb.ToString().SplitLines();
             }
 
-            var grid = Parser.ParseCharGrid(string.Join("\n", gridLines));
+            var grid = new CharGrid(string.Join("\n", gridLines));
             var movement = string.Join("", lines.Skip(empty));
             var robot = grid.Find(c => c == '@');
 

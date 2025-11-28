@@ -28,7 +28,7 @@ public class Day12 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            reporter.ReportSolution(CalculateCost(Parser.ParseCharGrid(input).FlipY(), false, reporter));
+            reporter.ReportSolution(CalculateCost(new CharGrid(input).Flip(Axis.Y), false, reporter));
 
             return Task.CompletedTask;
         }
@@ -40,7 +40,7 @@ public class Day12 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            reporter.ReportSolution(CalculateCost(Parser.ParseCharGrid(input).FlipY(), true, reporter));
+            reporter.ReportSolution(CalculateCost(new CharGrid(input).Flip(Axis.Y), true, reporter));
             return Task.CompletedTask;
         }
     }

@@ -135,7 +135,7 @@ public class Day08 : ProblemSet
 
     private static ProblemState Parse(string input)
     {
-        var grid = Parser.ParseCharGrid(input).FlipY();
+        var grid = new CharGrid(input).Flip(Axis.Y);
         var antennas = new Dictionary<char, HashSet<IntegerCoordinate<int>>>();
 
         foreach (var coordinate in grid.Coordinates)

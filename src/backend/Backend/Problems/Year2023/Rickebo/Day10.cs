@@ -105,13 +105,13 @@ public class Day10 : ProblemSet
 
     public class Graph
     {
-        public CharGrid Grid { get; init; }
+        public required CharGrid Grid { get; init; }
         public IntegerCoordinate<int> Source { get; init; }
         public Direction SourceDirection { get; private set; }
 
         public static Graph Parse(string[] lines)
         {
-            var grid = Parser.ParseCharGrid(string.Join("\n", lines));
+            var grid = new CharGrid(string.Join("\n", lines));
             var source = grid.Find(c => c == 'S');
 
             var graph = new Graph()
