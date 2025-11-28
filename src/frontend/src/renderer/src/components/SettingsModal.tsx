@@ -100,8 +100,9 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                 checked={settings.state.summarizeWithAI}
                 disabled={!settings.state.retrieveDescription}
                 onChange={(e) => {
+                  const enabled = e.currentTarget.checked
                   settings.update((current) => {
-                    current.summarizeWithAI = e.currentTarget.checked
+                    current.summarizeWithAI = enabled
                     settings.save(current)
                   })
                 }}

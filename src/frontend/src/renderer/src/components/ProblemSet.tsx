@@ -261,7 +261,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           className="h-100 w-100 overflow-auto"
         >
           {props.set.problems.map((problem, i) => (
-            <>
+            <React.Fragment key={`problem-group-${i}`}>
               <Tab.Pane eventKey={`desc-${i}`}>
                 <ProblemDescription 
                   metadata={problem} 
@@ -297,7 +297,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
                 </div>
               </Tab.Pane>
-            </>
+            </React.Fragment>
           ))}
         </Tab.Content>
       </Tab.Container>
