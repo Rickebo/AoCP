@@ -50,7 +50,7 @@ public class Day27 : ProblemSet
                 _reporter = reporter;
 
                 // Parse input to grid
-                _grid = new CharGrid(input).Flip(Axis.Y);
+                _grid = new CharGrid(input);
 
                 // Print storage matrix
                 _reporter.ReportStringGridUpdate(
