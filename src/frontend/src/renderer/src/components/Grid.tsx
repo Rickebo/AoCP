@@ -145,6 +145,9 @@ function scaleFactor(scale: number): number {
   return Math.pow(1.5, scale - 1)
 }
 
+const MIN_FILL = 0.9
+const MIN_SCALE = 1 + Math.log(MIN_FILL) / Math.log(1.5)
+
 function createTransform(offsetX: number, offsetY: number, scaleCoefficient: number): Transform {
   const factor = scaleFactor(scaleCoefficient)
   return new Transform([offsetX, offsetY], factor)
@@ -163,6 +166,7 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
   const [clickOffset, setClickOffset] = useState<[number, number] | undefined>(undefined)
   const [mousePos, setMousePos] = useState<[number, number] | undefined>(undefined)
   const renderSessionRef = useRef<GifRenderSession | null>(null)
+  const hasCenteredInitially = useRef(false)
 
   const resizeCanvas = (width: number, height: number): void => {
     if (canvasRef.current == null) return
@@ -193,6 +197,30 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
     setCanvasSize([divRef.clientWidth, divRef.clientHeight])
   })
 
+  useEffect(() => {
+    if (w > 0 && h > 0 && canvasSize[0] > 0 && canvasSize[1] > 0 && !hasCenteredInitially.current) {
+      hasCenteredInitially.current = true
+      const [canvasWidth, canvasHeight] = canvasSize
+      const pixelSize = Math.min(canvasWidth / w, canvasHeight / h)
+      const factor = scaleFactor(MIN_SCALE)
+      const centeredOffsetX = (canvasWidth / factor - w * pixelSize) / 2
+      const centeredOffsetY = (canvasHeight / factor - h * pixelSize) / 2
+      if (scale !== MIN_SCALE) setScale(MIN_SCALE)
+      setOffset([centeredOffsetX, centeredOffsetY])
+    }
+  }, [w, h, canvasSize, scale])
+
+  useEffect(() => {
+    if (scale !== MIN_SCALE) return
+    const [canvasWidth, canvasHeight] = canvasSize
+    if (canvasWidth === 0 || canvasHeight === 0 || w === 0 || h === 0) return
+    const pixelSize = Math.min(canvasWidth / w, canvasHeight / h)
+    const factor = scaleFactor(MIN_SCALE)
+    const centeredOffsetX = (canvasWidth / factor - w * pixelSize) / 2
+    const centeredOffsetY = (canvasHeight / factor - h * pixelSize) / 2
+    setOffset([centeredOffsetX, centeredOffsetY])
+  }, [canvasSize, w, h, scale])
+
   const draw = (data: GridData, clear: boolean = false): void => {
     if (data == null) return
     if (w == 0 || h == 0) return
@@ -217,7 +245,7 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
       const y = Number(yIndex)
       if (y >= h) continue
 
-      const yp = y * pixelSize
+      const yp = (h - 1 - y) * pixelSize
       if (yp > canvasHeight) continue
 
       const newRow: Record<string, string | GridCell> = (newData[yIndex] = {})
@@ -233,6 +261,18 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
         newRow[xIndex] = cell
       }
     }
+
+    // Draw border around the grid
+    const [x0, y0] = transform.transform(0, 0)
+    const [sw, sh] = transform.scale([w * pixelSize, h * pixelSize])
+    context.save()
+    context.strokeStyle = 'rgba(0, 0, 0, 0.85)'
+    context.lineWidth = 2
+    context.strokeRect(x0, y0, sw, sh)
+    context.strokeStyle = 'rgba(255, 255, 255, 0.9)'
+    context.lineWidth = 1
+    context.strokeRect(x0, y0, sw, sh)
+    context.restore()
 
     setData((current) => {
       const result: GridData = { ...current }
@@ -263,29 +303,45 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
     if (mousePos == null) return
 
     setScale((currentScale) => {
-      // const [cx, cy] = mousePos
-      const oldScale = scaleFactor(scale)
-      const newScale = scale + delta
+      const oldFactor = scaleFactor(currentScale)
+      let proposedScale = currentScale + delta
+
+      const minScale = MIN_SCALE
+      const maxScale = 10
+      const nextScale = Math.max(minScale, Math.min(maxScale, proposedScale))
+
+      if (nextScale === currentScale) return currentScale
+
+      const newFactor = scaleFactor(nextScale)
 
       const [canvasWidth, canvasHeight] = canvasSize
 
-      const currentWidth = canvasWidth / oldScale
-      const newWidth = canvasWidth / newScale
+      if (nextScale === minScale) {
+        if (canvasWidth === 0 || canvasHeight === 0 || w === 0 || h === 0) return currentScale
+        const pixelSize = Math.min(canvasWidth / w, canvasHeight / h)
+        const centeredOffsetX = (canvasWidth / newFactor - w * pixelSize) / 2
+        const centeredOffsetY = (canvasHeight / newFactor - h * pixelSize) / 2
+        setOffset([centeredOffsetX, centeredOffsetY])
+        return nextScale
+      }
 
-      const currentHeight = canvasHeight / oldScale
-      const newHeight = canvasHeight / newScale
+      const currentWidth = canvasWidth / oldFactor
+      const currentHeight = canvasHeight / oldFactor
+      const newWidth = canvasWidth / newFactor
+      const newHeight = canvasHeight / newFactor
 
-      const dx = (currentWidth - newWidth) * mousePos[0]
-      const dy = (currentHeight - newHeight) * mousePos[1]
+      const mouseX = mousePos[0]
+      const mouseY = mousePos[1]
 
-      if (newScale < 1 || newScale > 10) return currentScale
+      const dx = (currentWidth - newWidth) * mouseX
+      const dy = (currentHeight - newHeight) * mouseY
 
       setOffset((currentOffset) => {
         const [cx, cy] = currentOffset
         return [cx - dx, cy - dy]
       })
 
-      return newScale
+      return nextScale
     })
   }
 
@@ -293,18 +349,12 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
     if (clickPos == null || clickOffset == null) return
 
     const [cx, cy] = clickPos
-    const [w, h] = canvasSize
-    const wFactor = w / h
-    const dx = (mx - cx) * wFactor
-    const dy = my - cy
-
-    const factor = Math.min(...canvasSize) / scaleFactor(scale)
-
+    const [canvasWidth, canvasHeight] = canvasSize
+    const factor = scaleFactor(scale)
+    const deltaX = (mx - cx) * (canvasWidth / factor)
+    const deltaY = (my - cy) * (canvasHeight / factor)
     const [ox, oy] = clickOffset
-    const nx = ox + dx * factor
-    const ny = oy + dy * factor
-
-    setOffset([nx, ny])
+    setOffset([ox + deltaX, oy + deltaY])
   }
 
   const getRelativePosition = (e: React.MouseEvent<HTMLCanvasElement>): [number, number] => {
