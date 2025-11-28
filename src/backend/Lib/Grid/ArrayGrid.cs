@@ -206,14 +206,14 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public ArrayGrid<TValue> Section(IntegerCoordinate<int> origin, int width, int height)
     {
-        var newWidth = Math.Min(Width, width) - origin.X;
-        var newHeight = Math.Min(Height, height) - origin.Y;
-        var newValues = new TValue[newWidth, newHeight];
+        var sectionWidth = Math.Min(Width - origin.X, width);
+        var sectionHeight = Math.Min(Height - origin.Y, height);
+        var sectionValues = new TValue[sectionWidth, sectionHeight];
 
-        for (var y = origin.Y; y < newHeight; y++)
-            for (var x = origin.X; x < newWidth; x++)
-                newValues[x, y] = _values[x, y];
+        for (var y = 0; y < sectionHeight; y++)
+            for (var x = 0; x < sectionWidth; x++)
+                sectionValues[x, y] = _values[origin.X + x, origin.Y + y];
 
-        return new ArrayGrid<TValue>(newValues);
+        return new ArrayGrid<TValue>(sectionValues);
     }
 }
