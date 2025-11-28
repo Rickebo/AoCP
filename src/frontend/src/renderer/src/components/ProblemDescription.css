@@ -683,6 +683,7 @@
 
 .problem-container {
     position: relative;
+    width: 100%;
 }
 
 .problem-summary-toggle {
@@ -698,4 +699,41 @@
 
 .problem {
     overflow-y: auto;
+    padding-top: 1.25rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.problem-button {
+    border-width: 1px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+}
+
+.problem-button .spinner-border {
+    margin: 0;
+}
+
+.problem-summary-toggle {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 5;
+}
+
+.problem-refresh-button {
+    position: absolute;
+    top: 0.5rem;
+    right: calc(0.5rem + 32px + 0.5rem);
+    z-index: 5;
+}
+
+.problem-button-icon,
+.problem-button-spinner {
+    display: block;
 }

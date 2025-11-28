@@ -5,7 +5,7 @@ import { usePersistentState } from '@renderer/StateUtils'
 import { ProblemDescriptionData } from '@renderer/data/ProblemDescriptionData'
 import { useSettings } from '../context/SettingsContext'
 import { useAocService } from '@renderer/AocUtils'
-import { BsStars } from 'react-icons/bs'
+import { BsStars, BsArrowRepeat } from 'react-icons/bs'
 
 export interface ProblemDescriptionProps {
   metadata: ProblemMetadata
@@ -78,6 +78,31 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     }
   }
 
+  const refreshProcessedDescription = async (): Promise<void> => {
+    if (!settings.state.summarizeWithAI || !settings.state.retrieveDescription || loadingProcessed || !hasRaw) {
+      return
+    }
+
+    const current = descriptionCache.state
+    if (current.raw == null) {
+      return
+    }
+
+    setLoadingProcessed(true)
+
+    try {
+      const processed = await aocService.getProcessedDescription(current.raw)
+      if (processed != null) {
+        descriptionCache.update((currentState) => {
+          currentState.processed = processed
+          descriptionCache.save(currentState)
+        })
+      }
+    } finally {
+      setLoadingProcessed(false)
+    }
+  }
+
   useEffect(() => {
     if (settings.state.retrieveDescription && !hasRaw) {
       void downloadRawDescription()
@@ -89,6 +114,18 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
       void downloadProcessedDescription()
     }
   }, [hasRaw, hasProcessed, settings.state.retrieveDescription, settings.state.summarizeWithAI])
+
+  useEffect(() => {
+    if (!settings.state.summarizeWithAI && showSummary) {
+      setShowSummary(false)
+    }
+  }, [settings.state.summarizeWithAI])
+
+  useEffect(() => {
+    if (!settings.state.retrieveDescription && showSummary) {
+      setShowSummary(false)
+    }
+  }, [settings.state.retrieveDescription])
 
   let html: string | undefined
 
@@ -109,7 +146,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
       {showSummaryButton && (
         <button
           type="button"
-          className={`btn btn-sm btn-outline-warning problem-summary-toggle${
+          className={`btn btn-sm btn-outline-warning problem-button problem-summary-toggle${
             showSummary ? ' active' : ''
           }`}
           onClick={() => {
@@ -121,21 +158,41 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
           disabled={!summaryEnabled}
           title={showSummary ? 'Show full description' : 'Show summarized description'}
         >
-          <div>
-            <BsStars />
-            {loadingProcessed && (
-              <span
-                className="spinner-border spinner-border-sm text-warning ms-2"
-                role="status"
-                aria-hidden="true"
-              />
-            )}
-          </div>
+          {!loadingProcessed && <BsStars className="problem-button-icon" />}
+          {loadingProcessed && (
+            <span
+              className={`spinner-border spinner-border-sm problem-button-spinner ${
+                showSummary ? 'text-dark' : 'text-warning'
+              }`}
+              role="status"
+              aria-hidden="true"
+            />
+          )}
+        </button>
+      )}
+      {showSummaryButton && showSummary && (
+        <button
+          type="button"
+          className="btn btn-sm btn-outline-primary problem-button problem-refresh-button"
+          onClick={() => {
+            void refreshProcessedDescription()
+          }}
+          disabled={!hasRaw || loadingProcessed}
+          title="Re-summarize description"
+        >
+          {!loadingProcessed && <BsArrowRepeat className="problem-button-icon" />}
+          {loadingProcessed && (
+            <span
+              className="spinner-border spinner-border-sm text-primary problem-button-spinner"
+              role="status"
+              aria-hidden="true"
+            />
+          )}
         </button>
       )}
       <div
         dangerouslySetInnerHTML={innerHtml}
-        className="problem"
+        className={`problem ${showSummary ? 'problem--with-summary' : 'problem--no-summary'}`}
         style={{
           fontFamily: 'Source Code Pro, monospace',
           fontSize: '1em',
