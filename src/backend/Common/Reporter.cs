@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Common.Updates;
 using Lib.Coordinate;
 using Lib.Grid;
+using Lib.Color;
 
 namespace Common;
 
@@ -27,6 +28,9 @@ public class Reporter
 
     public void ReportSolution(string solution) =>
         Report(FinishedProblemUpdate.FromSolution(solution));
+
+    public void ReportStringGridUpdate(IStringCoordinate coordinate, Color color) =>
+        ReportStringGridUpdate(coordinate, color.ToRgbaString());
 
     public void ReportStringGridUpdate(IStringCoordinate coordinate, string text) =>
         ReportStringGridUpdate(
