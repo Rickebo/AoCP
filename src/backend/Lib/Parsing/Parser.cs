@@ -27,38 +27,39 @@ public static partial class Parser
         else if (typeof(T) == typeof(double))
             matches = RegexDouble().Matches(str);
         else
-            throw new Exception("Unsupported generic type.");
+            throw new NotSupportedException("Unsupported generic type.");
 
         T[]? numbers = null;
         if (typeof(T) == typeof(int))
             numbers = matches.Select(x => int.Parse(x.Value)).ToArray() as T[];
-        if (typeof(T) == typeof(uint))
+        else if (typeof(T) == typeof(uint))
             numbers = matches.Select(x => uint.Parse(x.Value)).ToArray() as T[];
-        if (typeof(T) == typeof(long))
+        else if (typeof(T) == typeof(long))
             numbers = matches.Select(x => long.Parse(x.Value)).ToArray() as T[];
-        if (typeof(T) == typeof(ulong))
+        else if (typeof(T) == typeof(ulong))
             numbers = matches.Select(x => ulong.Parse(x.Value)).ToArray() as T[];
-        if (typeof(T) == typeof(double))
+        else if (typeof(T) == typeof(double))
             numbers = matches.Select(x => double.Parse(x.Value)).ToArray() as T[];
 
         return numbers ?? [];
     }
 
-    public static T[] StringsToValues<T>(string[] str)
+    public static T[] GetValues<T>(string[] str)
     {
-        T[]? numbers = null;
-        if (typeof(T) == typeof(int))
-            numbers = str.Select(x => int.Parse(x.Trim())).ToArray() as T[];
-        if (typeof(T) == typeof(uint))
-            numbers = str.Select(x => uint.Parse(x.Trim())).ToArray() as T[];
-        if (typeof(T) == typeof(long))
-            numbers = str.Select(x => long.Parse(x.Trim())).ToArray() as T[];
-        if (typeof(T) == typeof(ulong))
-            numbers = str.Select(x => ulong.Parse(x.Trim())).ToArray() as T[];
-        if (typeof(T) == typeof(double))
-            numbers = str.Select(x => double.Parse(x.Trim())).ToArray() as T[];
+        List<T> values = [];
+        foreach (var entry in str)
+            values.AddRange(GetValues<T>(entry));
 
-        return numbers ?? [];
+        return [.. values];
+    }
+
+    public static T[][] GetValueArrays<T>(string[] str)
+    {
+        List<T[]> values = [];
+        foreach (var entry in str)
+            values.Add(GetValues<T>(entry));
+
+        return [.. values];
     }
 
     public static ArrayGrid<Direction> ParseDirectionGrid(string text)

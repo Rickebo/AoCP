@@ -1,6 +1,6 @@
 using Lib.Coordinate;
 using Lib.Grid;
-using Lib.Printing;
+using Lib.Color;
 
 namespace Common.Updates;
 

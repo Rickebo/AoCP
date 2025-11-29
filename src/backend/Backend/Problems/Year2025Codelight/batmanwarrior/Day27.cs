@@ -3,10 +3,9 @@ using Common.Updates;
 using Lib.Coordinate;
 using Lib.Enums;
 using Lib.Grid;
-using Lib.Printing;
+using Lib.Color;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading.Tasks;
 
 namespace Backend.Problems.Year2025Codelight.batmanwarrior;
@@ -56,10 +55,10 @@ public class Day27 : ProblemSet
 
                 // Print storage matrix
                 _reporter.ReportStringGridUpdate(_grid, (builder, coordinate, val) =>
-                builder.WithCoordinate(coordinate).WithText(_grid[coordinate] switch
+                builder.WithCoordinate(coordinate).WithColor(_grid[coordinate] switch
                 {
-                    '#' => ColorTable.Black,    // Occupied
-                    _ => ColorTable.Gray,       // Free
+                    '#' => Colors.Black,    // Occupied
+                    _ => Colors.Gray,       // Free
                 }));
             }
 
@@ -135,11 +134,11 @@ public class Day27 : ProblemSet
                     totalMax.Pos, 
                     totalMax.Width, 
                     totalMax.Height, 
-                    ColorTable.IndianRed
+                    Colors.IndianRed
                 ));
 
                 // Paint rectangle origin
-                _reporter.ReportStringGridUpdate(totalMax.Pos, ColorTable.LightGreen);
+                _reporter.ReportStringGridUpdate(totalMax.Pos, ColorHex.LightGreen);
 
                 return totalMax.Area;
             }
