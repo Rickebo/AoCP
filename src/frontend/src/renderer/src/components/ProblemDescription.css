@@ -1,12 +1,10 @@
 .problem {
     body {
         background: #0f0f23;
-        /*337 x 5*/
         color: #cccccc;
         font-family: "Source Code Pro", monospace;
         font-weight: 300;
         font-size: 14pt;
-        min-width: 60em;
     }
 
     img {
@@ -703,6 +701,8 @@
     padding-left: 1rem;
     padding-right: 1rem;
     width: 100%;
+    max-width: 60em;
+    margin: 0 auto;
     box-sizing: border-box;
 }
 
