@@ -1,10 +1,12 @@
 ﻿using Common;
 using Common.Updates;
-using Lib;
 using Lib.Coordinate;
+using Lib.Enums;
 using Lib.Grid;
+using Lib.Printing;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading.Tasks;
 
 namespace Backend.Problems.Year2025Codelight.batmanwarrior;
@@ -35,7 +37,7 @@ public class Day27 : ProblemSet
             int maxProfit = storage.LargestSpace();
 
             // Send solution to frontend
-            reporter.Report(FinishedProblemUpdate.FromSolution(maxProfit.ToString()));
+            reporter.ReportSolution(maxProfit);
             return Task.CompletedTask;
         }
 
@@ -53,12 +55,12 @@ public class Day27 : ProblemSet
                 _grid = new CharGrid(input);
 
                 // Print storage matrix
-                _reporter.ReportStringGridUpdate(
-                    _grid,
-                    (builder, coordinate, val) => builder
-                        .WithCoordinate(coordinate)
-                        .WithText(ColorCell(coordinate))
-                );
+                _reporter.ReportStringGridUpdate(_grid, (builder, coordinate, val) =>
+                builder.WithCoordinate(coordinate).WithText(_grid[coordinate] switch
+                {
+                    '#' => ColorTable.Black,    // Occupied
+                    _ => ColorTable.Gray,       // Free
+                }));
             }
 
             public int LargestSpace()
@@ -72,9 +74,8 @@ public class Day27 : ProblemSet
                         continue;
 
                     // Get maximum possible space for this coord
-                    bool predicate(char c) => c == _grid[pos];
-                    int localMaxWidth = _grid.CountRepeating(pos, Direction.East, predicate);
-                    int localMaxHeight = _grid.CountRepeating(pos, Direction.North, predicate);
+                    int localMaxWidth = _grid.CountRepeating(pos, Direction.East);
+                    int localMaxHeight = _grid.CountRepeating(pos, Direction.North);
 
                     // Check if worth looking
                     if (localMaxWidth * localMaxHeight <= totalMax.Area)
@@ -130,23 +131,17 @@ public class Day27 : ProblemSet
                 }
 
                 // Paint the largest rectangle
-                foreach (var pos in _grid.SectionCoordinates(totalMax.Pos, totalMax.Width, totalMax.Height))
-                   _reporter.ReportStringGridUpdate(pos, "#FF0000");
+                _reporter.Report(StringGridUpdate.FromRect(
+                    totalMax.Pos, 
+                    totalMax.Width, 
+                    totalMax.Height, 
+                    ColorTable.IndianRed
+                ));
 
                 // Paint rectangle origin
-                _reporter.ReportStringGridUpdate(totalMax.Pos, "#00FF00");
+                _reporter.ReportStringGridUpdate(totalMax.Pos, ColorTable.LightGreen);
 
                 return totalMax.Area;
-            }
-
-            private string ColorCell(IntegerCoordinate<int> coordinate)
-            {
-                // Color formating
-                return _grid[coordinate] switch
-                {
-                    '#' => "#000000",   // Occupied
-                    _ => "#444444",     // Free
-                };
             }
 
             private struct TotalMax(IntegerCoordinate<int> pos, int area, int width, int height)
