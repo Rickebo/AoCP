@@ -1,4 +1,4 @@
-﻿using Lib;
+﻿using Lib.Printing;
 using Lib.Coordinate;
 using Lib.Grid;
 
@@ -19,13 +19,13 @@ public class StringGridUpdate : GridUpdate<string>
 
     public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid) => FromGrid(
         grid,
-        color => color.ToRgbaString(),
+        cell => cell.ToRgbaString(),
         Construct
     );
 
     public static StringGridUpdate FromStringGrid(ArrayGrid<string> grid) => FromGrid(
         grid,
-        ch => ch.ToString(),
+        cell => cell.ToString(),
         Construct
     );
 
@@ -35,6 +35,28 @@ public class StringGridUpdate : GridUpdate<string>
         Construct
     );
 
+    public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, Color color) =>
+        FromRect(origin, width, height, color.ToRgbaString());
+
+    public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, string color)
+    {
+        var rows = new Dictionary<string, Dictionary<string, string>>();
+        for (var y = 0; y < height; y++)
+        {
+            var row = new Dictionary<string, string>();
+            for (var x = 0; x < width; x++)
+                row[(origin.X + x).ToString()] = color;
+
+            rows[(origin.Y + y).ToString()] = row;
+        }
+
+        return new StringGridUpdate()
+        {
+            Width = null,
+            Height = null,
+            Rows = rows,
+        };
+    }
 
     public static StringGridUpdateBuilder Builder() => new();
 
@@ -112,7 +134,7 @@ public class StringGridUpdate : GridUpdate<string>
                 var x = text.Coordinate.GetStringX();
                 var y = text.Coordinate.GetStringY();
                 if (!rows.TryGetValue(y, out var row))
-                    row = rows[y] = new Dictionary<string, string>();
+                    row = rows[y] = [];
 
                 row[x] = text.Text;
             }
