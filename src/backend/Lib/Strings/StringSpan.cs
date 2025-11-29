@@ -1,7 +1,7 @@
 using Lib.Extensions;
 using System.Text;
 
-namespace Lib;
+namespace Lib.Strings;
 
 public readonly struct StringSpan : IEquatable<StringSpan>
 {

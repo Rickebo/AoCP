@@ -16,15 +16,11 @@ public class Reporter
             throw new Exception("Failed to write update to channel.");
     }
 
-    public void ReportLine(string line) => ReportText(lines: [line]);
+    public void ReportLine(string line) =>
+        ReportText(lines: [line]);
 
-    public void ReportText(string? text = null, string[]? lines = null) => Report(
-        new TextProblemUpdate()
-        {
-            Text = text,
-            Lines = lines
-        }
-    );
+    public void ReportText(string? text = null, string[]? lines = null) =>
+        Report(new TextProblemUpdate(){ Text = text, Lines = lines });
 
     public void ReportSolution(IFormattable solution) =>
         ReportSolution(solution.ToString() ?? "");
@@ -46,19 +42,18 @@ public class Reporter
         Func<
             StringGridUpdate.StringGridUpdateBuilder,
             StringGridUpdate.StringGridUpdateBuilder
-        > configure
-    ) => Report(configure(StringGridUpdate.Builder()).Build());
+        > configure) =>
+        Report(configure(StringGridUpdate.Builder()).Build());
 
     public void ReportStringGridUpdate<T>(
         ArrayGrid<T> grid,
         Func<
-                StringGridUpdate.StringCoordinateBuilder,
-                IntegerCoordinate<int>,
-                T,
-                StringGridUpdate.StringCoordinateBuilder
-            >
-            configure
-    ) => ReportStringGridUpdate(
+            StringGridUpdate.StringCoordinateBuilder,
+            IntegerCoordinate<int>,
+            T,
+            StringGridUpdate.StringCoordinateBuilder
+        > configure) =>
+        ReportStringGridUpdate(
         builder => builder
             .WithWidth(grid.Width)
             .WithHeight(grid.Height)
