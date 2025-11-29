@@ -1,3 +1,4 @@
+using Lib.Extensions;
 using Lib.Grid;
 using System.Numerics;
 using System.Text.Json;
@@ -7,15 +8,11 @@ namespace Lib.Color;
 
 public class ColorJsonConverter : JsonConverter<Color>
 {
-    public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        return Color.Parse(reader.GetString() ?? "#000000FF");
-    }
+    public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        Color.Parse(reader.GetString() ?? "#000000FF");
 
-    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options)
-    {
+    public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value.ToString());
-    }
 }
 
 public readonly struct Color(uint value) : IEquatable<Color>
@@ -51,9 +48,9 @@ public readonly struct Color(uint value) : IEquatable<Color>
     public static Color FromRgba(uint rgba) => new(rgba);
     public static Color FromArgb(uint argb) => new(argb << 8 | argb >> 24);
 
-    public static byte? FromRange(double? v) => v != null ? (byte)(Math.Clamp(v.Value, 0, 1) * 255) : null;
+    public static byte? FromRange(double? v) => v != null ? (byte)(v.Value.Clamp(0, 1) * 255) : null;
 
-    private static uint Parse(char ch)
+    public static uint ParseNibble(char ch)
     {
         if (char.IsDigit(ch))
             return (uint)(ch - '0');
@@ -61,42 +58,50 @@ public readonly struct Color(uint value) : IEquatable<Color>
         ch = char.ToLower(ch);
         var ordinal = 10u + ch - 'a';
         if (ordinal is < 10 or > 15)
-            throw new Exception("Cannot parse hexadecimal character '" + ch + "'");
+            throw new ArgumentException("Cannot parse hexadecimal character '" + ch + "'");
 
         return ordinal;
     }
 
     /// <summary>
-    /// Parse a Color from a hex string on the format of "#AABBCCDD", "#AABBCC", "#ABCD", "#ABC" where A is the R
-    /// component, B is the B component, C is the G component and D is the A component. If components are specified as a
-    /// single digit, such as for "#ABC", then each value is shifted to represent the corresponding components most
-    /// significant bits. 
+    /// Parse a Color from a hex string on the format of "#RRGGBBAA", "#RRGGBB", "#RGBA", "#RGB". 
+    /// If components are specified as a single digit, such as for "#RGB", then each value is shifted 
+    /// to represent the corresponding components most significant bits. Alpha component defaults to 255. 
     /// </summary>
     /// <param name="text">The text to parse as a color</param>
     /// <returns>The parsed color</returns>
     public static Color Parse(string text)
     {
+        // # optional
         if (text.StartsWith('#'))
             text = text[1..];
 
-        var digits = text.Select(Parse).ToArray();
+        // Retrieve nibbles
+        var nibbles = text.Select(ParseNibble).ToArray();
 
-        if (digits.Length is 3 or 4)
+        // Short forms: #RGB or #RGBA
+        if (nibbles.Length is 3 or 4)
         {
-            var value = digits[0] << (RedShift + 4) | digits[1] << (GreenShift + 4) | digits[2] << (BlueShift + 4);
+            // Create components
+            var shortR = nibbles[0] << 4;
+            var shortG = nibbles[1] << 4;
+            var shortB = nibbles[2] << 4;
+            var shortA = nibbles.Length == 4 ? nibbles[3] << 4 : 255;
 
-            if (digits.Length is 4)
-                value = value << 8 | (digits[3] << (AlphaShift + 4));
-
-            return new Color(value);
+            return new(shortR << RedShift | shortG << GreenShift | shortB << BlueShift | shortA << AlphaShift);
         }
 
-        var r = digits[0] << 8 | digits[1];
-        var g = digits[2] << 8 | digits[3];
-        var b = digits[4] << 8 | digits[5];
-        var a = digits.Length >= 8 ? digits[6] << 8 | digits[7] : 0;
+        // Long forms: #RRGGBB or #RRGGBBAA
+        if (nibbles.Length is not 6 and not 8)
+            throw new ArgumentException($"Hex string {text} must be 3, 4, 6, or 8 hex digits long.");
 
-        return new Color(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
+        // Combine nibbles into bytes correctly: (high << 4) | low
+        var longR = (nibbles[0] << 4) | nibbles[1];
+        var longG = (nibbles[2] << 4) | nibbles[3];
+        var longB = (nibbles[4] << 4) | nibbles[5];
+        var longA = nibbles.Length == 8 ? (nibbles[6] << 4) | nibbles[7] : 255;
+
+        return new(longR << RedShift | longG << GreenShift | longB << BlueShift | longA << AlphaShift);
     }
 
     public static Color From(
@@ -115,7 +120,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
         var bv = (uint)(b ?? FromRange(blue) ?? 0x00);
         var av = (uint)(a ?? FromRange(alpha) ?? 0xFF);
 
-        return new Color((rv << RedShift) | (gv << GreenShift) | (bv << BlueShift) | (av << AlphaShift));
+        return new(rv << RedShift | gv << GreenShift | bv << BlueShift | av << AlphaShift);
     }
 
     public Color With(
@@ -212,6 +217,69 @@ public readonly struct Color(uint value) : IEquatable<Color>
             h = (h + goldenRatio) % 1;
             yield return FromHsv(h, saturation, vibrancy);
         }
+    }
+
+    public static ArrayGrid<Color> Heatmap<TCell>(
+        ArrayGrid<TCell> sourceGrid,
+        Color from,
+        Color to,
+        TCell? minClamp = null,
+        TCell? maxClamp = null
+    ) where TCell : struct, INumber<TCell>, IMinMaxValue<TCell>
+    {
+        // Check if clamping has been provided
+        bool clampMin = minClamp != null;
+        bool clampMax = maxClamp != null;
+
+        // Find out global min and max values if necessary
+        if (!clampMin || !clampMax)
+        {
+            foreach (var coord in sourceGrid.Coordinates)
+            {
+                TCell value = sourceGrid[coord];
+                if (!clampMin && (minClamp == null || value < minClamp))
+                    minClamp = value;
+                if (!clampMax && (maxClamp == null || value > maxClamp))
+                    maxClamp = value;
+            }
+        }
+
+        // Create clamping min max
+        TCell min = minClamp ?? TCell.MinValue;
+        TCell max = maxClamp ?? TCell.MaxValue;
+
+        // Create color grid
+        ArrayGrid<Color> colorGrid = new(sourceGrid.Width, sourceGrid.Height);
+
+        // Create range
+        double range = double.CreateSaturating(max - min);
+
+        // Interpolate each cell value
+        foreach (var coord in sourceGrid.Coordinates)
+        {
+            // Clamp
+            TCell clamped = sourceGrid[coord].Clamp(min, max);
+
+            // Interpolate
+            double percent = double.CreateSaturating(clamped - min) / range;
+            colorGrid[coord.X, coord.Y] = Between(from, to, percent);
+        }
+
+        return colorGrid;
+    }
+
+    public static Color Between(Color from, Color to, double percent)
+    {
+        // Clamp percent between 0 and 1
+        percent = percent.Clamp(0.0, 1.0);
+
+        // Interpolate R G B A values
+        uint r = (uint)Math.Round(from.R + to.R * percent - from.R * percent);
+        uint g = (uint)Math.Round(from.G + to.G * percent - from.G * percent);
+        uint b = (uint)Math.Round(from.B + to.B * percent - from.B * percent);
+        uint a = (uint)Math.Round(from.A + to.A * percent - from.A * percent);
+
+        return new(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
     }
 
     public new string ToString() => ToRgbaString();
