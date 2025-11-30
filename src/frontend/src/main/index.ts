@@ -26,6 +26,7 @@ type SummaryRequest = {
 }
 
 export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
+export type DiscussionReasoning = { effort?: string; max_tokens?: number }
 
 function buildReasoningConfig(
   summaryConfig?: SummaryConfig
@@ -313,7 +314,8 @@ async function chatWithOpenRouterStream(
   openRouterToken: string,
   onChunk: (chunk: string) => void,
   signal?: AbortSignal,
-  model?: string
+  model?: string,
+  reasoning?: DiscussionReasoning
 ): Promise<string | undefined> {
   try {
     const safeModel =
@@ -325,11 +327,20 @@ async function chatWithOpenRouterStream(
         Authorization: `Bearer ${openRouterToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: safeModel,
-        stream: true,
-        messages
-      }),
+      body: JSON.stringify(
+        reasoning != null
+          ? {
+              model: safeModel,
+              stream: true,
+              messages,
+              reasoning
+            }
+          : {
+              model: safeModel,
+              stream: true,
+              messages
+            }
+      ),
       signal
     })
 
@@ -566,7 +577,8 @@ function createWindow(): void {
       event,
       messages: ChatMessage[],
       openRouterToken: string,
-      model?: string
+      model?: string,
+      reasoning?: DiscussionReasoning
     ): Promise<string | undefined> => {
       if (openRouterToken == null || openRouterToken.trim().length === 0) {
         return undefined
@@ -585,7 +597,8 @@ function createWindow(): void {
           sender.send(channel, { type: 'chunk', content: chunk })
         },
         abortController.signal,
-        model
+        model,
+        reasoning
       )
         .then((finalContent) => {
           if (sender.isDestroyed()) return

@@ -1,0 +1,17 @@
+.shimmer-text {
+  color: rgba(255, 255, 255, 0.18);
+  background: linear-gradient(90deg, #1a1f29 0%, #ffffff 50%, #1a1f29 100%);
+  background-size: 140px 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: discussion-shimmer 1.8s infinite linear;
+}
+
+@keyframes discussion-shimmer {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 140px 0;
+  }
+}

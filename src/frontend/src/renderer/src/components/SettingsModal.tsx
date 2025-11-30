@@ -63,6 +63,22 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
             </Form.Group>
 
             <Form.Group>
+              <Form.Label>OpenRouter API token</Form.Label>
+              <Form.Control
+                type="text"
+                value={settings.state.openRouterToken ?? ''}
+                placeholder="sk-or-..."
+                onChange={(e) => {
+                  const newToken = e.currentTarget.value
+                  settings.update((current) => {
+                    current.openRouterToken = newToken
+                    settings.save(current)
+                  })
+                }}
+              />
+            </Form.Group>
+
+            <Form.Group>
               <Form.Check
                 type="switch"
                 label="Retrieve description"
@@ -80,27 +96,11 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
               />
             </Form.Group>
 
-            <Accordion alwaysOpen defaultActiveKey={['backend']}>
+            <Accordion alwaysOpen defaultActiveKey={['ai-summary','ai-discussion','backend']}>
               <Accordion.Item eventKey="ai">
                 <Accordion.Header>AI Summarization</Accordion.Header>
                 <Accordion.Body>
                   <Stack gap={3}>
-                    <Form.Group>
-                      <Form.Label>OpenRouter API token</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={settings.state.openRouterToken ?? ''}
-                        placeholder="sk-or-..."
-                        onChange={(e) => {
-                          const newToken = e.currentTarget.value
-                          settings.update((current) => {
-                            current.openRouterToken = newToken
-                            settings.save(current)
-                          })
-                        }}
-                      />
-                    </Form.Group>
-
                     <Form.Group>
                       <Form.Check
                         type="switch"
@@ -220,6 +220,75 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                       <Form.Text>
                         Uses OpenRouter <code>reasoning.max_tokens</code>. If set to a positive number,
                         it takes precedence over effort.
+                      </Form.Text>
+                    </Form.Group>
+                  </Stack>
+                </Accordion.Body>
+              </Accordion.Item>
+
+              <Accordion.Item eventKey="ai-discussion">
+                <Accordion.Header>AI Discussion</Accordion.Header>
+                <Accordion.Body>
+                  <Stack gap={3}>
+                    <Form.Group>
+                      <Form.Label>Discussion model</Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="openai/gpt-5"
+                        value={settings.state.discussionModel}
+                        onChange={(e) => {
+                          const model = e.currentTarget.value
+                          settings.update((current) => {
+                            current.discussionModel = model
+                            settings.save(current)
+                          })
+                        }}
+                      />
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Discussion reasoning effort (OpenRouter)</Form.Label>
+                      <Form.Select
+                        value={settings.state.discussionReasoningEffort ?? ''}
+                        onChange={(e) => {
+                          const effort = e.currentTarget.value
+                          settings.update((current) => {
+                            current.discussionReasoningEffort = effort.length > 0 ? effort : undefined
+                            settings.save(current)
+                          })
+                        }}
+                      >
+                        <option value="">Use model default</option>
+                        <option value="none">None</option>
+                        <option value="minimal">Minimal</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                      </Form.Select>
+                      <Form.Text>Maps to OpenRouter <code>reasoning.effort</code>.</Form.Text>
+                    </Form.Group>
+
+                    <Form.Group>
+                      <Form.Label>Discussion reasoning max tokens</Form.Label>
+                      <Form.Control
+                        type="number"
+                        min={0}
+                        value={settings.state.discussionReasoningMaxTokens ?? ''}
+                        placeholder="Leave blank for none"
+                        onChange={(e) => {
+                          const raw = e.currentTarget.value
+                          const parsed = Number(raw)
+                          settings.update((current) => {
+                            current.discussionReasoningMaxTokens =
+                              raw.length === 0 || !Number.isFinite(parsed) || parsed <= 0
+                                ? undefined
+                                : Math.floor(parsed)
+                            settings.save(current)
+                          })
+                        }}
+                      />
+                      <Form.Text>
+                        Uses OpenRouter <code>reasoning.max_tokens</code>. If set, it overrides effort.
                       </Form.Text>
                     </Form.Group>
                   </Stack>

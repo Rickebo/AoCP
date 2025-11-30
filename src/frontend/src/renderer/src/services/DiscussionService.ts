@@ -9,10 +9,16 @@ export interface DiscussionHandlers {
 export class DiscussionService {
   private token: string
   private model: string
+  private reasoning?: { effort?: string; max_tokens?: number }
 
-  constructor(openRouterToken: string, model: string) {
+  constructor(
+    openRouterToken: string,
+    model: string,
+    reasoning?: { effort?: string; max_tokens?: number }
+  ) {
     this.token = openRouterToken
     this.model = model
+    this.reasoning = reasoning
   }
 
   public hasToken(): boolean {
@@ -28,7 +34,7 @@ export class DiscussionService {
       return undefined
     }
 
-    const channel = await window.startDiscussionStream(messages, this.token, this.model)
+    const channel = await window.startDiscussionStream(messages, this.token, this.model, this.reasoning)
     if (channel == null) {
       handlers.onError?.('Failed to start discussion stream.')
       return undefined

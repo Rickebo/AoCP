@@ -7,6 +7,8 @@ import { DiscussionService, ChatMessage } from '../services/DiscussionService'
 import { ProblemDescriptionData } from '@renderer/data/ProblemDescriptionData'
 import { marked } from 'marked'
 import { usePersistentState } from '@renderer/StateUtils'
+import { BsArrowRepeat, BsSendFill, BsBoxArrowUp } from 'react-icons/bs'
+import './ProblemDiscussion.css'
 
 export interface ProblemDiscussionProps {
   year: number
@@ -28,6 +30,8 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
   const [streaming, setStreaming] = useState<boolean>(false)
   const [reloadSolution, setReloadSolution] = useState<boolean>(false)
   const streamHandleRef = useRef<{ cancel: () => void }>()
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const atBottomRef = useRef<boolean>(true)
 
   type PersistedDiscussion = { system?: ChatMessage; messages: ChatMessage[] }
   const storageKey = `${props.problemKey}-discussion-part-${props.partIndex}`
@@ -38,8 +42,20 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
 
   const discussionService = useMemo(
     () =>
-      new DiscussionService(settings.state.openRouterToken ?? '', settings.state.summaryModel ?? 'openai/gpt-5'),
-    [settings.state.openRouterToken, settings.state.summaryModel]
+      new DiscussionService(
+        settings.state.openRouterToken ?? '',
+        settings.state.discussionModel ?? 'openai/gpt-5',
+        {
+          effort: settings.state.discussionReasoningEffort,
+          max_tokens: settings.state.discussionReasoningMaxTokens
+        }
+      ),
+    [
+      settings.state.openRouterToken,
+      settings.state.discussionModel,
+      settings.state.discussionReasoningEffort,
+      settings.state.discussionReasoningMaxTokens
+    ]
   )
 
   const cacheKey = `${props.problemKey}-part-${props.partIndex}`
@@ -262,6 +278,20 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
 
   const missingToken = discussionService.hasToken() === false
 
+  const handleScroll = (): void => {
+    const el = containerRef.current
+    if (!el) return
+    const threshold = 32 // px tolerance
+    atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight <= threshold
+  }
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    if (!atBottomRef.current) return
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+  }, [messages])
+
   return (
     <div className="h-100 d-flex flex-column gap-3 p-3">
       {loadingContext && (
@@ -279,12 +309,16 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
       )}
 
       <div
+        ref={containerRef}
         className="flex-grow-1 overflow-auto border rounded p-3 d-flex flex-column"
         style={{ background: '#0f141b', gap: '0.5rem' }}
+        onScroll={handleScroll}
       >
         {messages.map((msg, idx) => {
           const isUser = msg.role === 'user'
           const html = marked.parse(msg.content ?? '')
+          const isAssistantPending =
+            msg.role === 'assistant' && ((msg.content ?? '').trim().length === 0)
 
           return (
             <div
@@ -310,10 +344,14 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
                 >
                   {msg.role}
                 </div>
-                <div
-                  className="discussion-message"
-                  dangerouslySetInnerHTML={{ __html: html }}
-                />
+                {isAssistantPending ? (
+                  <div className="shimmer-text">Thinking…</div>
+                ) : (
+                  <div
+                    className="discussion-message"
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                )}
               </div>
             </div>
           )
@@ -329,40 +367,51 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
         <Stack direction="horizontal" gap={2}>
           <Form.Control
             as="textarea"
-            rows={2}
+            rows={1}
             value={input}
             onChange={(e) => setInput(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                void handleSend()
+              }
+            }}
             placeholder="Ask the AI about this problem or your implementation…"
             disabled={loadingContext || missingToken}
+            style={{ minHeight: '38px', height: '38px' }}
           />
-          <div className="d-flex flex-column gap-2">
-            <Form.Check
-              type="checkbox"
-              id={`${storageKey}-reload-solution`}
-              label="Attach latest solution file"
-              checked={reloadSolution}
-              onChange={(e) => setReloadSolution(e.currentTarget.checked)}
+          <Stack gap={2} direction="horizontal" className="align-items-start">
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={loadingContext || missingToken || streaming || systemMessage == null}
+              title={streaming ? 'Streaming…' : 'Send message'}
+            >
+              <BsSendFill />
+            </Button>
+            <Button
+              variant={reloadSolution ? 'success' : 'outline-secondary'}
+              onClick={() => setReloadSolution((v) => !v)}
               disabled={loadingContext || missingToken || props.solutionFilePath == null}
               title={
                 props.solutionFilePath == null
                   ? 'No solution file path available for this problem'
-                  : 'Read the solution file again before sending'
+                  : 'Re-read your solution file before sending'
               }
-              className="small"
-            />
-            <Stack gap={2} direction="horizontal">
-              <Button
-                variant="primary"
-                type="submit"
-                disabled={loadingContext || missingToken || streaming || systemMessage == null}
-              >
-                {streaming ? 'Streaming…' : 'Send'}
-              </Button>
-              <Button variant="outline-secondary" type="button" onClick={resetConversation}>
-                Reset
-              </Button>
-            </Stack>
-          </div>
+              className="d-flex align-items-center justify-content-center"
+              style={{ height: '38px', width: '38px', padding: 0 }}
+            >
+              <BsBoxArrowUp />
+            </Button>
+            <Button
+              variant="outline-secondary"
+              type="button"
+              onClick={resetConversation}
+              title="Reset discussion"
+            >
+              <BsArrowRepeat />
+            </Button>
+          </Stack>
         </Stack>
       </Form>
     </div>

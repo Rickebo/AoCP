@@ -8,6 +8,12 @@ export type SummaryConfig = {
   reasoningMaxTokens?: number
 }
 
+export type DiscussionConfig = {
+  model?: string
+  reasoningEffort?: string
+  reasoningMaxTokens?: number
+}
+
 declare global {
   interface Window {
     setCookie: (url: string, cookie: string) => Promise<void>
@@ -40,7 +46,8 @@ declare global {
     startDiscussionStream: (
       messages: { role: string; content: string }[],
       openRouterToken: string,
-      model?: string
+      model?: string,
+      reasoning?: { effort?: string; max_tokens?: number }
     ) => Promise<string | undefined>
     subscribeDiscussionStream: (
       channel: string,

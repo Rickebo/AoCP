@@ -11,6 +11,11 @@ type SummaryConfig = {
   reasoningMaxTokens?: number
 }
 
+type DiscussionConfig = {
+  effort?: string
+  max_tokens?: number
+}
+
 // Custom APIs for renderer
 const api = {}
 
@@ -92,8 +97,12 @@ if (process.contextIsolated) {
     )
     contextBridge.exposeInMainWorld(
       'startDiscussionStream',
-      (messages: { role: string; content: string }[], openRouterToken: string, model?: string) =>
-        ipcRenderer.invoke('start-discussion-stream', messages, openRouterToken, model)
+      (
+        messages: { role: string; content: string }[],
+        openRouterToken: string,
+        model?: string,
+        reasoning?: DiscussionConfig
+      ) => ipcRenderer.invoke('start-discussion-stream', messages, openRouterToken, model, reasoning)
     )
     contextBridge.exposeInMainWorld(
       'subscribeDiscussionStream',
