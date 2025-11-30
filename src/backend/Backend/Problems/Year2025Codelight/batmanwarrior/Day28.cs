@@ -43,7 +43,7 @@ public class Day28 : ProblemSet
         {
             private readonly Reporter _reporter;
             private readonly IntGrid _grid;
-            private readonly ArrayGrid<IntegerCoordinate<int>> _path;
+            private readonly Dictionary<IntegerCoordinate<int>, IntegerCoordinate<int>> _path = [];
             private const int _minValue = 0;
             private const int _maxValue = 9;
 
@@ -55,9 +55,6 @@ public class Day28 : ProblemSet
                 // Parse input to grid
                 _grid = new IntGrid(input);
 
-                // Create path
-                _path = new ArrayGrid<IntegerCoordinate<int>>(_grid.Width, _grid.Height, new(int.MaxValue, int.MaxValue));
-
                 // Print heatmap
                 _reporter.Report(StringGridUpdate.FromColorGrid(Color.Heatmap(
                     _grid, Colors.Blue, Colors.Red, _minValue, _maxValue)));
@@ -67,18 +64,21 @@ public class Day28 : ProblemSet
             {
                 // Lift everyone so they can see DJ
                 var totalLift = 0;
-                Dictionary<IntegerCoordinate<int>, (int, int)> cache = [];
+                Dictionary<IntegerCoordinate<int>, int> cache = [];
                 foreach (var coord in _grid.Coordinates)
                     totalLift += LiftPerson(coord, cache);
 
                 return totalLift;
             }
 
-            public int LiftPerson(IntegerCoordinate<int> pos, Dictionary<IntegerCoordinate<int>, (int, int)> cache)
+            private int LiftPerson(IntegerCoordinate<int> pos, Dictionary<IntegerCoordinate<int>, int> cache)
             {
                 // Create queue and visited hashset 
                 PriorityQueue<IntegerCoordinate<int>, int> queue = new();
                 HashSet<IntegerCoordinate<int>> visited = [];
+
+                // Clear previous path
+                _path.Clear();
 
                 // Add initial position
                 var initialPos = pos;
@@ -87,18 +87,17 @@ public class Day28 : ProblemSet
                 // Try to find the way to edge with the least lift required
                 while (queue.TryDequeue(out var currPos, out var lift))
                 {
+                    // Skip visited tiles
+                    if (!visited.Add(currPos))
+                        continue;
+
                     // Check if this position is cached
-                    /*if (cache.TryGetValue(currPos, out (int, int) value))
+                    if (cache.TryGetValue(currPos, out var maxHeight))
                     {
-                        // Get cached info
-                        int cacheHeight = value.Item1;
-                        int cacheAdditionalLift = value.Item2;
+                        // Return the 
 
-                        // Get current height
-                        int currHeight = _grid[initialPos] + lift;
-
-                        // Retrieve lift required to DJ
-                        lift += Math.Max(0, cacheHeight + cacheAdditionalLift - currHeight);
+                        // Get lift required from this point
+                        lift += Math.Max(0, maxHeight - _grid[initialPos] + lift);
 
                         // Add backtrack to cache
                         BacktrackToCache(initialPos, currPos, cacheAdditionalLift, cache);
@@ -114,23 +113,20 @@ public class Day28 : ProblemSet
 
                         // Return lift
                         return lift;
-                    }*/
-
-                    // Add this pos to visited hashset
-                    visited.Add(currPos);
+                    }
 
                     // If at edge of dance floor
                     if (_grid.OnOutline(currPos))
                     {
                         // Add backtrack to cache
-                        //BacktrackToCache(initialPos, currPos, 0, cache);
+                        BacktrackToCache(initialPos, currPos, 0, cache);
 
                         // Update height
                         _grid[initialPos] += lift;
 
                         // Print new height
                         _reporter.ReportStringGridUpdate(
-                            initialPos, 
+                            initialPos,
                             Color.Between(Colors.Blue, Colors.Red, _grid[initialPos], _minValue, _maxValue
                         ));
 
@@ -141,10 +137,10 @@ public class Day28 : ProblemSet
                     // Queue up neighbours
                     foreach (var neighbour in currPos.Neighbours)
                     {
-                        if (neighbour != initialPos && !visited.Contains(neighbour))
+                        if (!visited.Contains(neighbour))
                         {
                             queue.Enqueue(neighbour, Math.Max(lift, _grid[neighbour] - _grid[initialPos]));
-                            //_path[neighbour] = currPos;
+                            _path[neighbour] = currPos;
                         }
                     }
                 }
