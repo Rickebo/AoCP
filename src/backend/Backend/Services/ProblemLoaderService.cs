@@ -33,6 +33,25 @@ public class ProblemLoaderService : IHostedService
     private readonly ConcurrentDictionary<string, string> _fileHash = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
 
+    private static DirectoryInfo ResolveProblemsRoot()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(Environment.CurrentDirectory, "Problems"),
+            Path.Combine(AppContext.BaseDirectory, "Problems"),
+            Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "Problems"))
+        };
+
+        foreach (var candidate in candidates)
+        {
+            if (Directory.Exists(candidate))
+                return new DirectoryInfo(candidate);
+        }
+
+        throw new DirectoryNotFoundException(
+            $"Could not locate Problems directory. Tried: {string.Join(", ", candidates)}");
+    }
+
     public unsafe ProblemLoaderService(IEnumerable<ProblemCollection> problemCollections)
     {
         _problemCollections = problemCollections;
@@ -60,9 +79,8 @@ public class ProblemLoaderService : IHostedService
         }
 
         _references = references;
-        _monitorRoot = new DirectoryInfo(
-            Path.Combine(Environment.CurrentDirectory, "Problems")
-        );
+        _monitorRoot = ResolveProblemsRoot();
+        ProblemSourceRegistry.SetRoot(_monitorRoot.FullName);
 
         _rootDirectories = [.. _monitorRoot
             .GetDirectories("Year*")
@@ -152,13 +170,15 @@ public class ProblemLoaderService : IHostedService
         pdbStream.Seek(0, SeekOrigin.Begin);
         
         var assembly = AssemblyLoadContext.Default.LoadFromStream(ms, pdbStream);
+        ProblemSourceRegistry.SetPath(assembly, Path.GetFullPath(path));
 
         foreach (var collection in _problemCollections)
-            collection.FindProblems(assembly: assembly);
+            collection.FindProblems(assembly: assembly, sourcePath: path);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        _ = LoadAll(_monitorRoot);
         _fileSystemWatcher.EnableRaisingEvents = true;
         return Task.CompletedTask;
     }

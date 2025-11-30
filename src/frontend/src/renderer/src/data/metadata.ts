@@ -11,6 +11,7 @@ export interface ProblemCollectionMetadata {
 export interface ProblemSetMetadata {
   name: string
   releaseTime: string
+  solutionFilePath?: string | undefined
   problems: ProblemMetadata[]
 }
 

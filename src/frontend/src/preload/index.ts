@@ -11,6 +11,11 @@ type SummaryConfig = {
   reasoningMaxTokens?: number
 }
 
+type DiscussionConfig = {
+  effort?: string
+  max_tokens?: number
+}
+
 // Custom APIs for renderer
 const api = {}
 
@@ -40,6 +45,10 @@ if (process.contextIsolated) {
       'getRawDescription',
       (year: number, day: number, token: string, partIndex: number): Promise<string> =>
         ipcRenderer.invoke('get-raw-description', year, day, token, partIndex)
+    )
+    contextBridge.exposeInMainWorld(
+      'readFile',
+      (filePath: string): Promise<string | undefined> => ipcRenderer.invoke('read-file', filePath)
     )
     contextBridge.exposeInMainWorld(
       'getProcessedDescription',
@@ -85,6 +94,30 @@ if (process.contextIsolated) {
       'cancelProcessedDescriptionStream',
       (channel: string): Promise<void> =>
         ipcRenderer.invoke('cancel-processed-description-stream', channel)
+    )
+    contextBridge.exposeInMainWorld(
+      'startDiscussionStream',
+      (
+        messages: { role: string; content: string }[],
+        openRouterToken: string,
+        model?: string,
+        reasoning?: DiscussionConfig
+      ) => ipcRenderer.invoke('start-discussion-stream', messages, openRouterToken, model, reasoning)
+    )
+    contextBridge.exposeInMainWorld(
+      'subscribeDiscussionStream',
+      (channel: string, listener: (payload: ProcessedDescriptionStreamPayload) => void): (() => void) => {
+        const wrapped = (
+          _event: Electron.IpcRendererEvent,
+          data: ProcessedDescriptionStreamPayload
+        ): void => listener(data)
+        ipcRenderer.on(channel, wrapped)
+        return () => ipcRenderer.removeListener(channel, wrapped)
+      }
+    )
+    contextBridge.exposeInMainWorld(
+      'cancelDiscussionStream',
+      (channel: string): Promise<void> => ipcRenderer.invoke('cancel-discussion-stream', channel)
     )
     contextBridge.exposeInMainWorld(
       'getDescription',

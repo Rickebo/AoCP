@@ -25,6 +25,9 @@ type SummaryRequest = {
   reasoning?: { effort?: string; max_tokens?: number }
 }
 
+export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
+export type DiscussionReasoning = { effort?: string; max_tokens?: number }
+
 function buildReasoningConfig(
   summaryConfig?: SummaryConfig
 ): { effort?: string; max_tokens?: number } | undefined {
@@ -306,6 +309,101 @@ async function summarizeDescriptionWithOpenRouterStream(
   }
 }
 
+async function chatWithOpenRouterStream(
+  messages: ChatMessage[],
+  openRouterToken: string,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
+  model?: string,
+  reasoning?: DiscussionReasoning
+): Promise<string | undefined> {
+  try {
+    const safeModel =
+      model != null && model.trim().length > 0 ? model.trim() : defaultSummaryModel
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openRouterToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(
+        reasoning != null
+          ? {
+              model: safeModel,
+              stream: true,
+              messages,
+              reasoning
+            }
+          : {
+              model: safeModel,
+              stream: true,
+              messages
+            }
+      ),
+      signal
+    })
+
+    if (!response.ok) {
+      console.error('OpenRouter API request failed', response.status, await response.text())
+      return undefined
+    }
+
+    const reader = response.body?.getReader()
+    if (reader == null) {
+      return undefined
+    }
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let content = ''
+    let finished = false
+
+    while (!finished) {
+      const { value, done } = await reader.read()
+      finished = done
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed.length === 0) continue
+        if (trimmed === 'data: [DONE]') {
+          return content.length > 0 ? content : undefined
+        }
+
+        if (!trimmed.startsWith('data:')) continue
+
+        const payload = trimmed.slice('data:'.length).trimStart()
+        if (payload.length === 0) continue
+
+        try {
+          type StreamPayload = { choices?: { delta?: { content?: string } }[] }
+          const parsed: StreamPayload = JSON.parse(payload)
+          const delta = parsed.choices?.[0]?.delta?.content
+          if (typeof delta === 'string' && delta.length > 0) {
+            content += delta
+            onChunk(delta)
+          }
+        } catch (err) {
+          console.error('Failed to parse OpenRouter stream chunk', err)
+        }
+      }
+    }
+
+    return content.length > 0 ? content : undefined
+  } catch (error) {
+    if ((error as Error)?.name === 'AbortError') {
+      return undefined
+    }
+    console.error('Failed to call OpenRouter API (streaming)', error)
+    return undefined
+  }
+}
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -378,6 +476,16 @@ function createWindow(): void {
     return await fetchAocArticle(year, day, token, partIndex)
   })
 
+  ipcMain.handle('read-file', async (_, filePath: string): Promise<string | undefined> => {
+    try {
+      const content = await fs.readFile(filePath, { encoding: 'utf-8' })
+      return content
+    } catch (error) {
+      console.error('Failed to read file', filePath, error)
+      return undefined
+    }
+  })
+
   ipcMain.handle(
     'get-processed-description',
     async (
@@ -407,6 +515,7 @@ function createWindow(): void {
   )
 
   const activeSummaryStreams = new Map<string, AbortController>()
+  const activeDiscussionStreams = new Map<string, AbortController>()
 
   ipcMain.handle(
     'start-processed-description-stream',
@@ -459,6 +568,60 @@ function createWindow(): void {
     if (controller != null) {
       controller.abort()
       activeSummaryStreams.delete(channel)
+    }
+  })
+
+  ipcMain.handle(
+    'start-discussion-stream',
+    async (
+      event,
+      messages: ChatMessage[],
+      openRouterToken: string,
+      model?: string,
+      reasoning?: DiscussionReasoning
+    ): Promise<string | undefined> => {
+      if (openRouterToken == null || openRouterToken.trim().length === 0) {
+        return undefined
+      }
+
+      const channel = `discussion-stream-${randomUUID()}`
+      const abortController = new AbortController()
+      activeDiscussionStreams.set(channel, abortController)
+      const sender = event.sender
+
+      chatWithOpenRouterStream(
+        messages,
+        openRouterToken,
+        (chunk) => {
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'chunk', content: chunk })
+        },
+        abortController.signal,
+        model,
+        reasoning
+      )
+        .then((finalContent) => {
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'done', content: finalContent })
+        })
+        .catch((error) => {
+          if (abortController.signal.aborted) return
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'error', message: error?.message ?? String(error) })
+        })
+        .finally(() => {
+          activeDiscussionStreams.delete(channel)
+        })
+
+      return channel
+    }
+  )
+
+  ipcMain.handle('cancel-discussion-stream', (_, channel: string): void => {
+    const controller = activeDiscussionStreams.get(channel)
+    if (controller != null) {
+      controller.abort()
+      activeDiscussionStreams.delete(channel)
     }
   })
 

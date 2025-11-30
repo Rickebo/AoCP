@@ -8,6 +8,12 @@ export type SummaryConfig = {
   reasoningMaxTokens?: number
 }
 
+export type DiscussionConfig = {
+  model?: string
+  reasoningEffort?: string
+  reasoningMaxTokens?: number
+}
+
 declare global {
   interface Window {
     setCookie: (url: string, cookie: string) => Promise<void>
@@ -19,6 +25,7 @@ declare global {
       token: string,
       partIndex: number
     ) => Promise<string>
+    readFile: (filePath: string) => Promise<string | undefined>
     getProcessedDescription: (
       article: string,
       openRouterToken: string,
@@ -36,6 +43,17 @@ declare global {
       listener: (payload: { type: string; content?: string; message?: string }) => void
     ) => () => void
     cancelProcessedDescriptionStream: (channel: string) => Promise<void>
+    startDiscussionStream: (
+      messages: { role: string; content: string }[],
+      openRouterToken: string,
+      model?: string,
+      reasoning?: { effort?: string; max_tokens?: number }
+    ) => Promise<string | undefined>
+    subscribeDiscussionStream: (
+      channel: string,
+      listener: (payload: { type: string; content?: string; message?: string }) => void
+    ) => () => void
+    cancelDiscussionStream: (channel: string) => Promise<void>
     getDescription: (
       year: number,
       day: number,
