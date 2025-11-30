@@ -304,7 +304,7 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
 
     setScale((currentScale) => {
       const oldFactor = scaleFactor(currentScale)
-      let proposedScale = currentScale + delta
+      const proposedScale = currentScale + delta
 
       const minScale = MIN_SCALE
       const maxScale = 10

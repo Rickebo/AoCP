@@ -70,9 +70,8 @@ export function useConnectionManager(
     const start = data.start
     const end = data.end ?? new Date()
 
-    const elapsed = data.elapsedNs != null
-      ? data.elapsedNs / 1000000
-      : end.getTime() - start.getTime()
+    const elapsed =
+      data.elapsedNs != null ? data.elapsedNs / 1000000 : end.getTime() - start.getTime()
 
     const micros = (elapsed * 1000) % 1000
     const nanos = (elapsed * 1000000) % 1000
@@ -98,7 +97,12 @@ export function useConnectionManager(
         continue
       }
 
-      const valueStr = usedUnits == 0 ? Math.floor(value).toString() : Math.floor(value).toString().padStart(unit != 's' ? 3 : 0, '0')
+      const valueStr =
+        usedUnits == 0
+          ? Math.floor(value).toString()
+          : Math.floor(value)
+              .toString()
+              .padStart(unit != 's' ? 3 : 0, '0')
       usedUnits++
       result += valueStr + unit + ' '
     }

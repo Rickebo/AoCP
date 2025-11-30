@@ -26,7 +26,9 @@ export default class ProblemService {
     const setPart = encodeURIComponent(problemId.setName)
     const problemPart = encodeURIComponent(problemId.problemName)
 
-    const ws = new WebSocket(`${this.api}/problem/solve/${yearPart}/${authorPart}/${setPart}/${problemPart}`)
+    const ws = new WebSocket(
+      `${this.api}/problem/solve/${yearPart}/${authorPart}/${setPart}/${problemPart}`
+    )
 
     ws.addEventListener('open', () => {
       ws.send(input)

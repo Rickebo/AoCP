@@ -1,10 +1,4 @@
-﻿import {
-  Container,
-  Nav,
-  Navbar,
-  NavDropdown,
-  Stack
-} from 'react-bootstrap'
+﻿import { Container, Nav, Navbar, NavDropdown, Stack } from 'react-bootstrap'
 import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
 import { Metadata, ProblemSetMetadata } from '../data/metadata'

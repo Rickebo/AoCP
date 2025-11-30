@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import './ProblemDescription.css'
 import { ProblemMetadata } from '../data/metadata'
 import { usePersistentState } from '@renderer/StateUtils'
@@ -21,6 +21,8 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   const [loadingRaw, setLoadingRaw] = useState<boolean>(false)
   const [loadingProcessed, setLoadingProcessed] = useState<boolean>(false)
   const [showSummary, setShowSummary] = useState<boolean>(settings.state.summarizeWithAI)
+  const [streamedSummary, setStreamedSummary] = useState<string | undefined>(undefined)
+  const streamHandleRef = useRef<{ cancel: () => void }>()
 
   const cacheKey = `${props.problemKey}-part-${props.partIndex}`
 
@@ -33,7 +35,57 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   const hasRaw = descriptionData?.raw != null
   const hasProcessed = descriptionData?.processed != null
 
-  const summaryEnabled = settings.state.summarizeWithAI && hasProcessed
+  const summaryEnabled = settings.state.summarizeWithAI && hasRaw
+  const summaryHtml = streamedSummary ?? descriptionData?.processed
+  const summaryAvailable = summaryHtml != null
+
+  const getCachedDescriptionForPart = (part: number): ProblemDescriptionData | undefined => {
+    const key = `${props.problemKey}-part-${part}`
+    try {
+      const cached = localStorage.getItem(key)
+      if (cached == null) return undefined
+      return JSON.parse(cached) as ProblemDescriptionData
+    } catch (error) {
+      console.error('Failed to read cached description', error)
+      return undefined
+    }
+  }
+
+  const cacheRawDescriptionForPart = (part: number, raw: string): void => {
+    const key = `${props.problemKey}-part-${part}`
+    try {
+      const existing = getCachedDescriptionForPart(part) ?? { raw: undefined, processed: undefined }
+      const nextState: ProblemDescriptionData = { ...existing, raw }
+      localStorage.setItem(key, JSON.stringify(nextState))
+    } catch (error) {
+      console.error('Failed to cache previous description', error)
+    }
+  }
+
+  const loadPreviousPartDescriptions = async (): Promise<string[]> => {
+    if (props.partIndex <= 0) {
+      return []
+    }
+
+    const articles: string[] = []
+    for (let i = 0; i < props.partIndex; i++) {
+      const cachedRaw = getCachedDescriptionForPart(i)?.raw
+      if (cachedRaw != null && cachedRaw.length > 0) {
+        articles.push(cachedRaw)
+        continue
+      }
+
+      try {
+        const raw = await aocService.getRawDescription(props.year, props.day, i)
+        articles.push(raw)
+        cacheRawDescriptionForPart(i, raw)
+      } catch (error) {
+        console.error(`Failed to fetch previous part ${i + 1} description`, error)
+      }
+    }
+
+    return articles
+  }
 
   const downloadRawDescription = async (): Promise<void> => {
     if (!settings.state.retrieveDescription || loadingRaw || hasRaw) {
@@ -53,33 +105,17 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     }
   }
 
-  const downloadProcessedDescription = async (): Promise<void> => {
-    if (!settings.state.summarizeWithAI || !settings.state.retrieveDescription || loadingProcessed || !hasRaw || hasProcessed) {
-      return
-    }
-
-    const current = descriptionCache.state
-    if (current.raw == null) {
-      return
-    }
-
-    setLoadingProcessed(true)
-
-    try {
-      const processed = await aocService.getProcessedDescription(current.raw)
-      if (processed != null) {
-        descriptionCache.update((currentState) => {
-          currentState.processed = processed
-          descriptionCache.save(currentState)
-        })
-      }
-    } finally {
-      setLoadingProcessed(false)
-    }
+  const cancelStream = (): void => {
+    streamHandleRef.current?.cancel()
+    streamHandleRef.current = undefined
   }
 
-  const refreshProcessedDescription = async (): Promise<void> => {
-    if (!settings.state.summarizeWithAI || !settings.state.retrieveDescription || loadingProcessed || !hasRaw) {
+  const streamProcessedDescription = async (force: boolean = false): Promise<void> => {
+    if (
+      !settings.state.summarizeWithAI ||
+      !settings.state.retrieveDescription ||
+      loadingProcessed
+    ) {
       return
     }
 
@@ -88,18 +124,49 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
       return
     }
 
+    if (!force && current.processed != null) {
+      return
+    }
+
+    cancelStream()
     setLoadingProcessed(true)
+    setStreamedSummary('')
 
     try {
-      const processed = await aocService.getProcessedDescription(current.raw)
-      if (processed != null) {
-        descriptionCache.update((currentState) => {
-          currentState.processed = processed
-          descriptionCache.save(currentState)
-        })
+      const previousArticles = await loadPreviousPartDescriptions()
+
+      const handle = await aocService.streamProcessedDescription(current.raw, previousArticles, {
+        onChunk: (chunk) => {
+          setStreamedSummary((prev) => (prev ?? '') + chunk)
+        },
+        onDone: (full) => {
+          const finalHtml = full ?? streamedSummary ?? ''
+          setStreamedSummary(finalHtml)
+          if (finalHtml.length > 0) {
+            descriptionCache.update((currentState) => {
+              currentState.processed = finalHtml
+              descriptionCache.save(currentState)
+            })
+          }
+          setLoadingProcessed(false)
+          streamHandleRef.current = undefined
+        },
+        onError: (message) => {
+          console.error('Failed to stream processed description', message)
+          setLoadingProcessed(false)
+          streamHandleRef.current = undefined
+        }
+      })
+
+      if (handle != null) {
+        streamHandleRef.current = handle
+      } else {
+        setLoadingProcessed(false)
       }
-    } finally {
+    } catch (error) {
+      console.error('Failed to start streaming processed description', error)
       setLoadingProcessed(false)
+      streamHandleRef.current = undefined
     }
   }
 
@@ -110,10 +177,22 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   }, [hasRaw, settings.state.retrieveDescription])
 
   useEffect(() => {
-    if (settings.state.retrieveDescription && settings.state.summarizeWithAI && hasRaw && !hasProcessed) {
-      void downloadProcessedDescription()
+    if (
+      settings.state.retrieveDescription &&
+      settings.state.summarizeWithAI &&
+      hasRaw &&
+      !hasProcessed &&
+      !loadingProcessed
+    ) {
+      void streamProcessedDescription()
     }
-  }, [hasRaw, hasProcessed, settings.state.retrieveDescription, settings.state.summarizeWithAI])
+  }, [
+    hasRaw,
+    hasProcessed,
+    loadingProcessed,
+    settings.state.retrieveDescription,
+    settings.state.summarizeWithAI
+  ])
 
   useEffect(() => {
     if (!settings.state.summarizeWithAI && showSummary) {
@@ -127,10 +206,23 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     }
   }, [settings.state.retrieveDescription])
 
+  useEffect(() => {
+    if (!settings.state.summarizeWithAI || !settings.state.retrieveDescription) {
+      cancelStream()
+      setStreamedSummary(undefined)
+    }
+  }, [settings.state.retrieveDescription, settings.state.summarizeWithAI])
+
+  useEffect(() => {
+    return (): void => {
+      cancelStream()
+    }
+  }, [])
+
   let html: string | undefined
 
-  if (settings.state.summarizeWithAI && showSummary && hasProcessed) {
-    html = descriptionData?.processed ?? undefined
+  if (settings.state.summarizeWithAI && showSummary && summaryAvailable) {
+    html = summaryHtml ?? undefined
   } else if (settings.state.retrieveDescription && descriptionData?.raw != null) {
     html = descriptionData.raw
   } else if (props.metadata.description != null) {
@@ -175,7 +267,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
           type="button"
           className="btn btn-sm btn-outline-primary problem-button problem-refresh-button"
           onClick={() => {
-            void refreshProcessedDescription()
+            void streamProcessedDescription(true)
           }}
           disabled={!hasRaw || loadingProcessed}
           title="Re-summarize description"

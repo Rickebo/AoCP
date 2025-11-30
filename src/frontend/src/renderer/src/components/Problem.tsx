@@ -5,6 +5,10 @@ import ProblemDescription from './ProblemDescription'
 
 export interface ProblemProps {
   metadata: ProblemMetadata
+  problemKey: string
+  year: number
+  day: number
+  partIndex: number
 }
 
 const Problem: FC<ProblemProps> = (props) => {
@@ -13,11 +17,15 @@ const Problem: FC<ProblemProps> = (props) => {
       {/* <p>{props.metadata.description}</p> */}
       <Accordion defaultActiveKey="description">
         <Accordion.Item eventKey="description">
-          <Accordion.Header>
-            Problem description
-          </Accordion.Header>
+          <Accordion.Header>Problem description</Accordion.Header>
           <Accordion.Body>
-            <ProblemDescription metadata={props.metadata} />
+            <ProblemDescription
+              metadata={props.metadata}
+              problemKey={props.problemKey}
+              year={props.year}
+              day={props.day}
+              partIndex={props.partIndex}
+            />
           </Accordion.Body>
         </Accordion.Item>
       </Accordion>

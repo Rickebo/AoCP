@@ -1,5 +1,4 @@
-﻿import { Metadata } from "../data/metadata";
-
+﻿import { Metadata } from '../data/metadata'
 
 export class MetadataService {
   private baseUrl: string

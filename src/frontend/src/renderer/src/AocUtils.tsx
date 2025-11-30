@@ -1,5 +1,13 @@
 ﻿import { useSettings } from './context/SettingsContext'
 
+export type SummaryConfig = {
+  model?: string
+  systemPrompt?: string
+  userPrompt?: string
+  reasoningEffort?: string
+  reasoningMaxTokens?: number
+}
+
 declare global {
   interface Window {
     setCookie: (url: string, cookie: string) => Promise<void>
@@ -13,8 +21,21 @@ declare global {
     ) => Promise<string>
     getProcessedDescription: (
       article: string,
-      openRouterToken: string
+      openRouterToken: string,
+      previousArticles?: string[],
+      config?: SummaryConfig
     ) => Promise<string | undefined>
+    startProcessedDescriptionStream: (
+      article: string,
+      openRouterToken: string,
+      previousArticles?: string[],
+      config?: SummaryConfig
+    ) => Promise<string | undefined>
+    subscribeProcessedDescriptionStream: (
+      channel: string,
+      listener: (payload: { type: string; content?: string; message?: string }) => void
+    ) => () => void
+    cancelProcessedDescriptionStream: (channel: string) => Promise<void>
     getDescription: (
       year: number,
       day: number,
@@ -27,10 +48,12 @@ declare global {
 class AocService {
   private token: string
   private openRouterToken: string
+  private summaryConfig: SummaryConfig
 
-  constructor(token: string, openRouterToken: string) {
+  constructor(token: string, openRouterToken: string, summaryConfig: SummaryConfig) {
     this.token = token
     this.openRouterToken = openRouterToken
+    this.summaryConfig = summaryConfig
   }
 
   public async getInput(year: number, day: number): Promise<string> {
@@ -41,12 +64,67 @@ class AocService {
     return await window.getRawDescription(year, day, this.token, partIndex)
   }
 
-  public async getProcessedDescription(article: string): Promise<string | undefined> {
+  public async getProcessedDescription(
+    article: string,
+    previousArticles: string[] = []
+  ): Promise<string | undefined> {
     if (this.openRouterToken == null || this.openRouterToken.trim().length === 0) {
       return undefined
     }
 
-    return await window.getProcessedDescription(article, this.openRouterToken)
+    return await window.getProcessedDescription(
+      article,
+      this.openRouterToken,
+      previousArticles,
+      this.summaryConfig
+    )
+  }
+
+  public async streamProcessedDescription(
+    article: string,
+    previousArticles: string[] = [],
+    handlers: {
+      onChunk: (chunk: string) => void
+      onDone?: (full?: string) => void
+      onError?: (message: string) => void
+    }
+  ): Promise<{ cancel: () => void } | undefined> {
+    if (this.openRouterToken == null || this.openRouterToken.trim().length === 0) {
+      return undefined
+    }
+
+    const channel = await window.startProcessedDescriptionStream(
+      article,
+      this.openRouterToken,
+      previousArticles,
+      this.summaryConfig
+    )
+    if (channel == null) {
+      return undefined
+    }
+
+    let fullContent = ''
+
+    const unsubscribe = window.subscribeProcessedDescriptionStream(channel, (payload) => {
+      const type = payload?.type
+      if (type === 'chunk' && typeof payload.content === 'string') {
+        fullContent += payload.content
+        handlers.onChunk(payload.content)
+      } else if (type === 'done') {
+        unsubscribe()
+        handlers.onDone?.(fullContent.length > 0 ? fullContent : payload.content)
+      } else if (type === 'error') {
+        unsubscribe()
+        handlers.onError?.(payload.message ?? 'Failed to stream summary')
+      }
+    })
+
+    const cancel = (): void => {
+      unsubscribe()
+      void window.cancelProcessedDescriptionStream(channel)
+    }
+
+    return { cancel }
   }
 
   public hasToken(): boolean {
@@ -75,8 +153,15 @@ export function useAocService(): AocService {
 
   const sessionToken = getSessionToken()
   const openRouterToken = settings.state.openRouterToken ?? ''
+  const summaryConfig: SummaryConfig = {
+    model: settings.state.summaryModel,
+    systemPrompt: settings.state.summarySystemPrompt,
+    userPrompt: settings.state.summaryUserPrompt,
+    reasoningEffort: settings.state.summaryReasoningEffort,
+    reasoningMaxTokens: settings.state.summaryReasoningMaxTokens
+  }
 
   window.setCookie('https://adventofcode.com', sessionToken)
 
-  return new AocService(sessionToken, openRouterToken)
+  return new AocService(sessionToken, openRouterToken, summaryConfig)
 }
