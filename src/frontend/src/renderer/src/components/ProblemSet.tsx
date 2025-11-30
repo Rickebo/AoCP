@@ -12,6 +12,7 @@ import { RenderSettings } from '../services/GifService'
 
 export interface ProblemSetProps {
   year: number
+  source: string
   author: string
   set: ProblemSetMetadata
 }
@@ -56,7 +57,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef | null>>({})
-  const mgr = useConnectionManager(props.year, props.author, props.set, grids)
+  const mgr = useConnectionManager(props.year, props.source, props.author, props.set, grids)
   // Cooldown before showing spinner for problem being solved. To prevent it from flashing
   // too quickly when a solution is just a bit too efficient.
   const startCooldown = 10
@@ -139,7 +140,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     }
   }, [isSolvingAny])
 
-  const problemKey = `input-${props.year}-${props.set.name}`
+  const problemKey = `input-${props.source}-${props.year}-${props.set.name}`
 
   return (
     <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>

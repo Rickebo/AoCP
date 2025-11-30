@@ -10,6 +10,7 @@ namespace Backend.Problems;
 public abstract class ProblemCollection
 {
     public abstract int Year { get; }
+    public abstract string Source { get; }
     public abstract Type ProblemRootType { get; }
     public Dictionary<string, List<ProblemSet>> Problems { get; } = new();
 
@@ -21,6 +22,7 @@ public abstract class ProblemCollection
     }
     
     public ProblemCollectionMetadata GetMetadata() => new(
+        Source,
         Year,
         Problems.ToDictionary(
             p => p.Key,

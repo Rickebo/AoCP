@@ -30,6 +30,7 @@ export interface SolveData {
 
 export function useConnectionManager(
   year: number,
+  source: string,
   author: string,
   set: ProblemSetMetadata,
   grids: MutableRefObject<Record<string, GridRef | null>>
@@ -203,6 +204,7 @@ export function useConnectionManager(
 
     const id: ProblemId = {
       year: year,
+      source: source,
       author: author,
       setName: set.name,
       problemName: problem.name

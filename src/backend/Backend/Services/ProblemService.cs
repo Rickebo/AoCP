@@ -9,8 +9,8 @@ namespace Backend.Services;
 
 public class ProblemService
 {
-    private Dictionary<int, ProblemCollection> _problemCollections = new();
-    private Dictionary<int, IndexedProblemCollection> _indexedProblemCollections = new();
+    private Dictionary<(int Year, string Source), ProblemCollection> _problemCollections = new();
+    private Dictionary<(int Year, string Source), IndexedProblemCollection> _indexedProblemCollections = new();
 
     public ProblemService(IEnumerable<ProblemCollection> problemCollections)
     {
@@ -22,13 +22,14 @@ public class ProblemService
         var collections = problemCollections.ToArray();
 
         _problemCollections = collections
-            .ToDictionary(col => col.Year, col => col);
+            .GroupBy(col => (col.Year, col.Source))
+            .ToDictionary(col => col.Key, col => col.First());
 
         foreach (var collection in collections)
             collection.OnUpdate += (_, _) => Load(_problemCollections.Values);
         
         _indexedProblemCollections = collections.ToDictionary(
-            col => col.Year,
+            col => (col.Year, col.Source),
             col => new IndexedProblemCollection(col)
         );
     }
@@ -43,9 +44,11 @@ public class ProblemService
 
     public void Validate(ProblemsMetadata metadata)
     {
-        foreach (var problemCollection in metadata.Collections.Values)
+        foreach (var problemCollection in metadata.Collections)
         {
             ValidateYear(problemCollection.Year);
+            if (string.IsNullOrEmpty(problemCollection.Source))
+                throw new InvalidOperationException("Problem collection source cannot be empty.");
 
             foreach (var authorProblems in problemCollection.ProblemSets)
             {
@@ -82,14 +85,13 @@ public class ProblemService
         new()
         {
             Collections = _problemCollections
-                .ToDictionary(
-                    entry => entry.Key,
-                    entry => entry.Value.GetMetadata()
-                )
+                .Values
+                .Select(col => col.GetMetadata())
+                .ToList()
         };
 
     public Problem? GetProblem(ProblemId problemId) =>
-        _indexedProblemCollections.TryGetValue(problemId.Year, out var collection)
+        _indexedProblemCollections.TryGetValue((problemId.Year, problemId.Source), out var collection)
             ? collection.Get(problemId)
             : null;
 
