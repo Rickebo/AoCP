@@ -1,4 +1,6 @@
-﻿namespace Lib.Extensions;
+﻿using Lib.Parsing;
+
+namespace Lib.Extensions;
 
 public static class StringExtensions
 {

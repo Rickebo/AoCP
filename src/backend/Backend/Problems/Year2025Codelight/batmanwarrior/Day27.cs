@@ -33,10 +33,10 @@ public class Day27 : ProblemSet
             Storage storage = new(input, reporter);
 
             // Get largest rectangular free shelf space
-            int maxProfit = storage.LargestSpace();
+            int largestSpace = storage.LargestSpace();
 
             // Send solution to frontend
-            reporter.ReportSolution(maxProfit);
+            reporter.ReportSolution(largestSpace);
             return Task.CompletedTask;
         }
 
@@ -128,7 +128,7 @@ public class Day27 : ProblemSet
                         totalMax.Height = localMax.Height;
                     }
                 }
-
+                
                 // Paint the largest rectangle
                 _reporter.Report(StringGridUpdate.FromRect(
                     totalMax.Pos, 

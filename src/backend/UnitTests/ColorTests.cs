@@ -5,12 +5,6 @@ namespace UnitTests;
 [TestFixture]
 public class ColorTests
 {
-    [SetUp]
-    public void Setup()
-    {
-        // Not implemented yet   
-    }
-
     [Test]
     public void Nibble_Parse()
     {
@@ -32,6 +26,7 @@ public class ColorTests
     {
         // Setup
         var nibbles = "0123456789ABCDEF";
+
         Dictionary<string, string> validShort = new()
         {
             { "#RGB", "#012" },
@@ -56,7 +51,9 @@ public class ColorTests
             { "Length9", "999999999" },
             { "Invalid hexadecimal character", "XYZ" },
         };
+
         int Nibble(char c) => nibbles.IndexOf(char.ToUpper(c));
+
         void AssertColor(Color color, int r, int g, int b, int a, string msg)
         {
             Assert.Multiple(() =>

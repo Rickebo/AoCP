@@ -1,10 +1,9 @@
-﻿namespace Lib.Enums
+﻿namespace Lib.Enums;
+
+[Flags]
+public enum Axis
 {
-    [Flags]
-    public enum Axis
-    {
-        None = 0,
-        X = 1,
-        Y = 2,
-    }
+    None = 0,
+    X = 1,
+    Y = 2,
 }

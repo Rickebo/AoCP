@@ -1,8 +1,4 @@
-﻿using System.Numerics;
-using Lib.Coordinate;
-using Lib.Grid;
-
-namespace Lib.Search;
+﻿namespace Lib.Search;
 
 // public class GridSearchSource<TElement, TSearchElement, TCoordinate, TCoordinateNumber, TCost> : ISearchSource<TSearchElement, TCost>
 //     where TElement : ISearchElement<TCost>

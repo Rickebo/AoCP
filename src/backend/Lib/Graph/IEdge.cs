@@ -1,4 +1,4 @@
-﻿namespace Lib;
+﻿namespace Lib.Graph;
 
 public interface IEdge<TNode> where TNode : notnull
 {

@@ -11,7 +11,7 @@ public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
 
     public NumberRange(T start, T stop)
     {
-        if (Stop < Start)
+        if (stop < start)
             throw new InvalidOperationException();
 
         Start = start;
@@ -26,13 +26,13 @@ public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
         coordinate >= Start && coordinate <= Stop;
 
     public NumberRange<T> GreaterThan(T threshold) =>
-        new NumberRange<T>(
+        new(
             T.Max(threshold + T.One, Start),
             T.Max(threshold + T.One, Stop)
         );
 
     public NumberRange<T> LessThan(T threshold) =>
-        new NumberRange<T>(
+        new(
             T.Min(threshold, Start),
             T.Min(threshold, Stop)
         );
@@ -87,7 +87,7 @@ public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
         other.Contains(this);
 
     public NumberRange<T> Intersection(NumberRange<T> other) =>
-        new NumberRange<T>(
+        new(
             T.Max(Start, other.Start),
             T.Min(Stop, other.Stop)
         );

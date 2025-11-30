@@ -1,4 +1,4 @@
-﻿namespace Lib;
+﻿namespace Lib.Graph;
 
 public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode>
 {

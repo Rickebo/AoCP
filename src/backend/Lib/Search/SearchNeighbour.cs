@@ -1,9 +1,8 @@
-﻿namespace Lib.Search
+﻿namespace Lib.Search;
+
+public class SearchNeighbour<TNeighbour, TCost> 
+    where TNeighbour : ISearchElement<TCost>
 {
-    public class SearchNeighbour<TNeighbour, TCost> 
-        where TNeighbour : ISearchElement<TCost>
-    {
-        public required TNeighbour Element { get; init; }
-        public required TCost Cost { get; init; }
-    }
+    public required TNeighbour Element { get; init; }
+    public required TCost Cost { get; init; }
 }
