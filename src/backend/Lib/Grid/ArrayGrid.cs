@@ -31,6 +31,14 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         _values = values;
     }
 
+    public ArrayGrid(int width, int height, TValue initialValue)
+    {
+        _values = new TValue[width, height];
+        for (var y = 0; y < height; y++)
+            for (var x = 0; x < width; x++)
+                _values[x, y] = initialValue;
+    }
+
     public ArrayGrid(IEnumerable<IEnumerable<TValue>> rows, int width, int height)
     {
         _values = new TValue[width, height];
@@ -77,6 +85,23 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
         set => _values[x, y] = value;
     }
 
+    public bool OnRadius(IntegerCoordinate<int> coordinate, int radius)
+    {
+        // Radius must be within grid
+        if (radius > Math.Min(Width, Height))
+            throw new ArgumentException("Radius can not extend outside of grid.");
+
+        // Grid mid points
+        int midWidth = Width / 2;
+        int midHeight= Height / 2;
+
+        return (coordinate.X == midWidth - radius || coordinate.X == midWidth + radius) 
+            && (coordinate.Y == midHeight - radius || coordinate.Y == midHeight + radius);
+    }
+
+    public bool OnOutline(IntegerCoordinate<int> coordinate) =>
+        (coordinate.X == 0 || coordinate.X == Width - 1) || (coordinate.Y == 0 || coordinate.Y == Height - 1);
+
     public void Apply(Func<TValue, TValue> modifier)
     {
         foreach (var coordinate in Coordinates)
@@ -122,6 +147,9 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public bool Contains(IntegerCoordinate<int> coordinate) =>
         Contains(coordinate.X, coordinate.Y);
+
+    public void Fill(TValue value) =>
+        Fill(IntegerCoordinate<int>.Zero, Width, Height, value);
 
     public void Fill(IntegerCoordinate<int> coordinate, int width, int height, TValue value)
     {
