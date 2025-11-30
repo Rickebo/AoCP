@@ -1,9 +1,10 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 using Lib.Enums;
 using Lib.Extensions;
 using Lib.Grid;
 
-namespace Lib;
+namespace Lib.Parsing;
 
 public static partial class Parser
 {
@@ -14,22 +15,34 @@ public static partial class Parser
     private static partial Regex RegexSigned();
 
     [GeneratedRegex(@"[+-]?\d+(\.\d+)?")]
-    private static partial Regex RegexDouble();
+    private static partial Regex RegexDecimalsDot();
 
-    public static T[] GetValues<T>(string str)
+    [GeneratedRegex(@"[+-]?\d+(\,\d+)?")]
+    private static partial Regex RegexDecimalsComma();
+
+    public static T[] GetValues<T>(string str, string decimalSeparator = ".")
     {
-        MatchCollection matches;
+        // Guard decimal separator
+        if ((typeof(T) == typeof(double) || typeof(T) == typeof(decimal)) && decimalSeparator != "." && decimalSeparator != ",")
+            throw new NotSupportedException("Unsupported decimal separator.");
 
+        // Choose regex pattern
+        MatchCollection matches;
         if (typeof(T) == typeof(uint) || typeof(T) == typeof(ulong))
             matches = RegexUnsigned().Matches(str);
         else if (typeof(T) == typeof(int) || typeof(T) == typeof(long))
             matches = RegexSigned().Matches(str);
-        else if (typeof(T) == typeof(double))
-            matches = RegexDouble().Matches(str);
+        else if (typeof(T) == typeof(double) || typeof(T) == typeof(decimal))
+            matches = decimalSeparator == "." ? RegexDecimalsDot().Matches(str) : RegexDecimalsComma().Matches(str);
         else
             throw new NotSupportedException("Unsupported generic type.");
 
+        // Parse values
         T[]? numbers = null;
+        NumberFormatInfo nfi = new()
+        {
+            NumberDecimalSeparator = decimalSeparator
+        };
         if (typeof(T) == typeof(int))
             numbers = matches.Select(x => int.Parse(x.Value)).ToArray() as T[];
         else if (typeof(T) == typeof(uint))
@@ -39,7 +52,9 @@ public static partial class Parser
         else if (typeof(T) == typeof(ulong))
             numbers = matches.Select(x => ulong.Parse(x.Value)).ToArray() as T[];
         else if (typeof(T) == typeof(double))
-            numbers = matches.Select(x => double.Parse(x.Value)).ToArray() as T[];
+            numbers = matches.Select(x => double.Parse(x.Value, nfi)).ToArray() as T[];
+        else if (typeof(T) == typeof(decimal))
+            numbers = matches.Select(x => decimal.Parse(x.Value, nfi)).ToArray() as T[];
 
         return numbers ?? [];
     }
