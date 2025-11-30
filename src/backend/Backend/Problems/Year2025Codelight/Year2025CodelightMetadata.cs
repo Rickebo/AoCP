@@ -12,6 +12,7 @@ public static class Year2025CodelightMetadata
     public class Year2025CodelightCollection : ProblemCollection
     {
         public override Type ProblemRootType { get; } = typeof(Year2025CodelightMetadata);
+        public override string Source => "Codelight";
         public override int Year => 2025;
     }
 }

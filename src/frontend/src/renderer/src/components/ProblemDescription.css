@@ -77,7 +77,8 @@
     }
 
     p.wrap {
-        width: 45em;
+        width: auto;
+        max-width: none;
     }
 
     .hidden-until-hover {
@@ -338,7 +339,8 @@
     }
 
     article {
-        width: 45em;
+        width: auto;
+        max-width: none;
         margin-bottom: 2em;
         margin-top: 2em;
     }
@@ -441,7 +443,7 @@
 
     .share:hover .share-content,
     .share:focus-within .share-content {
-        max-width: 45em;
+        max-width: none;
         transition: max-width .2s 0s;
     }
 
@@ -670,7 +672,8 @@
     }
 
     .sponsors {
-        width: 46em;
+        width: auto;
+        max-width: none;
         /*76 characters*/
     }
 
@@ -701,7 +704,6 @@
     padding-left: 1rem;
     padding-right: 1rem;
     width: 100%;
-    max-width: 60em;
     margin: 0 auto;
     box-sizing: border-box;
 }

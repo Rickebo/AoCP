@@ -17,7 +17,6 @@ export function setAny(source: object, value: any, ...path: string[]): void {
   current[path[path.length - 1]] = value
 }
 
-
 export function set<T extends object>(saver: SaveFunction<T>, value: any, ...path: string[]): void {
   saver((settings: T) => {
     setAny(settings, value, ...path)

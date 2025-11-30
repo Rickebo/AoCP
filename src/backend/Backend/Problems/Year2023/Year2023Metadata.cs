@@ -10,7 +10,8 @@ public static class Year2023Metadata
 
     public class Year2023Collection : ProblemCollection
     {
-        public override int Year => 2023;
         public override Type ProblemRootType { get; } = typeof(Year2023Metadata);
+        public override string Source => "AoC";
+        public override int Year => 2023;
     }
 }

@@ -12,6 +12,7 @@ import { RenderSettings } from '../services/GifService'
 
 export interface ProblemSetProps {
   year: number
+  source: string
   author: string
   set: ProblemSetMetadata
 }
@@ -56,7 +57,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef | null>>({})
-  const mgr = useConnectionManager(props.year, props.author, props.set, grids)
+  const mgr = useConnectionManager(props.year, props.source, props.author, props.set, grids)
   // Cooldown before showing spinner for problem being solved. To prevent it from flashing
   // too quickly when a solution is just a bit too efficient.
   const startCooldown = 10
@@ -64,7 +65,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   const [pendingRenderInput, setPendingRenderInput] = useState<string | undefined>(undefined)
   const [renderWidth, setRenderWidth] = useState<number>(800)
   const [renderHeight, setRenderHeight] = useState<number>(800)
-  const [tick, setTick] = useState(0)
+  const [, setTick] = useState(0)
   const [speedFactor, setSpeedFactor] = useState<number>(1)
 
   const navigate = (url: string): void => {
@@ -139,7 +140,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     }
   }, [isSolvingAny])
 
-  const problemKey = `input-${props.year}-${props.set.name}`
+  const problemKey = `input-${props.source}-${props.year}-${props.set.name}`
 
   return (
     <div className="d-flex flex-column overflow-auto" style={{ flex: '1 1 auto' }}>
@@ -263,17 +264,17 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
         >
           {props.set.problems.map((problem, i) => (
             <React.Fragment key={`problem-group-${i}`}>
-              <Tab.Pane eventKey={`desc-${i}`} style={{flexGrow: '1', minWidth: 0}}>
-                <ProblemDescription 
-                  metadata={problem} 
-                  problemKey={problemKey} 
-                  year={props.year} 
-                  day={new Date(props.set.releaseTime).getDate()} 
-                  partIndex={i} 
+              <Tab.Pane eventKey={`desc-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
+                <ProblemDescription
+                  metadata={problem}
+                  problemKey={problemKey}
+                  year={props.year}
+                  day={new Date(props.set.releaseTime).getDate()}
+                  partIndex={i}
                 />
               </Tab.Pane>
-              <Tab.Pane eventKey={`grid-${i}`} style={{flexGrow: '1', minWidth: 0}}>
-                <div className="w-100 h-100 d-flex" style={{minWidth: 0}}>
+              <Tab.Pane eventKey={`grid-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
+                <div className="w-100 h-100 d-flex" style={{ minWidth: 0 }}>
                   {problem.name == null ? null : (
                     <Grid
                       ref={(grid) => {
@@ -283,8 +284,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   )}
                 </div>
               </Tab.Pane>
-              <Tab.Pane eventKey={`log-${i}`} style={{flexGrow: '1', minWidth: 0}}>
-                <div className="w-100 h-100 d-flex flex" style={{minWidth: 0}}>
+              <Tab.Pane eventKey={`log-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
+                <div className="w-100 h-100 d-flex flex" style={{ minWidth: 0 }}>
                   {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
                 </div>
               </Tab.Pane>

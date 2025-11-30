@@ -14,13 +14,13 @@ export function useCooldown(time: number): CooldownContext {
 
     const timeout = setTimeout(() => func(), time)
 
-    return () => {
+    return (): void => {
       window.clearTimeout(timeout)
     }
   }, [func])
 
   return {
-    set: (func: CooldownFunction) => {
+    set: (func: CooldownFunction): void => {
       setFunc(() => func)
     }
   }

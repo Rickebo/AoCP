@@ -3,6 +3,95 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as path from 'node:path'
 import * as fs from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
+
+type SummaryConfig = {
+  model?: string
+  systemPrompt?: string
+  userPrompt?: string
+  reasoningEffort?: string
+  reasoningMaxTokens?: number
+}
+
+const defaultSummaryModel = 'openai/gpt-5'
+const defaultSummarySystemPrompt =
+  'You summarize Advent of Code problem descriptions into concise HTML while preserving important formatting such as code blocks and distinct input examples. Use any provided earlier parts only as context to interpret references; the output must cover only the target part.'
+const defaultSummaryUserPrompt =
+  'Summarize only the target Advent of Code problem part below into shorter HTML that keeps the essential details needed to solve that part. If earlier parts are provided, treat them purely as context and do not re-summarize them.'
+
+type SummaryRequest = {
+  model: string
+  messages: { role: 'system' | 'user'; content: string }[]
+  reasoning?: { effort?: string; max_tokens?: number }
+}
+
+function buildReasoningConfig(
+  summaryConfig?: SummaryConfig
+): { effort?: string; max_tokens?: number } | undefined {
+  const maxTokens = summaryConfig?.reasoningMaxTokens
+  const effort = summaryConfig?.reasoningEffort?.trim().toLowerCase()
+
+  if (typeof maxTokens === 'number' && Number.isFinite(maxTokens) && maxTokens > 0) {
+    return { max_tokens: Math.floor(maxTokens) }
+  }
+
+  if (effort != null && effort.length > 0) {
+    return { effort }
+  }
+
+  return undefined
+}
+
+function buildSummaryRequest(
+  article: string,
+  previousArticles: string[] = [],
+  summaryConfig?: SummaryConfig
+): SummaryRequest {
+  const model =
+    summaryConfig?.model != null && summaryConfig.model.trim().length > 0
+      ? summaryConfig.model
+      : defaultSummaryModel
+
+  const systemPrompt =
+    summaryConfig?.systemPrompt != null && summaryConfig.systemPrompt.trim().length > 0
+      ? summaryConfig.systemPrompt
+      : defaultSummarySystemPrompt
+
+  const userPrompt =
+    summaryConfig?.userPrompt != null && summaryConfig.userPrompt.trim().length > 0
+      ? summaryConfig.userPrompt
+      : defaultSummaryUserPrompt
+
+  const usableContext = previousArticles.filter(
+    (content) => typeof content === 'string' && content.trim().length > 0
+  )
+  const contextSection =
+    usableContext.length > 0
+      ? `Context from earlier parts (do not summarize these; use only to resolve references):\n${usableContext
+          .map((content, idx) => `Part ${idx + 1}:\n${content}`)
+          .join('\n\n---\n\n')}`
+      : undefined
+
+  const userContent =
+    contextSection != null
+      ? `${userPrompt}\n\n${contextSection}\n\nTarget part HTML to summarize:\n${article}`
+      : `${userPrompt}\n\nTarget part HTML to summarize:\n${article}`
+
+  return {
+    model,
+    reasoning: buildReasoningConfig(summaryConfig),
+    messages: [
+      {
+        role: 'system',
+        content: systemPrompt
+      },
+      {
+        role: 'user',
+        content: userContent
+      }
+    ]
+  }
+}
 
 async function fetchAocArticle(
   year: number,
@@ -34,13 +123,9 @@ async function fetchAocArticle(
 
   const articles: string[] = []
   let searchIndex = 0
+  let openIndex = html.indexOf('<article', searchIndex)
 
-  while (true) {
-    const openIndex = html.indexOf('<article', searchIndex)
-    if (openIndex === -1) {
-      break
-    }
-
+  while (openIndex !== -1) {
     const closeIndex = html.indexOf('</article>', openIndex)
     if (closeIndex === -1) {
       break
@@ -49,6 +134,7 @@ async function fetchAocArticle(
     const articleHtml = html.slice(openIndex, closeIndex + '</article>'.length)
     articles.push(articleHtml)
     searchIndex = closeIndex + '</article>'.length
+    openIndex = html.indexOf('<article', searchIndex)
   }
 
   if (articles.length === 0) {
@@ -77,31 +163,31 @@ async function fetchAocArticle(
 
 async function summarizeDescriptionWithOpenRouter(
   article: string,
-  openRouterToken: string
+  previousArticles: string[],
+  openRouterToken: string,
+  summaryConfig?: SummaryConfig
 ): Promise<string | undefined> {
   try {
+    const request = buildSummaryRequest(article, previousArticles, summaryConfig)
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${openRouterToken}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: 'openai/gpt-5',
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You summarize Advent of Code problem descriptions into concise HTML while preserving important formatting such as code blocks and distinct input examples.'
-          },
-          {
-            role: 'user',
-            content:
-              'Summarize the following Advent of Code problem description HTML into a shorter HTML explanation that keeps the essential details needed to solve the puzzle:\n\n' +
-              article
-          }
-        ]
-      })
+      body: JSON.stringify(
+        request.reasoning != null
+          ? {
+              model: request.model,
+              messages: request.messages,
+              reasoning: request.reasoning
+            }
+          : {
+              model: request.model,
+              messages: request.messages
+            }
+      )
     })
 
     if (!response.ok) {
@@ -109,8 +195,12 @@ async function summarizeDescriptionWithOpenRouter(
       return undefined
     }
 
-    const data: any = await response.json()
-    const content = data?.choices?.[0]?.message?.content
+    type ChatCompletionResponse = {
+      choices?: { message?: { content?: string } }[]
+    }
+
+    const data: ChatCompletionResponse = await response.json()
+    const content = data.choices?.[0]?.message?.content
     if (typeof content !== 'string') {
       return undefined
     }
@@ -118,6 +208,100 @@ async function summarizeDescriptionWithOpenRouter(
     return content
   } catch (error) {
     console.error('Failed to call OpenRouter API', error)
+    return undefined
+  }
+}
+
+async function summarizeDescriptionWithOpenRouterStream(
+  article: string,
+  previousArticles: string[],
+  openRouterToken: string,
+  onChunk: (chunk: string) => void,
+  signal?: AbortSignal,
+  summaryConfig?: SummaryConfig
+): Promise<string | undefined> {
+  try {
+    const request = buildSummaryRequest(article, previousArticles, summaryConfig)
+
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${openRouterToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(
+        request.reasoning != null
+          ? {
+              model: request.model,
+              stream: true,
+              messages: request.messages,
+              reasoning: request.reasoning
+            }
+          : {
+              model: request.model,
+              stream: true,
+              messages: request.messages
+            }
+      ),
+      signal
+    })
+
+    if (!response.ok) {
+      console.error('OpenRouter API request failed', response.status, await response.text())
+      return undefined
+    }
+
+    const reader = response.body?.getReader()
+    if (reader == null) {
+      return undefined
+    }
+
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let content = ''
+    let finished = false
+
+    while (!finished) {
+      const { value, done } = await reader.read()
+      finished = done
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed.length === 0) continue
+        if (trimmed === 'data: [DONE]') {
+          return content.length > 0 ? content : undefined
+        }
+
+        if (!trimmed.startsWith('data:')) continue
+
+        const payload = trimmed.slice('data:'.length).trimStart()
+        if (payload.length === 0) continue
+
+        try {
+          type StreamPayload = { choices?: { delta?: { content?: string } }[] }
+          const parsed: StreamPayload = JSON.parse(payload)
+          const delta = parsed.choices?.[0]?.delta?.content
+          if (typeof delta === 'string' && delta.length > 0) {
+            content += delta
+            onChunk(delta)
+          }
+        } catch (err) {
+          console.error('Failed to parse OpenRouter stream chunk', err)
+        }
+      }
+    }
+
+    return content.length > 0 ? content : undefined
+  } catch (error) {
+    if ((error as Error)?.name === 'AbortError') {
+      return undefined
+    }
+    console.error('Failed to call OpenRouter API (streaming)', error)
     return undefined
   }
 }
@@ -190,22 +374,30 @@ function createWindow(): void {
     return await fetchAocArticle(year, day, token)
   })
 
-  ipcMain.handle(
-    'get-raw-description',
-    async (_, year, day, token, partIndex): Promise<string> => {
-      return await fetchAocArticle(year, day, token, partIndex)
-    }
-  )
+  ipcMain.handle('get-raw-description', async (_, year, day, token, partIndex): Promise<string> => {
+    return await fetchAocArticle(year, day, token, partIndex)
+  })
 
   ipcMain.handle(
     'get-processed-description',
-    async (_, article: string, openRouterToken: string): Promise<string | undefined> => {
+    async (
+      _,
+      article: string,
+      openRouterToken: string,
+      previousArticles: string[] = [],
+      summaryConfig?: SummaryConfig
+    ): Promise<string | undefined> => {
       try {
         if (openRouterToken == null || openRouterToken.trim().length === 0) {
           return undefined
         }
 
-        const processed = await summarizeDescriptionWithOpenRouter(article, openRouterToken)
+        const processed = await summarizeDescriptionWithOpenRouter(
+          article,
+          previousArticles,
+          openRouterToken,
+          summaryConfig
+        )
         return processed ?? undefined
       } catch (error) {
         console.error('Failed to handle get-processed-description', error)
@@ -214,26 +406,85 @@ function createWindow(): void {
     }
   )
 
-  ipcMain.handle('save-gif', async (_, defaultFileName: string, bytes: Uint8Array): Promise<boolean> => {
-    const result = await dialog.showSaveDialog(mainWindow, {
-      title: 'Save grid animation',
-      defaultPath: defaultFileName,
-      filters: [
-        {
-          name: 'WebM Video',
-          extensions: ['webm']
-        }
-      ]
-    })
+  const activeSummaryStreams = new Map<string, AbortController>()
 
-    if (result.canceled || !result.filePath) {
-      return false
+  ipcMain.handle(
+    'start-processed-description-stream',
+    async (
+      event,
+      article: string,
+      openRouterToken: string,
+      previousArticles: string[] = [],
+      summaryConfig?: SummaryConfig
+    ): Promise<string | undefined> => {
+      if (openRouterToken == null || openRouterToken.trim().length === 0) {
+        return undefined
+      }
+
+      const channel = `processed-description-stream-${randomUUID()}`
+      const abortController = new AbortController()
+      activeSummaryStreams.set(channel, abortController)
+      const sender = event.sender
+
+      summarizeDescriptionWithOpenRouterStream(
+        article,
+        previousArticles,
+        openRouterToken,
+        (chunk) => {
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'chunk', content: chunk })
+        },
+        abortController.signal,
+        summaryConfig
+      )
+        .then((finalContent) => {
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'done', content: finalContent })
+        })
+        .catch((error) => {
+          if (abortController.signal.aborted) return
+          if (sender.isDestroyed()) return
+          sender.send(channel, { type: 'error', message: error?.message ?? String(error) })
+        })
+        .finally(() => {
+          activeSummaryStreams.delete(channel)
+        })
+
+      return channel
     }
+  )
 
-    await fs.writeFile(result.filePath, Buffer.from(bytes))
-
-    return true
+  ipcMain.handle('cancel-processed-description-stream', (_, channel: string): void => {
+    const controller = activeSummaryStreams.get(channel)
+    if (controller != null) {
+      controller.abort()
+      activeSummaryStreams.delete(channel)
+    }
   })
+
+  ipcMain.handle(
+    'save-gif',
+    async (_, defaultFileName: string, bytes: Uint8Array): Promise<boolean> => {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: 'Save grid animation',
+        defaultPath: defaultFileName,
+        filters: [
+          {
+            name: 'WebM Video',
+            extensions: ['webm']
+          }
+        ]
+      })
+
+      if (result.canceled || !result.filePath) {
+        return false
+      }
+
+      await fs.writeFile(result.filePath, Buffer.from(bytes))
+
+      return true
+    }
+  )
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.

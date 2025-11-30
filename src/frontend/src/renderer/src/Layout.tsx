@@ -10,6 +10,7 @@ interface AuthorState {
 
 const Layout: FC = () => {
   const [year, setYear] = useState<number | undefined>()
+  const [source, setSource] = useState<string | undefined>()
 
   const authorState = usePersistentState<AuthorState>('author', {
     author: 'Unknown'
@@ -32,8 +33,9 @@ const Layout: FC = () => {
   return (
     <div className="h-100 d-flex flex-column">
       <NavigationBar
-        setProblemSet={(year, set) => {
+        setProblemSet={(year, source, set) => {
           setYear(year)
+          setSource(source)
           setSelectedProblemSet(set)
         }}
         author={author ?? 'Unknown'}
@@ -41,10 +43,11 @@ const Layout: FC = () => {
       />
 
       <div className="d-flex flex-column flex-grow-1 overflow-hidden">
-        {year == null || author == null || selectedProblemSet == null ? null : (
+        {year == null || source == null || author == null || selectedProblemSet == null ? null : (
           <ProblemSet
-            key={`problem-${year}-${author}-${selectedProblemSet.name}`}
+            key={`problem-${source}-${year}-${author}-${selectedProblemSet.name}`}
             year={year}
+            source={source}
             author={author}
             set={selectedProblemSet}
           />

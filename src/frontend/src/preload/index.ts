@@ -2,6 +2,15 @@ import { contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { ipcRenderer } from 'electron'
 
+type ProcessedDescriptionStreamPayload = { type: string; content?: string; message?: string }
+type SummaryConfig = {
+  model?: string
+  systemPrompt?: string
+  userPrompt?: string
+  reasoningEffort?: string
+  reasoningMaxTokens?: number
+}
+
 // Custom APIs for renderer
 const api = {}
 
@@ -34,12 +43,57 @@ if (process.contextIsolated) {
     )
     contextBridge.exposeInMainWorld(
       'getProcessedDescription',
-      (article: string, openRouterToken: string): Promise<string | undefined> =>
-        ipcRenderer.invoke('get-processed-description', article, openRouterToken)
+      (
+        article: string,
+        openRouterToken: string,
+        previousArticles: string[] = [],
+        config?: SummaryConfig
+      ): Promise<string | undefined> =>
+        ipcRenderer.invoke('get-processed-description', article, openRouterToken, previousArticles, config)
+    )
+    contextBridge.exposeInMainWorld(
+      'startProcessedDescriptionStream',
+      (
+        article: string,
+        openRouterToken: string,
+        previousArticles: string[] = [],
+        config?: SummaryConfig
+      ): Promise<string | undefined> =>
+        ipcRenderer.invoke(
+          'start-processed-description-stream',
+          article,
+          openRouterToken,
+          previousArticles,
+          config
+        )
+    )
+    contextBridge.exposeInMainWorld(
+      'subscribeProcessedDescriptionStream',
+      (
+        channel: string,
+        listener: (payload: ProcessedDescriptionStreamPayload) => void
+      ): (() => void) => {
+        const wrapped = (
+          _event: Electron.IpcRendererEvent,
+          data: ProcessedDescriptionStreamPayload
+        ): void => listener(data)
+        ipcRenderer.on(channel, wrapped)
+        return () => ipcRenderer.removeListener(channel, wrapped)
+      }
+    )
+    contextBridge.exposeInMainWorld(
+      'cancelProcessedDescriptionStream',
+      (channel: string): Promise<void> =>
+        ipcRenderer.invoke('cancel-processed-description-stream', channel)
     )
     contextBridge.exposeInMainWorld(
       'getDescription',
-      (year: number, day: number, token: string, openRouterToken: string): Promise<{article: string, processed: string | undefined} | undefined> => 
+      (
+        year: number,
+        day: number,
+        token: string,
+        openRouterToken: string
+      ): Promise<{ article: string; processed: string | undefined } | undefined> =>
         ipcRenderer.invoke('get-description', year, day, token, openRouterToken)
     )
     contextBridge.exposeInMainWorld(

@@ -1,5 +1,15 @@
 declare module 'webm-writer' {
-  const WebMWriter: any
-  export default WebMWriter
-}
+  interface WebMWriterOptions {
+    quality?: number
+    fileWriter?: unknown
+    frameRate?: number
+    frameWidth?: number
+    frameHeight?: number
+  }
 
+  export default class WebMWriter {
+    constructor(options?: WebMWriterOptions)
+    addFrame(frame: HTMLCanvasElement): void
+    complete(): Promise<Blob>
+  }
+}

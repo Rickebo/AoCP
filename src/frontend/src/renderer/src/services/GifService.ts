@@ -21,8 +21,13 @@ export interface RenderSettings {
 const sanitizeFilePart = (value: string): string =>
   value.replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '')
 
+type WebMWriterInstance = {
+  addFrame: (frame: HTMLCanvasElement) => void
+  complete: () => Promise<Blob>
+}
+
 export class GifRenderSession {
-  private readonly writer: any
+  private readonly writer: WebMWriterInstance
   private readonly settings: RenderSettings
   private frameIndex: number = 0
   private readonly offscreen: HTMLCanvasElement
@@ -48,7 +53,7 @@ export class GifRenderSession {
       frameRate: fps,
       frameWidth: this.settings.width,
       frameHeight: this.settings.height
-    })
+    }) as WebMWriterInstance
   }
 
   public addFrame(canvas: HTMLCanvasElement): void {

@@ -1,8 +1,9 @@
 ﻿export interface Metadata {
-  collections: Record<number, ProblemCollectionMetadata>
+  collections: ProblemCollectionMetadata[]
 }
 
 export interface ProblemCollectionMetadata {
+  source: string
   year: number
   problemSets: Record<string, ProblemSetMetadata[]>
 }
