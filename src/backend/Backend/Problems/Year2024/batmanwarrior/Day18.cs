@@ -85,7 +85,7 @@ public class Day18 : ProblemSet
             }
 
             // Create empty space
-            _grid = new('.', width, height);
+            _grid = new(width, height, '.');
 
             // Print grid
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_grid, "#FFFFFF", "#000000"));

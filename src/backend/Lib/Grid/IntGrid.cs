@@ -8,7 +8,7 @@ public class IntGrid : ArrayGrid<int>
 {
     public IntGrid(string input, int? defaultValue = null) : base(ParseFromString(input, defaultValue)) {}
 
-    public IntGrid(int num, int width, int height) : base(Fill(num, width, height)) {}
+    public IntGrid(int width, int height, int num) : base(width, height, num) {}
 
     public IntGrid(int[,] values) : base(values) {}
 
@@ -32,17 +32,6 @@ public class IntGrid : ArrayGrid<int>
                     );
             }
         }
-
-        return arr;
-    }
-
-    private static int[,] Fill(int num, int width, int height)
-    {
-        // Fill 2D-array with ints
-        var arr = new int[width, height];
-        for (var y = 0; y < height; y++)
-            for (var x = 0; x < width; x++)
-                arr[x, y] = num;
 
         return arr;
     }

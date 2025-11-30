@@ -8,7 +8,7 @@ public class CharGrid : ArrayGrid<char>
 {
     public CharGrid(string input) : base(ParseFromString(input)) {}
 
-    public CharGrid(char c, int width, int height) : base(Fill(c, width, height)) {}
+    public CharGrid(int width, int height, char c) : base(width, height, c) {}
 
     public CharGrid(char[,] values) : base(values) {}
 
@@ -24,17 +24,6 @@ public class CharGrid : ArrayGrid<char>
         for (var y = 0; y < height; y++)
             for (var x = 0; x < width; x++)
                 arr[x, y] = rows[^(y + 1)][x];
-
-        return arr;
-    }
-
-    private static char[,] Fill(char c, int width, int height)
-    {
-        // Fill 2D-array with chars
-        var arr = new char[width, height];
-        for (var y = 0; y < height; y++)
-            for (var x = 0; x < width; x++)
-                arr[x, y] = c;
 
         return arr;
     }

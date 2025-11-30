@@ -282,6 +282,14 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return new(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
     }
 
+    public static Color Between<T>(Color from, Color to, T curr, T min, T max) where T : INumber<T>
+    {
+        var currD = double.CreateSaturating(curr);
+        var minD = double.CreateSaturating(min);
+        var maxD = double.CreateSaturating(max);
+        return Between(from, to, (currD - minD) / (maxD - minD));
+    }
+
     public new string ToString() => ToRgbaString();
     public string ToRgbaString() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
     public string ToRgbString() => $"#{R:X2}{G:X2}{B:X2}";

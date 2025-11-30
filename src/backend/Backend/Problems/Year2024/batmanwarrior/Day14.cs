@@ -152,7 +152,7 @@ public class Day14 : ProblemSet
                 if (easterEgg)
                 {
                     // Create grid
-                    CharGrid grid = new(' ', _width, _height);
+                    CharGrid grid = new(_width, _height, ' ');
 
                     // Add robots
                     foreach (Robot robot in _robots)
