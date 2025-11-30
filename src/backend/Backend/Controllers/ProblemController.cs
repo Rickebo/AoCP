@@ -12,6 +12,8 @@ using Backend.Problems;
 using Backend.Services;
 using Common;
 using Common.Updates;
+using Lib;
+using Lib.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -167,26 +169,55 @@ public class ProblemController(
         }
         catch (Exception ex)
         {
-            if (ex is ProblemException problemEx)
-            {
-                logger.LogDebug(
-                    ex,
-                    $"A problem exception occurred while solving problem {setName} -> {problemName}:"
-                );
+            if (logger.IsEnabled(LogLevel.Error))
+                logger.LogError("{Message}", $"An exception occurred while solving problem: {setName} -> {problemName}");
 
-                await Transmit(
-                    socket,
-                    new FinishedProblemUpdate
-                    {
-                        Error = ex.Message,
-                        Solution = null,
-                        Successful = false
-                    }
-                );
-            }
-            else
+            PrintException(ex);
+
+            await Transmit(
+                socket,
+                new FinishedProblemUpdate
+                {
+                    Error = ex.Message,
+                    Solution = null,
+                    Successful = false
+                }
+            );
+        }
+    }
+
+    private static void PrintException(Exception ex)
+    {
+        // Split exception content
+        string[] lines = ex.ToString().SplitLines();
+
+        // Print type and message
+        if (lines.Length > 0)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            foreach (var part in Parser.SplitBy(lines[0], [": "]))
+                Console.WriteLine(new string(' ', 6) + part);
+            Console.ResetColor();
+        }
+
+        // Format stack trace
+        if (lines.Length > 1)
+        {
+            foreach (var line in lines[1..])
             {
-                logger.LogError(ex, "An exception occurred while solving problem.");
+                // Retrieve relevant lines
+                var index = line.IndexOf("src\\backend");
+                if (index >= 0)
+                {
+                    string[] parts = Parser.SplitBy(line[index..], [":"]);
+                    if (parts.Length > 1)
+                    {
+                        Console.Write(new string(' ', 6) + parts[0] + " - ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(parts[1]);
+                        Console.ResetColor();
+                    }
+                }
             }
         }
     }
