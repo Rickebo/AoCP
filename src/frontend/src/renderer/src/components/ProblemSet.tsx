@@ -7,6 +7,7 @@ import { useConnectionManager } from '../ConnectionManager'
 import classNames from 'classnames'
 import Grid, { GridRef } from './Grid'
 import ProblemDescription from './ProblemDescription'
+import ProblemDiscussion from './ProblemDiscussion'
 import { BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
 import { RenderSettings } from '../services/GifService'
 
@@ -254,6 +255,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                 <Nav.Item>
                   <Nav.Link eventKey={`log-${i}`}>Log</Nav.Link>
                 </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey={`chat-${i}`}>Discussion</Nav.Link>
+                </Nav.Item>
               </Stack>
             </Col>
           ))}
@@ -288,6 +292,16 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                 <div className="w-100 h-100 d-flex flex" style={{ minWidth: 0 }}>
                   {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
                 </div>
+              </Tab.Pane>
+              <Tab.Pane eventKey={`chat-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
+                <ProblemDiscussion
+                  year={props.year}
+                  day={new Date(props.set.releaseTime).getDate()}
+                  partIndex={i}
+                  problemKey={problemKey}
+                  problem={problem}
+                  solutionFilePath={props.set.solutionFilePath}
+                />
               </Tab.Pane>
             </React.Fragment>
           ))}

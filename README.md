@@ -36,6 +36,8 @@ Electron will open a desktop window and connect to `http://localhost:8080` by de
 
 To fetch puzzle input automatically, paste your Advent of Code session cookie (`session=…`) into **Settings → AoC token**. The main process will store it securely and use it when calling `https://adventofcode.com`.
 
+If you want AI help, add an OpenRouter API token under **Settings → OpenRouter**. The app uses it to summarize puzzle descriptions and to power the new Discussion tab that chats about each problem using both the raw description and your local solution file.
+
 ## Adding your own solutions
 
 1. Navigate to `src/backend/Backend/Problems` and pick the correct year folder. If the year does not exist yet:

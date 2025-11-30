@@ -192,11 +192,13 @@ public class Day06 : ProblemSet
         var pos = grid.Find(ch => guardChars.Contains(ch.ToString()));
         var dir = DirectionExtensions.Parse(grid[pos]);
 
+        dir = dir.FlipY();
+
         return new GuardPosition(pos, dir);
     }
 
-    private record GuardPosition(IntegerCoordinate<int> Position, Direction Direction);
+    private readonly record struct GuardPosition(IntegerCoordinate<int> Position, Direction Direction);
 
     private static CharGrid Parse(string input) =>
-        new CharGrid(input).Flip(Axis.Y);
+        new CharGrid(input);
 }

@@ -19,6 +19,7 @@ declare global {
       token: string,
       partIndex: number
     ) => Promise<string>
+    readFile: (filePath: string) => Promise<string | undefined>
     getProcessedDescription: (
       article: string,
       openRouterToken: string,
@@ -36,6 +37,16 @@ declare global {
       listener: (payload: { type: string; content?: string; message?: string }) => void
     ) => () => void
     cancelProcessedDescriptionStream: (channel: string) => Promise<void>
+    startDiscussionStream: (
+      messages: { role: string; content: string }[],
+      openRouterToken: string,
+      model?: string
+    ) => Promise<string | undefined>
+    subscribeDiscussionStream: (
+      channel: string,
+      listener: (payload: { type: string; content?: string; message?: string }) => void
+    ) => () => void
+    cancelDiscussionStream: (channel: string) => Promise<void>
     getDescription: (
       year: number,
       day: number,
