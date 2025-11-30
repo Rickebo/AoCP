@@ -56,7 +56,7 @@ public readonly struct FloatingCoordinate<T>(T x, T y)
         FloatingCoordinate<T> left,
         FloatingCoordinate<T> right
     ) =>
-        left.X == right.Y && left.Y == right.Y;
+        left.X == right.X && left.Y == right.Y;
 
     public static bool operator !=(
         FloatingCoordinate<T> left,

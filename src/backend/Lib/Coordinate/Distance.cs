@@ -20,7 +20,7 @@ public readonly struct Distance<T>(T x, T y) where T : INumber<T>
         new(left.X - right.X, left.Y - right.Y);
 
     public static bool operator ==(Distance<T> left, Distance<T> right) =>
-        left.X == right.Y && left.Y == right.Y;
+        left.X == right.X && left.Y == right.Y;
 
     public static bool operator !=(Distance<T> left, Distance<T> right) =>
         !(left == right);

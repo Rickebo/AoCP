@@ -42,7 +42,7 @@ public readonly struct Coordinate<T>(T x, T y)
         new(left.X - right.X, left.Y - right.Y);
 
     public static bool operator ==(Coordinate<T> left, Coordinate<T> right) =>
-        left.X == right.Y && left.Y == right.Y;
+        left.X == right.X && left.Y == right.Y;
 
     public static bool operator !=(Coordinate<T> left, Coordinate<T> right) =>
         !(left == right);
