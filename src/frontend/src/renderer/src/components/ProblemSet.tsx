@@ -64,6 +64,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
   const [pendingRenderInput, setPendingRenderInput] = useState<string | undefined>(undefined)
   const [renderWidth, setRenderWidth] = useState<number>(800)
   const [renderHeight, setRenderHeight] = useState<number>(800)
+  const [tick, setTick] = useState(0)
   const [speedFactor, setSpeedFactor] = useState<number>(1)
 
   const navigate = (url: string): void => {
@@ -130,8 +131,8 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
     if (!isSolvingAny) return
 
     const interval = setInterval(() => {
-      // No-op body; dependency on isSolvingAny is enough to keep React updating elapsed labels via mgr.elapsed
-    }, 7)
+      setTick((t) => t + 1)
+    }, 15)
 
     return (): void => {
       clearInterval(interval)
