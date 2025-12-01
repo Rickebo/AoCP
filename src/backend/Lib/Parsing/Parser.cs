@@ -79,7 +79,7 @@ public static partial class Parser
 
     public static ArrayGrid<Direction> ParseDirectionGrid(string text)
     {
-        var lines = SplitLines(text);
+        var lines = text.SplitLines();
         var width = lines[0].Length;
         var height = lines.Length;
         var grid = new ArrayGrid<Direction>(width, height);
@@ -94,12 +94,4 @@ public static partial class Parser
 
         return grid;
     }
-
-    public static string[] SplitLines(string str) => SplitBy(str, ["\r\n", "\n"]);
-
-    public static string[] SplitBy(string str, string[] splits) => str
-        .Split(
-            splits,
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        );
 }

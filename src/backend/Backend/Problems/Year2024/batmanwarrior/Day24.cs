@@ -80,7 +80,7 @@ public class Day24 : ProblemSet
                 else
                 {
                     // Add the gates and their respective wires
-                    string[] parts = Parser.SplitBy(row, [" ", "->"]);
+                    string[] parts = row.SplitBy([" ", "->"]);
 
                     // Check if wires exist
                     if (!_wires.ContainsKey(parts[0]))

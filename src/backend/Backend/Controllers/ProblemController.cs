@@ -196,7 +196,7 @@ public class ProblemController(
         if (lines.Length > 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            foreach (var part in Parser.SplitBy(lines[0], [": "]))
+            foreach (var part in lines[0].SplitBy([": "]))
                 Console.WriteLine(new string(' ', 6) + part);
             Console.ResetColor();
         }
@@ -210,7 +210,7 @@ public class ProblemController(
                 var index = line.IndexOf("src\\backend");
                 if (index >= 0)
                 {
-                    string[] parts = Parser.SplitBy(line[index..], [":"]);
+                    string[] parts = line[index..].SplitBy([":"]);
                     if (parts.Length > 1)
                     {
                         Console.Write(new string(' ', 6) + parts[0] + " - ");

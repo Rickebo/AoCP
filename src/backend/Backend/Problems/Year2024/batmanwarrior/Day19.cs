@@ -72,7 +72,7 @@ public class Day19 : ProblemSet
             string[] rows = input.SplitLines();
 
             // Retrieve available patterns
-            _patterns = Parser.SplitBy(rows[0], [", "]);
+            _patterns = rows[0].SplitBy([", "]);
 
             // Retrieve desired designs
             _designs = rows[1..];
