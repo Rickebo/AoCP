@@ -73,20 +73,26 @@ public static class DirectionExtensions
 
     public static Direction Parse(char character) => character switch
     {
-        '-' => Enums.Direction.East | Enums.Direction.West,
-        '|' => Enums.Direction.North | Enums.Direction.South,
-        '+' => Enums.Direction.North |
-               Enums.Direction.East |
-               Enums.Direction.South |
-               Enums.Direction.West,
+        '-' => Enums.Direction.East
+             | Enums.Direction.West,
+        '|' => Enums.Direction.North
+             | Enums.Direction.South,
+        '+' => Enums.Direction.North
+             | Enums.Direction.East
+             | Enums.Direction.South
+             | Enums.Direction.West,
         '>' => Enums.Direction.East,
         '<' => Enums.Direction.West,
         '^' => Enums.Direction.North,
         'v' => Enums.Direction.South,
-        '7' => Enums.Direction.South | Enums.Direction.West,
-        'F' => Enums.Direction.East | Enums.Direction.South,
-        'L' => Enums.Direction.North | Enums.Direction.East,
-        'J' => Enums.Direction.North | Enums.Direction.West,
+        '7' => Enums.Direction.South
+             | Enums.Direction.West,
+        'F' => Enums.Direction.East
+             | Enums.Direction.South,
+        'L' => Enums.Direction.North
+             | Enums.Direction.East,
+        'J' => Enums.Direction.North
+             | Enums.Direction.West,
         'N' => Enums.Direction.North,
         'E' => Enums.Direction.East,
         'S' => Enums.Direction.South,

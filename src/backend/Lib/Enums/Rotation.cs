@@ -2,7 +2,7 @@
 
 public enum Rotation
 {
-    None,
-    Clockwise,
-    Counterclockwise,
+    None = 0,
+    Clockwise = 1,
+    Counterclockwise = 2,
 }

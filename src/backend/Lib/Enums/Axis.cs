@@ -4,6 +4,6 @@
 public enum Axis
 {
     None = 0,
-    X = 1,
-    Y = 2,
+    X = 1 << 0,
+    Y = 1 << 1,
 }

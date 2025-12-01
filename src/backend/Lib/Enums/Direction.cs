@@ -4,12 +4,20 @@
 public enum Direction
 {
     None = 0,
-    North = 1,
-    NorthEast = 1 | 2,
-    East = 2,
-    SouthEast = 2 | 4,
-    South = 4,
-    SouthWest = 4 | 8,
-    West = 8,
-    NorthWest = 8 | 1
+    North = 1 << 0,
+    East = 1 << 1,
+    South = 1 << 2,
+    West = 1 << 3,
+    NorthEast = North | East,
+    NorthWest = North | West,
+    SouthEast = South | East,
+    SouthWest = South | West,
+    Up = North,
+    Right = East,
+    Down = South,
+    Left = West,
+    UpRight = NorthEast,
+    UpLeft = NorthWest,
+    DownRight = SouthEast,
+    DownLeft = SouthWest,
 }
