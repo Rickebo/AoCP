@@ -87,9 +87,9 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     return articles
   }
 
-  const downloadRawDescription = async (): Promise<void> => {
-    if (!settings.state.retrieveDescription || loadingRaw || hasRaw) {
-      return
+  const downloadRawDescription = async (force: boolean = false): Promise<string | undefined> => {
+    if (!settings.state.retrieveDescription || loadingRaw || (!force && hasRaw)) {
+      return undefined
     }
 
     setLoadingRaw(true)
@@ -98,8 +98,15 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
       const raw = await aocService.getRawDescription(props.year, props.day, props.partIndex)
       descriptionCache.update((current) => {
         current.raw = raw
+        if (force) {
+          current.processed = undefined
+        }
         descriptionCache.save(current)
       })
+      return raw
+    } catch (error) {
+      console.error('Failed to download raw description', error)
+      return undefined
     } finally {
       setLoadingRaw(false)
     }
@@ -110,7 +117,10 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     streamHandleRef.current = undefined
   }
 
-  const streamProcessedDescription = async (force: boolean = false): Promise<void> => {
+  const streamProcessedDescription = async (
+    force: boolean = false,
+    rawOverride?: string
+  ): Promise<void> => {
     if (
       !settings.state.summarizeWithAI ||
       !settings.state.retrieveDescription ||
@@ -120,7 +130,8 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     }
 
     const current = descriptionCache.state
-    if (current.raw == null) {
+    const raw = rawOverride ?? current.raw
+    if (raw == null || raw.length === 0) {
       return
     }
 
@@ -135,7 +146,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     try {
       const previousArticles = await loadPreviousPartDescriptions()
 
-      const handle = await aocService.streamProcessedDescription(current.raw, previousArticles, {
+      const handle = await aocService.streamProcessedDescription(raw, previousArticles, {
         onChunk: (chunk) => {
           setStreamedSummary((prev) => (prev ?? '') + chunk)
         },
@@ -233,6 +244,17 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
 
   const showSummaryButton = settings.state.summarizeWithAI && hasRaw
 
+  const handleResummarize = async (): Promise<void> => {
+    const freshlyDownloaded = await downloadRawDescription(true)
+    const rawForSummary = freshlyDownloaded ?? descriptionCache.state.raw
+
+    if (rawForSummary == null || rawForSummary.length === 0) {
+      return
+    }
+
+    await streamProcessedDescription(true, rawForSummary)
+  }
+
   return (
     <div className="problem-container">
       {showSummaryButton && (
@@ -267,9 +289,9 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
           type="button"
           className="btn btn-sm btn-outline-primary problem-button problem-refresh-button"
           onClick={() => {
-            void streamProcessedDescription(true)
+            void handleResummarize()
           }}
-          disabled={!hasRaw || loadingProcessed}
+          disabled={loadingRaw || loadingProcessed}
           title="Re-summarize description"
         >
           {!loadingProcessed && <BsArrowRepeat className="problem-button-icon" />}
