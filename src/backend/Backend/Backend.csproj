@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Problems\Year2025\batmanwarrior\" />
       <Folder Include="Problems\Year2025\Rickebo\" />
     </ItemGroup>
 

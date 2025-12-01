@@ -1,5 +1,6 @@
 ﻿using Backend.Problems.Year2023;
 using Backend.Problems.Year2024;
+using Backend.Problems.Year2025;
 using Backend.Problems.Year2025Codelight;
 using Backend.Services;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -25,5 +26,6 @@ public static class Startup
             .AddHostedService<ProblemLoaderService>()
             .AddYear2023()
             .AddYear2024()
+            .AddYear2025()
             .AddYear2025Codelight();
 }
