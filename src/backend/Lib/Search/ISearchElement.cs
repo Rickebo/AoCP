@@ -1,5 +1,6 @@
-﻿namespace Lib.Search;
+namespace Lib.Search;
 
 public interface ISearchElement<TCost>
 {
 }
+

@@ -3,7 +3,7 @@ using Lib.Parsing;
 using System.Globalization;
 using System.Text;
 
-namespace UnitTests;
+namespace LibUnitTests;
 
 [TestFixture]
 internal class ParsingTests

@@ -156,7 +156,7 @@ public class Day24 : ProblemSet
             }
 
             // Remove duplicates, sort and return (ez)
-            wrongGates = wrongGates.Distinct().ToList();
+            wrongGates = [.. wrongGates.Distinct()];
             wrongGates.Sort();
             return string.Join(",", wrongGates);
         }

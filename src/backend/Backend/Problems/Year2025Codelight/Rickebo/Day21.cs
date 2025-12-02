@@ -33,7 +33,7 @@ public class Day21 : ProblemSet
         public override string Description => "";
 
 
-        private int Bfs(Position start, CharGrid grid)
+        private static int Bfs(Position start, CharGrid grid)
         {
             var frontier = new PriorityQueue<Position, int>();
             

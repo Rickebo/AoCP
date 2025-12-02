@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 
 namespace Lib.Search;
 
@@ -11,20 +11,35 @@ public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISe
 
     public ISearchResult Find(TElement start, TCost initialCost, TElement end)
     {
-        var frontier = new PriorityQueue<TElement, TCost>();
-        frontier.Enqueue(start, initialCost);
+        var frontier = new Queue<(TElement Element, TCost Cost)>();
+        var visited = new HashSet<TElement>();
+        frontier.Enqueue((start, initialCost));
 
-        while (frontier.TryDequeue(out var currentElement, out var currentCost))
+        while (frontier.Count > 0)
         {
+            var (currentElement, currentCost) = frontier.Dequeue();
+            if (!visited.Add(currentElement))
+                continue;
+
+            if (currentElement.Equals(end))
+                return new SuccessfulBreadthFirstSearchResult
+                {
+                    Cost = currentCost
+                };
+
             foreach (var neighbour in Dataset.GetNeighbours(currentElement))
             {
+                if (visited.Contains(neighbour.Element))
+                    continue;
+
+                var nextCost = currentCost + neighbour.Cost;
                 if (neighbour.Element.Equals(end))
                     return new SuccessfulBreadthFirstSearchResult
                     {
-                        Cost = currentCost
+                        Cost = nextCost
                     };
 
-                frontier.Enqueue(neighbour.Element, currentCost + neighbour.Cost);
+                frontier.Enqueue((neighbour.Element, nextCost));
             }
         }
 
@@ -46,3 +61,4 @@ public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISe
 
     }
 }
+

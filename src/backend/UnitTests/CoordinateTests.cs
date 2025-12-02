@@ -1,7 +1,7 @@
 ﻿using Lib.Coordinate;
 using Lib.Enums;
 
-namespace UnitTests;
+namespace LibUnitTests;
 
 [TestFixture]
 internal class CoordinateTests
@@ -170,7 +170,7 @@ internal class CoordinateTests
         Assert.That(clamped, Is.EqualTo(new FloatingCoordinate<double>(4.0, -2.0)));
 
         var copySign = new FloatingCoordinate<double>(-2.0, 3.0)
-            .CopySign(new Coordinate<double>(1.0, -1.0));
+            .CopySign(new FloatingCoordinate<double>(1.0, -1.0));
         Assert.That(copySign, Is.EqualTo(new FloatingCoordinate<double>(2.0, -3.0)));
 
         var abs = new FloatingCoordinate<double>(-2.0, -3.0).Abs();
@@ -271,7 +271,7 @@ internal class CoordinateTests
                    new IntegerCoordinate<int>(4, 10));
         Assert.That(clamped, Is.EqualTo(new IntegerCoordinate<int>(4, -2)));
 
-        var copySign = a.CopySign(new Coordinate<int>(1, -1));
+        var copySign = a.CopySign(new IntegerCoordinate<int>(1, -1));
         Assert.That(copySign, Is.EqualTo(new IntegerCoordinate<int>(2, -3)));
 
         var abs = new IntegerCoordinate<int>(-2, -3).Abs();

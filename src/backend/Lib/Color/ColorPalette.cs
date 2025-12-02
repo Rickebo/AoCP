@@ -1,4 +1,4 @@
-﻿namespace Lib.Color;
+namespace Lib.Color;
 
 public static class ColorHex
 {
@@ -289,4 +289,5 @@ public static class Colors
     public static Color Yellow => Color.Parse(ColorHex.Yellow);
     public static Color YellowGreen => Color.Parse(ColorHex.YellowGreen);
 }
+
 

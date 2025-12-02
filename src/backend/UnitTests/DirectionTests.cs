@@ -256,7 +256,7 @@ public class DirectionTests
         static Direction From(IntegerCoordinate<int> coordinate)
         {
             ICoordinate<IntegerCoordinate<int>, int> asInterface = coordinate;
-            return asInterface.Direction();
+            return asInterface.DirectionFromOrigin();
         }
 
         Assert.Multiple(() =>

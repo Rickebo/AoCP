@@ -78,9 +78,9 @@ public class Day19 : ProblemSet
             _designs = rows[1..];
         }
 
-        public long Possible() => _designs.Where((design, _) => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()) > 0).Count();
+        public long Possible() => _designs.Where((design, _) => Spelunker(design, [.. _patterns.Where(pattern => design.Contains(pattern))]) > 0).Count();
 
-        public long Ways() => _designs.Sum(design => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()));
+        public long Ways() => _designs.Sum(design => Spelunker(design, [.. _patterns.Where(pattern => design.Contains(pattern))]));
 
         public long Spelunker(string design, string[] patterns)
         {

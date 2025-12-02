@@ -1,4 +1,4 @@
-﻿namespace Lib.Search;
+namespace Lib.Search;
 
 public interface ISearchAlgorithm<TSource, TElement, TCost> 
     where TElement : ISearchElement<TCost> 
@@ -8,3 +8,4 @@ public interface ISearchAlgorithm<TSource, TElement, TCost>
     ISearchResult Find(TElement start, TCost initialCost, TElement end);
 
 }
+

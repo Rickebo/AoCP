@@ -86,7 +86,7 @@ public class Day14 : ProblemSet
 
             foreach (var robot in Robots)
             {
-                var direction = (robot.Position - middle).Direction();
+                var direction = (robot.Position - middle).DirectionFromOrigin();
                 directions[(int)direction]++;
             }
 

@@ -139,10 +139,7 @@ public class Day16 : ProblemSet
                 if (forward)
                 {
                     // Add forward tile in path
-                    HashSet<IntegerCoordinate<int>> newPath = new(tracker.Path)
-                    {
-                        forwardPos
-                    };
+                    HashSet<IntegerCoordinate<int>> newPath = [.. tracker.Path,forwardPos];
 
                     // Keep going with +1 cost
                     queue.Enqueue(new(new(forwardPos, tracker.Reindeer.Dir), newPath), cost + 1);
@@ -151,10 +148,7 @@ public class Day16 : ProblemSet
                 if (right)
                 {
                     // Add right tile in path
-                    HashSet<IntegerCoordinate<int>> newPath = new(tracker.Path)
-                    {
-                        rightPos
-                    };
+                    HashSet<IntegerCoordinate<int>> newPath = [.. tracker.Path, rightPos];
 
                     // Keep going with +1001 cost
                     queue.Enqueue(new(new(rightPos, rightDir), newPath), cost + 1001);
@@ -163,10 +157,7 @@ public class Day16 : ProblemSet
                 if (left)
                 {
                     // Add left tile in path
-                    HashSet<IntegerCoordinate<int>> newPath = new(tracker.Path)
-                    {
-                        leftPos
-                    };
+                    HashSet<IntegerCoordinate<int>> newPath = [.. tracker.Path, leftPos];
 
                     // Keep going with +1001 cost
                     queue.Enqueue(new(new(leftPos, leftDir), newPath), cost + 1001);

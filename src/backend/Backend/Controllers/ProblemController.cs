@@ -25,12 +25,12 @@ public class ProblemController(
     ProblemService problemService
 ) : ControllerBase
 {
-    private static JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private async Task Transmit(WebSocket socket, ProblemUpdate update)
+    private static async Task Transmit(WebSocket socket, ProblemUpdate update)
     {
         var json = JsonSerializer.Serialize(update, JsonOptions);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
@@ -42,7 +42,7 @@ public class ProblemController(
         );
     }
 
-    private async Task<string> Receive(WebSocket webSocket)
+    private static async Task<string> Receive(WebSocket webSocket)
     {
         var buffers = new List<byte[]>();
         while (true)
@@ -68,7 +68,7 @@ public class ProblemController(
         return Encoding.UTF8.GetString(bytes);
     }
 
-    private async Task<T?> Receive<T>(WebSocket webSocket) =>
+    private static async Task<T?> Receive<T>(WebSocket webSocket) =>
         JsonSerializer.Deserialize<T>(await Receive(webSocket));
 
     [Route("solve/{source}/{year}/{author}/{setName}/{problemName}")]
