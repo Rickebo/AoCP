@@ -1,6 +1,7 @@
-﻿using System.Numerics;
-using Lib.Coordinate;
+﻿using Lib.Coordinate;
 using Lib.Enums;
+using System;
+using System.Numerics;
 
 namespace Lib.Extensions;
 
@@ -137,44 +138,71 @@ public static class DirectionExtensions
 
     public static Direction[] All() => Enum.GetValues<Direction>();
 
-    public static Direction Right(this Direction direction) => direction.RotateClockwise();
-    public static Direction Left(this Direction direction) => direction.RotateCounterClockwise();
+    public static Direction Right(this Direction direction) => direction.Rotate(Rotation.Clockwise);
+    public static Direction Left(this Direction direction) => direction.Rotate(Rotation.CounterClockwise);
 
-    public static Direction RotateClockwise(this Direction direction)
+    public static Angle ToAngle(this Direction direction)
+    => direction switch
     {
-        var next = (int)direction << 1;
-        return next > (int)Enums.Direction.West ? Enums.Direction.North : (Direction)next;
-    }
+        // 0°
+        Enums.Direction.North or Enums.Direction.Up => Angle.None,
+        // 45°
+        Enums.Direction.NorthEast or Enums.Direction.UpRight => Angle.EighthTurn,
+        // 90°
+        Enums.Direction.East or Enums.Direction.Right => Angle.QuarterTurn,
+        // 135°
+        Enums.Direction.SouthEast or Enums.Direction.DownRight => Angle.QuarterTurn | Angle.EighthTurn,
+        // 180°
+        Enums.Direction.South or Enums.Direction.Down => Angle.HalfTurn,
+        // 225°
+        Enums.Direction.SouthWest or Enums.Direction.DownLeft => Angle.HalfTurn | Angle.EighthTurn,
+        // 270°
+        Enums.Direction.West or Enums.Direction.Left => Angle.HalfTurn | Angle.QuarterTurn,
+        // 315°
+        Enums.Direction.NorthWest or Enums.Direction.UpLeft => Angle.HalfTurn | Angle.QuarterTurn | Angle.EighthTurn,
+        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction,
+            "Unsupported direction for angle conversion.")
+    };
 
-    public static Direction RotateClockwiseDiagonal(this Direction direction) =>
-        direction switch
+    public static Direction ToDirection(this Angle angle)
+    {
+        // Angle already encodes multiples of 45°, so just branch on degrees.
+        int degrees = angle.ToDegrees(); // 0, 45, ..., 315
+
+        return degrees switch
         {
-            Enums.Direction.North => Enums.Direction.NorthEast,
-            Enums.Direction.NorthEast => Enums.Direction.East,
-            Enums.Direction.East => Enums.Direction.SouthEast,
-            Enums.Direction.SouthEast => Enums.Direction.South,
-            Enums.Direction.South => Enums.Direction.SouthWest,
-            Enums.Direction.SouthWest => Enums.Direction.West,
-            Enums.Direction.West => Enums.Direction.NorthWest,
-            Enums.Direction.NorthWest => Enums.Direction.North,
-            Enums.Direction.None => Enums.Direction.None,
-            _ => throw new ArgumentException(
-                $"Unknown clockwise diagonal direction for direction {direction}"
-            ),
+            0 => Enums.Direction.North,
+            45 => Enums.Direction.NorthEast,
+            90 => Enums.Direction.East,
+            135 => Enums.Direction.SouthEast,
+            180 => Enums.Direction.South,
+            225 => Enums.Direction.SouthWest,
+            270 => Enums.Direction.West,
+            315 => Enums.Direction.NorthWest,
+            _ => throw new ArgumentOutOfRangeException(nameof(angle), angle,
+                    "Angle must be a multiple of 45° (0–315).")
         };
-
-    public static IEnumerable<Direction> Neighbours(this Direction direction) =>
-    [
-        direction.RotateCounterClockwise(),
-        direction,
-        direction.RotateClockwise()
-    ];
-
-    public static Direction RotateCounterClockwise(this Direction direction)
-    {
-        var next = (int)direction >> 1;
-        return next == 0 ? Enums.Direction.West : (Direction)next;
     }
+
+    public static Direction Rotate(this Direction direction, Rotation rotation, Angle by = Angle.QuarterTurn)
+    {
+        if (direction == Enums.Direction.None)
+            return Enums.Direction.None;
+
+        if (rotation == Rotation.None)
+            return direction;
+
+        return rotation == Rotation.Clockwise
+            ? direction.ToAngle().Add(by).ToDirection()
+            : direction.ToAngle().Subtract(by).ToDirection();
+    }
+
+    public static IEnumerable<Direction> Neighbours(this Direction direction, Angle angle = Angle.QuarterTurn) =>
+    [
+        direction.Rotate(Rotation.CounterClockwise, angle),
+        direction,
+        direction.Rotate(Rotation.Clockwise, angle)
+    ];
 
     public static bool Has(this Direction baseDirection, Direction direction) =>
         (baseDirection & direction) != 0;

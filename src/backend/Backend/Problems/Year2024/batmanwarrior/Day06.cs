@@ -107,7 +107,7 @@ public class Day06 : ProblemSet
             if (_grid.Contains(next) && _grid[next] == '#')
             {
                 // Rotate clockwise
-                return new Guard(guard.Pos, guard.Dir.RotateClockwise());
+                return new Guard(guard.Pos, guard.Dir.Rotate(Rotation.Clockwise));
             }
             else
             {

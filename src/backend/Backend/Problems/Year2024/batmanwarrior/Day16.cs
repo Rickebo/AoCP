@@ -125,8 +125,8 @@ public class Day16 : ProblemSet
                 }
 
                 // A reindeer can only move forward or to the sides, otherwise it is backtracking
-                Direction rightDir = tracker.Reindeer.Dir.RotateClockwise();
-                Direction leftDir = tracker.Reindeer.Dir.RotateCounterClockwise();
+                Direction rightDir = tracker.Reindeer.Dir.Rotate(Rotation.Clockwise);
+                Direction leftDir = tracker.Reindeer.Dir.Rotate(Rotation.CounterClockwise);
                 IntegerCoordinate<int> forwardPos = tracker.Reindeer.Pos.Move(tracker.Reindeer.Dir);
                 IntegerCoordinate<int> rightPos = tracker.Reindeer.Pos.Move(rightDir);
                 IntegerCoordinate<int> leftPos = tracker.Reindeer.Pos.Move(leftDir);

@@ -63,7 +63,7 @@ public class Day01 : ProblemSet
                 // Direction of rotation
                 var dir = line[0] switch
                 {
-                    'L' => Rotation.Counterclockwise,
+                    'L' => Rotation.CounterClockwise,
                     'R' => Rotation.Clockwise,
                     _ => throw new ProblemException("Invalid input."),
                 };

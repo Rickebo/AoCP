@@ -14,6 +14,4 @@ public enum Angle
     QuarterTurn = 1 << 1, // 90 degrees
     /// <summary> 180 degrees. </summary>
     HalfTurn = 1 << 2, // 180 degrees
-    /// <summary> 360 degrees. </summary>
-    FullTurn = 1 << 3, // 360 degrees
 }

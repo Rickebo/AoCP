@@ -132,13 +132,13 @@ public class Day21 : ProblemSet
                     _path[newPos] = seeker.Pos;
 
                     // Right
-                    newDir = seeker.Dir.RotateClockwise();
+                    newDir = seeker.Dir.Rotate(Rotation.Clockwise);
                     newPos = seeker.Pos.Move(newDir);
                     prioQueue.Enqueue(new CoffeSeeker(newPos, newDir), cost + 3);
                     _path[newPos] = seeker.Pos;
 
                     // Left
-                    newDir = seeker.Dir.RotateCounterClockwise();
+                    newDir = seeker.Dir.Rotate(Rotation.CounterClockwise);
                     newPos = seeker.Pos.Move(newDir);
                     prioQueue.Enqueue(new CoffeSeeker(newPos, newDir), cost + 2);
                     _path[newPos] = seeker.Pos;

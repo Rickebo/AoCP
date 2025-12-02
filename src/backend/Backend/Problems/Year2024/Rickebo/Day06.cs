@@ -172,7 +172,7 @@ public class Day06 : ProblemSet
 
             while (grid.Contains(next) && grid[next] == '#')
             {
-                dir = dir.RotateClockwise();
+                dir = dir.Rotate(Rotation.Clockwise);
                 next = pos.Move(dir);
             }
 
