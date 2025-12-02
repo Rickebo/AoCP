@@ -1,5 +1,6 @@
 ﻿using Common;
 using Common.Updates;
+using Lib.Extensions;
 using Lib.Parsing;
 using System;
 using System.Collections.Generic;
@@ -49,7 +50,7 @@ public class Day17 : ProblemSet
                 _reporter = reporter;
 
                 // Split input to retrieve palindrome candidates
-                string[] lines = Parser.SplitLines(input);
+                string[] lines = input.SplitLines();
 
                 // Remove unwanted characters and add to list
                 StringBuilder sb = new();

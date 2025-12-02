@@ -72,15 +72,15 @@ public class Day19 : ProblemSet
             string[] rows = input.SplitLines();
 
             // Retrieve available patterns
-            _patterns = Parser.SplitBy(rows[0], [", "]);
+            _patterns = rows[0].SplitBy([", "]);
 
             // Retrieve desired designs
             _designs = rows[1..];
         }
 
-        public long Possible() => _designs.Where((design, _) => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()) > 0).Count();
+        public long Possible() => _designs.Where((design, _) => Spelunker(design, [.. _patterns.Where(pattern => design.Contains(pattern))]) > 0).Count();
 
-        public long Ways() => _designs.Sum(design => Spelunker(design, _patterns.Where(pattern => design.Contains(pattern)).ToArray()));
+        public long Ways() => _designs.Sum(design => Spelunker(design, [.. _patterns.Where(pattern => design.Contains(pattern))]));
 
         public long Spelunker(string design, string[] patterns)
         {

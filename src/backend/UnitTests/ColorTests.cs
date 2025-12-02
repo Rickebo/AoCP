@@ -1,6 +1,6 @@
 ﻿using Lib.Color;
 
-namespace UnitTests;
+namespace LibUnitTests;
 
 [TestFixture]
 public class ColorTests

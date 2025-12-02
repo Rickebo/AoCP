@@ -25,12 +25,12 @@ public class ProblemController(
     ProblemService problemService
 ) : ControllerBase
 {
-    private static JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private async Task Transmit(WebSocket socket, ProblemUpdate update)
+    private static async Task Transmit(WebSocket socket, ProblemUpdate update)
     {
         var json = JsonSerializer.Serialize(update, JsonOptions);
         var jsonBytes = Encoding.UTF8.GetBytes(json);
@@ -42,7 +42,7 @@ public class ProblemController(
         );
     }
 
-    private async Task<string> Receive(WebSocket webSocket)
+    private static async Task<string> Receive(WebSocket webSocket)
     {
         var buffers = new List<byte[]>();
         while (true)
@@ -68,7 +68,7 @@ public class ProblemController(
         return Encoding.UTF8.GetString(bytes);
     }
 
-    private async Task<T?> Receive<T>(WebSocket webSocket) =>
+    private static async Task<T?> Receive<T>(WebSocket webSocket) =>
         JsonSerializer.Deserialize<T>(await Receive(webSocket));
 
     [Route("solve/{source}/{year}/{author}/{setName}/{problemName}")]
@@ -196,7 +196,7 @@ public class ProblemController(
         if (lines.Length > 0)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            foreach (var part in Parser.SplitBy(lines[0], [": "]))
+            foreach (var part in lines[0].SplitBy([": "]))
                 Console.WriteLine(new string(' ', 6) + part);
             Console.ResetColor();
         }
@@ -210,7 +210,7 @@ public class ProblemController(
                 var index = line.IndexOf("src\\backend");
                 if (index >= 0)
                 {
-                    string[] parts = Parser.SplitBy(line[index..], [":"]);
+                    string[] parts = line[index..].SplitBy([":"]);
                     if (parts.Length > 1)
                     {
                         Console.Write(new string(' ', 6) + parts[0] + " - ");

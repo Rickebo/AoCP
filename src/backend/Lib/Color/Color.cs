@@ -1,8 +1,8 @@
-using Lib.Extensions;
-using Lib.Grid;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Lib.Extensions;
+using Lib.Grid;
 
 namespace Lib.Color;
 

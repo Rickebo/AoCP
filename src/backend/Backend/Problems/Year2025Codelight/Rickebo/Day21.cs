@@ -33,7 +33,7 @@ public class Day21 : ProblemSet
         public override string Description => "";
 
 
-        private int Bfs(Position start, CharGrid grid)
+        private static int Bfs(Position start, CharGrid grid)
         {
             var frontier = new PriorityQueue<Position, int>();
             
@@ -46,8 +46,8 @@ public class Day21 : ProblemSet
                 var newDirections = new[]
                 {
                     (direction, 1),
-                    (direction.RotateCounterClockwise(), 2),
-                    (direction.RotateClockwise(), 3),
+                    (direction.Rotate(Rotation.CounterClockwise), 2),
+                    (direction.Rotate(Rotation.Clockwise), 3),
                 };
                 
                 foreach (var (newDirection, penalty) in newDirections)

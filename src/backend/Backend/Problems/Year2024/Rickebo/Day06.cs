@@ -172,7 +172,7 @@ public class Day06 : ProblemSet
 
             while (grid.Contains(next) && grid[next] == '#')
             {
-                dir = dir.RotateClockwise();
+                dir = dir.Rotate(Rotation.Clockwise);
                 next = pos.Move(dir);
             }
 
@@ -199,6 +199,5 @@ public class Day06 : ProblemSet
 
     private readonly record struct GuardPosition(IntegerCoordinate<int> Position, Direction Direction);
 
-    private static CharGrid Parse(string input) =>
-        new CharGrid(input);
+    private static CharGrid Parse(string input) => new(input);
 }

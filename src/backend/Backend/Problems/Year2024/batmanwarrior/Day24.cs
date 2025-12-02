@@ -80,7 +80,7 @@ public class Day24 : ProblemSet
                 else
                 {
                     // Add the gates and their respective wires
-                    string[] parts = Parser.SplitBy(row, [" ", "->"]);
+                    string[] parts = row.SplitBy([" ", "->"]);
 
                     // Check if wires exist
                     if (!_wires.ContainsKey(parts[0]))
@@ -156,7 +156,7 @@ public class Day24 : ProblemSet
             }
 
             // Remove duplicates, sort and return (ez)
-            wrongGates = wrongGates.Distinct().ToList();
+            wrongGates = [.. wrongGates.Distinct()];
             wrongGates.Sort();
             return string.Join(",", wrongGates);
         }

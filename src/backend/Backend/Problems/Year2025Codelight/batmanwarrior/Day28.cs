@@ -6,6 +6,8 @@ using Lib.Color;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using Lib.Extensions;
 
 namespace Backend.Problems.Year2025Codelight.batmanwarrior;
 public class Day28 : ProblemSet
@@ -41,149 +43,128 @@ public class Day28 : ProblemSet
 
         private class DanceFloor
         {
-            private readonly Reporter _reporter;
             private readonly IntGrid _grid;
-            private readonly ArrayGrid<IntegerCoordinate<int>> _path;
-            private const int _minValue = 0;
-            private const int _maxValue = 9;
+            private readonly Reporter _reporter;
+            private readonly HashSet<IntegerCoordinate<int>> _locked = [];
+            private int _lifts = 0;
+            private readonly int _minHeight = int.MaxValue;
+            private readonly int _maxHeight = int.MinValue;
 
             public DanceFloor(string input, Reporter reporter)
             {
                 // Save for prints
                 _reporter = reporter;
 
-                // Parse input to grid
-                _grid = new IntGrid(input);
+                // Parse string input
+                var rows = input.SplitLines();
+                var height = rows.Length;
+                var width = rows[0].Length;
 
-                // Create path
-                _path = new ArrayGrid<IntegerCoordinate<int>>(_grid.Width, _grid.Height, new(int.MaxValue, int.MaxValue));
+                // Create grid and find min max
+                var gridValues = new int[width, height];
+                for (var y = 0; y < height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        var val = rows[^(y + 1)][x] - '0';
+                        _minHeight = Math.Min(val, _minHeight);
+                        _maxHeight = Math.Max(val, _maxHeight);
+                        gridValues[x, y] = val;
+                    }
+                }
+                _grid = new(gridValues);
 
                 // Print heatmap
                 _reporter.Report(StringGridUpdate.FromColorGrid(Color.Heatmap(
-                    _grid, Colors.Blue, Colors.Red, _minValue, _maxValue)));
+                    _grid, Colors.Blue, Colors.Red, _minHeight, _maxHeight)));
             }
 
             public int TotalLifts()
             {
                 // Lift everyone so they can see DJ
-                var totalLift = 0;
-                Dictionary<IntegerCoordinate<int>, (int, int)> cache = [];
-                foreach (var coord in _grid.Coordinates)
-                    totalLift += LiftPerson(coord, cache);
+                for (int i = _minHeight; i < _maxHeight; i++)
+                    Lift(i);
 
-                return totalLift;
+                return _lifts;
             }
 
-            public int LiftPerson(IntegerCoordinate<int> pos, Dictionary<IntegerCoordinate<int>, (int, int)> cache)
+            private void Lift(int height)
             {
-                // Create queue and visited hashset 
-                PriorityQueue<IntegerCoordinate<int>, int> queue = new();
-                HashSet<IntegerCoordinate<int>> visited = [];
+                // Retrieve all persons with this height that are not already locked
+                HashSet<IntegerCoordinate<int>> personsAtHeight = [.. _grid.FindAll((p) => p == height).Where((p) => !_locked.Contains(p))];
 
-                // Add initial position
-                var initialPos = pos;
-                queue.Enqueue(initialPos, 0);
-
-                // Try to find the way to edge with the least lift required
-                while (queue.TryDequeue(out var currPos, out var lift))
+                // Flood fill
+                while (personsAtHeight.Count > 0)
                 {
-                    // Check if this position is cached
-                    /*if (cache.TryGetValue(currPos, out (int, int) value))
+                    // Create queue and visited hashset
+                    PriorityQueue<IntegerCoordinate<int>, int> queue = new();
+                    HashSet<IntegerCoordinate<int>> visited = [];
+
+                    // Get person
+                    IntegerCoordinate<int> person = personsAtHeight.Last();
+
+                    // Add person to queue
+                    queue.Enqueue(person, 0);
+
+                    // Remove from list
+                    personsAtHeight.Remove(person);
+
+                    while (queue.TryDequeue(out var pos, out var lift))
                     {
-                        // Get cached info
-                        int cacheHeight = value.Item1;
-                        int cacheAdditionalLift = value.Item2;
-
-                        // Get current height
-                        int currHeight = _grid[initialPos] + lift;
-
-                        // Retrieve lift required to DJ
-                        lift += Math.Max(0, cacheHeight + cacheAdditionalLift - currHeight);
-
-                        // Add backtrack to cache
-                        BacktrackToCache(initialPos, currPos, cacheAdditionalLift, cache);
-
-                        // Update height
-                        _grid[initialPos] += lift;
-
-                        // Print new height
-                        _reporter.ReportStringGridUpdate(
-                            initialPos,
-                            Color.Between(Colors.Blue, Colors.Red, _grid[initialPos], _minValue, _maxValue
-                        ));
-
-                        // Return lift
-                        return lift;
-                    }*/
-
-                    // Add this pos to visited hashset
-                    visited.Add(currPos);
-
-                    // If at edge of dance floor
-                    if (_grid.OnOutline(currPos))
-                    {
-                        // Add backtrack to cache
-                        //BacktrackToCache(initialPos, currPos, 0, cache);
-
-                        // Update height
-                        _grid[initialPos] += lift;
-
-                        // Print new height
-                        _reporter.ReportStringGridUpdate(
-                            initialPos, 
-                            Color.Between(Colors.Blue, Colors.Red, _grid[initialPos], _minValue, _maxValue
-                        ));
-
-                        // Return lift
-                        return lift;
-                    }
-
-                    // Queue up neighbours
-                    foreach (var neighbour in currPos.Neighbours)
-                    {
-                        if (neighbour != initialPos && !visited.Contains(neighbour))
+                        if (lift > 0)
                         {
-                            queue.Enqueue(neighbour, Math.Max(lift, _grid[neighbour] - _grid[initialPos]));
-                            //_path[neighbour] = currPos;
+                            foreach (var visitedPos in visited)
+                            {
+                                _grid[visitedPos] += lift;
+                                _lifts += lift;
+
+                                personsAtHeight.Remove(visitedPos);
+
+                                // Print new height to heatmap
+                                _reporter.ReportStringGridUpdate(
+                                    visitedPos,
+                                    Color.Between(Colors.Blue, Colors.Red, _grid[visitedPos], _minHeight, _maxHeight
+                                ));
+                            }
+
+                            break;
                         }
+
+                        // If position is locked
+                        if (_locked.Contains(pos))
+                        {
+                            // Lock visited tiles
+                            foreach (var visitedPos in visited)
+                            {
+                                _locked.Add(visitedPos);
+                                personsAtHeight.Remove(visitedPos);
+                            }
+
+                            break;
+                        }
+
+                        // Add visited pos
+                        visited.Add(pos);
+
+                        // If at the edge
+                        if (_grid.OnOutline(pos))
+                        {
+                            // Lock visited tiles
+                            foreach (var visitedPos in visited)
+                            {
+                                _locked.Add(visitedPos);
+                                personsAtHeight.Remove(visitedPos);
+                            }
+
+                            break;
+                        }
+
+                        // Queue up neighbours
+                        foreach (var neighbour in pos.Neighbours)
+                            if (!visited.Contains(neighbour))
+                                queue.Enqueue(neighbour, Math.Max(0, _grid[neighbour] - _grid[pos]));
                     }
                 }
-
-                throw new ProblemException("BFS did not find edge of dance floor.");
-            }
-
-            private static int LiftRequired(int from, int to) => Math.Max(0, to - from);
-
-            private void BacktrackToCache(
-                IntegerCoordinate<int> startPos, 
-                IntegerCoordinate<int> currPos, 
-                int additionalLift, 
-                Dictionary<IntegerCoordinate<int>, (int, int)> cache)
-            {
-                // Get height at this position
-                int currHeight = _grid[currPos];
-
-                // Keep track of maximum heights along the way
-                int maxHeight = currHeight;
-
-                // Backtrack and set cache
-                while (_grid.Contains(_path[currPos]) && _path[currPos] != startPos)
-                {
-                    // Update currpos
-                    currPos = _path[currPos];
-
-                    // Check if additional lift is required
-                    additionalLift += LiftRequired(_grid[currPos], maxHeight);
-
-                    // Update max height
-                    maxHeight = Math.Max(maxHeight, _grid[currPos]);
-
-                    // Set additional lift to cache
-                    cache[currPos] = (_grid[currPos], additionalLift);
-                }
-
-                // Set initial pos cache to zero (as it is now lifted to see DJ)
-                cache[startPos] = (currHeight + additionalLift, 0);
             }
         }
     }
