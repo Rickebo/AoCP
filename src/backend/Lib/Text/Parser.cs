@@ -86,8 +86,7 @@ public static partial class Parser
 
         for (var y = 0; y < height; y++)
         {
-            var yIndex = new Index(y, fromEnd: true);
-            var line = lines[yIndex];
+            var line = lines[^(y + 1)];
             for (var x = 0; x < width; x++)
                 grid[x, y] = DirectionExtensions.Parse(line[x]);
         }

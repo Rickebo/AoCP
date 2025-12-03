@@ -22,7 +22,8 @@ public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode
     }
 
     public bool IsConnected(TNode source, TNode destination) =>
-        GetSourceEdges(source).Any(edge => edge.Equals(destination));
+        // Compare destination nodes rather than edges themselves.
+        GetSourceEdges(source).Any(edge => edge.To.Equals(destination));
 
     public IEnumerable<TNode> GetNeighbours(TNode node) => GetSourceEdges(node).Select(edge => edge.To);
 
@@ -65,6 +66,7 @@ public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode
 
         _nodeSource[edge.From].Remove(edge);
         _nodeDestination[edge.To].Remove(edge);
+        _edges.Remove(edge);
         return true;
     }
 
@@ -73,16 +75,30 @@ public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode
         if (!_nodes.Remove(node))
             return false;
 
-        // Remove all edges ending in the node
-        if (_nodeDestination[node].Any(edge => !_nodeSource[edge.From].Remove(edge) || !_edges.Remove(edge)))
-            throw new Exception("Failed to remove node source edge from graph.");
+        var comparer = EqualityComparer<TNode>.Default;
+        var edgesToKeep = new List<TEdge>();
+        foreach (var edge in _edges)
+        {
+            if (comparer.Equals(edge.From, node) || comparer.Equals(edge.To, node))
+            {
+                if (_nodeSource.TryGetValue(edge.From, out var fromSet))
+                    fromSet.Remove(edge);
+                if (_nodeDestination.TryGetValue(edge.To, out var toSet))
+                    toSet.Remove(edge);
+            }
+            else
+            {
+                edgesToKeep.Add(edge);
+            }
+        }
 
-        if (_nodeSource[node].Any(edge => !_nodeDestination[edge.To].Remove(edge) || !_edges.Remove(edge)))
-            throw new Exception("Failed to remove node destination edge from graph.");
+        _edges.Clear();
+        foreach (var edge in edgesToKeep)
+            _edges.Add(edge);
 
-        if (!_nodeSource.Remove(node) || !_nodeDestination.Remove(node))
-            throw new Exception("Failed to remove node from graph.");
-
+        // Finally drop the node lookup entries.
+        _nodeSource.Remove(node);
+        _nodeDestination.Remove(node);
         return true;
     }
 }

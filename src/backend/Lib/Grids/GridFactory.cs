@@ -31,13 +31,14 @@ public static class GridFactory
         if (rows.Any(row => row.Length != width))
             throw new ArgumentException("All rows must have the same length");
 
-        var data = new int[rows.Count, width];
+        // Preserve the same orientation as ParseCharGrid: width first, height second.
+        var data = new int[width, rows.Count];
         for (var y = 0; y < rows.Count; y++)
         for (var x = 0; x < width; x++)
         {
             if (!char.IsDigit(rows[y][x]))
                 throw new ArgumentException("Non-digit character encountered when parsing int grid");
-            data[y, x] = rows[y][x] - '0';
+            data[x, y] = rows[y][x] - '0';
         }
 
         return new ArrayGrid<int>(data);
