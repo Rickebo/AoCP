@@ -76,3 +76,4 @@ public sealed class AStarSearch<TSource, TElement, TCost>(
         return path;
     }
 }
+

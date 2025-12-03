@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Parsing;
+using Lib.Text;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -140,3 +140,4 @@ public class Day11 : ProblemSet
         public long StoneCount() => _stones.Values.Sum();
     }
 }
+

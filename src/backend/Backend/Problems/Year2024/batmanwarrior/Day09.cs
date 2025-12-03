@@ -249,3 +249,4 @@ public class Day09 : ProblemSet
         public int Size = size;
     }
 }
+

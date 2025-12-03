@@ -1,6 +1,5 @@
 using Common;
-using Lib.Enums;
-using Lib.Extensions;
+using Lib.Geometry;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -124,3 +123,4 @@ public class Day01 : ProblemSet
         }
     }
 }
+

@@ -2,7 +2,7 @@ using Lib.Color;
 using ColorStruct = Lib.Color.Color;
 using ColorConstants = Lib.Color.Colors;
 
-namespace Lib.UnitTests.Coloring;
+namespace Lib.Color.Tests;
 
 public class ColorPaletteTests
 {
@@ -29,3 +29,4 @@ public class ColorPaletteTests
         });
     }
 }
+

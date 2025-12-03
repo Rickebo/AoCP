@@ -1,6 +1,5 @@
-using Lib.Extensions;
 
-namespace Lib.UnitTests.Text;
+namespace Lib.Text.Tests;
 
 public class StringExtensionsTests
 {
@@ -20,3 +19,4 @@ public class StringExtensionsTests
         CollectionAssert.AreEqual(new[] { "a", "b", "c" }, parts);
     }
 }
+

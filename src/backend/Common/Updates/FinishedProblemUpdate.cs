@@ -1,4 +1,4 @@
-﻿namespace Common.Updates;
+namespace Common.Updates;
 
 public class FinishedProblemUpdate : ProblemUpdate
 {
@@ -21,3 +21,4 @@ public class FinishedProblemUpdate : ProblemUpdate
             Successful = true
         };
 }
+

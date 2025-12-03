@@ -1,4 +1,4 @@
-﻿namespace Common.Updates;
+namespace Common.Updates;
 
 public class TextProblemUpdate : OngoingProblemUpdate
 {
@@ -42,3 +42,4 @@ public class TextProblemUpdate : OngoingProblemUpdate
             Text = text.ToString() ?? ""
         };
 }
+

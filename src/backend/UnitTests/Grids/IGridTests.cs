@@ -1,7 +1,7 @@
-using Lib.Coordinate;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 
-namespace Lib.UnitTests.Grids;
+namespace Lib.Grids.Tests;
 
 public class IGridTests
 {
@@ -16,3 +16,4 @@ public class IGridTests
         Assert.That(grid[coord], Is.EqualTo(42));
     }
 }
+

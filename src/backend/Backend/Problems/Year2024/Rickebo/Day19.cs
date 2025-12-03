@@ -5,10 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Extensions;
-using Lib.Grid;
-using Lib.Strings;
+using Lib.Geometry;
+using Lib.Grids;
+using Lib.Text;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
@@ -168,3 +167,4 @@ public class Day19 : ProblemSet
         public HashSet<int> Positions { get; } = positions;
     }
 }
+

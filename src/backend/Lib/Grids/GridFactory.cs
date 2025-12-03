@@ -1,4 +1,4 @@
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public static class GridFactory
 {
@@ -44,3 +44,4 @@ public static class GridFactory
         return new ArrayGrid<int>(data);
     }
 }
+

@@ -1,4 +1,4 @@
-namespace Lib.Extensions;
+namespace Lib.Collections;
 
 public static class EnumerableExtensions
 {
@@ -7,3 +7,4 @@ public static class EnumerableExtensions
 
     private static bool AreEqual<T>(T item1, T item2) => item1 == null ? item2 == null : item1.Equals(item2);
 }
+

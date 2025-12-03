@@ -1,7 +1,7 @@
-using Lib.Enums;
-using Lib.Parsing;
+using Lib.Geometry;
+using Lib.Text;
 
-namespace Lib.UnitTests.Text;
+namespace Lib.Text.Tests;
 
 public class ParserTests
 {
@@ -48,3 +48,4 @@ public class ParserTests
         });
     }
 }
+

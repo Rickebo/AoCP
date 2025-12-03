@@ -1,6 +1,6 @@
-using Lib.Graph;
+using Lib.Graphs;
 
-namespace Lib.UnitTests.Graphs;
+namespace Lib.Graphs.Tests;
 
 public class IEdgeTests
 {
@@ -18,3 +18,4 @@ public class IEdgeTests
         });
     }
 }
+

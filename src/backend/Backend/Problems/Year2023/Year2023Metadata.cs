@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Backend.Problems.Year2023;
@@ -15,3 +15,4 @@ public static class Year2023Metadata
         public override int Year => 2023;
     }
 }
+

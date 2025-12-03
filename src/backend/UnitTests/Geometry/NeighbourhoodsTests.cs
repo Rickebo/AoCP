@@ -1,7 +1,7 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 using Lib.Geometry;
 
-namespace Lib.UnitTests.Geometry;
+namespace Lib.Geometry.Tests;
 
 public class NeighbourhoodsTests
 {
@@ -46,3 +46,4 @@ public class NeighbourhoodsTests
         });
     }
 }
+

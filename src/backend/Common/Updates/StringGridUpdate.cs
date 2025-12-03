@@ -1,6 +1,6 @@
-﻿using Lib.Color;
-using Lib.Coordinate;
-using Lib.Grid;
+using Lib.Color;
+using Lib.Geometry;
+using Lib.Grids;
 
 namespace Common.Updates;
 
@@ -149,3 +149,4 @@ public class StringGridUpdate : GridUpdate<string>
         }
     }
 }
+

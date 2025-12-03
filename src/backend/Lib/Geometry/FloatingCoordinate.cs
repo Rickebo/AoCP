@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public readonly struct FloatingCoordinate<T>(T x, T y)
     : ICoordinate<FloatingCoordinate<T>, T>, IStringCoordinate
@@ -98,3 +98,4 @@ public readonly struct FloatingCoordinate<T>(T x, T y)
 
     public string? GetStringY() => Y.ToString();
 }
+

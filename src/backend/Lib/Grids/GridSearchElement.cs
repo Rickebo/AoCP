@@ -1,7 +1,7 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 using Lib.Search;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 /// <summary>
 /// Search element representing a single coordinate/value pair in an <see cref="ArrayGrid{TValue}"/>.
@@ -18,3 +18,4 @@ public readonly record struct GridSearchElement<TValue, TCost>(
     public override int GetHashCode() => Coordinate.GetHashCode();
     public override string ToString() => $"{Coordinate}";
 }
+

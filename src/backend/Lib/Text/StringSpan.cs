@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Lib.Strings;
+namespace Lib.Text;
 
 public readonly struct StringSpan : IEquatable<StringSpan>
 {
@@ -14,8 +14,8 @@ public readonly struct StringSpan : IEquatable<StringSpan>
     public StringSpan(string full, int start = 0, int length = int.MaxValue)
     {
         Full = full;
-        Start = Math.Clamp(start, 0, Math.Max(Full.Length - 1, 0));
-        Length = Math.Clamp(length, 0, Math.Max(Full.Length - start, 0));
+        Start = System.Math.Clamp(start, 0, System.Math.Max(Full.Length - 1, 0));
+        Length = System.Math.Clamp(length, 0, System.Math.Max(Full.Length - start, 0));
         _hash = HashCode.Combine(start, Length);
         for (var i = 0; i < Length; i++)
             _hash ^= Full[Start + i].GetHashCode();
@@ -83,3 +83,4 @@ public readonly struct StringSpan : IEquatable<StringSpan>
         return true;
     }
 }
+

@@ -1,10 +1,10 @@
 using System.Text.Json;
-using Lib.Grid;
+using Lib.Grids;
 using ColorStruct = Lib.Color.Color;
 using ColorConstants = Lib.Color.Colors;
 using ColorJsonConverter = Lib.Color.ColorJsonConverter;
 
-namespace Lib.UnitTests.Coloring;
+namespace Lib.Color.Tests;
 
 public class ColorTests
 {
@@ -216,3 +216,4 @@ public class ColorTests
         Assert.That(parsed, Is.EqualTo(color));
     }
 }
+

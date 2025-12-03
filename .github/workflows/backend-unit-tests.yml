@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Lib unit tests with coverage
         run: >
-          dotnet test UnitTests/LibUnitTests.csproj
+          dotnet test UnitTests/Lib.Tests.csproj
           --configuration Release
           --no-build
           --no-restore

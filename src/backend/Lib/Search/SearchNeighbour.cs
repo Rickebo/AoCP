@@ -7,3 +7,4 @@ public class SearchNeighbour<TNeighbour, TCost>
     public required TCost Cost { get; init; }
 }
 
+

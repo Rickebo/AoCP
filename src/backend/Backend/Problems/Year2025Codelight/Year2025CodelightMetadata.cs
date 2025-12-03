@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Backend.Problems.Year2024;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,3 +16,4 @@ public static class Year2025CodelightMetadata
         public override int Year => 2025;
     }
 }
+

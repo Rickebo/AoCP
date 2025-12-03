@@ -1,4 +1,4 @@
-﻿namespace Common;
+namespace Common;
 
 public class ProblemId
 {
@@ -8,3 +8,4 @@ public class ProblemId
     public string SetName { get; set; }
     public string ProblemName { get; set; }
 }
+

@@ -1,6 +1,6 @@
-using Lib.Grid;
+using Lib.Grids;
 
-namespace Lib.UnitTests.Grids;
+namespace Lib.Grids.Tests;
 
 public class GridFactoryTests
 {
@@ -37,3 +37,4 @@ public class GridFactoryTests
         Assert.Throws<ArgumentException>(() => GridFactory.ParseIntGrid(new[] { "1x" }));
     }
 }
+

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
-using Lib.Graph;
-using Lib.Extensions;
+using Lib.Graphs;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
@@ -265,3 +264,4 @@ public class Day23 : ProblemSet
 
     public record Connection(Computer From, Computer To) : IEdge<Computer>;
 }
+

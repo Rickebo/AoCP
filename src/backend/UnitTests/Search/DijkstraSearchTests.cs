@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 public class DijkstraSearchTests
 {
@@ -33,3 +33,4 @@ public class DijkstraSearchTests
         Assert.That(result, Is.InstanceOf<DijkstraSearch<TestSearchSource, TestNode, int>.UnsuccessfulResult>());
     }
 }
+

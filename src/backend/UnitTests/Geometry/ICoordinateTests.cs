@@ -1,6 +1,6 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 
-namespace Lib.UnitTests.Geometry;
+namespace Lib.Geometry.Tests;
 
 public class ICoordinateTests
 {
@@ -12,3 +12,4 @@ public class ICoordinateTests
         Assert.That(coordinate.ManhattanLength(), Is.EqualTo(5));
     }
 }
+

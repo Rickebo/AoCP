@@ -1,8 +1,7 @@
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
+using Lib.Geometry;
+using Lib.Text;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public class IntGrid : ArrayGrid<int>
 {
@@ -44,3 +43,4 @@ public class IntGrid : ArrayGrid<int>
 
     public override IntGrid Flip(Axis axis) => Flip(values => new IntGrid(values), axis);
 }
+

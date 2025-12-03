@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Backend.Problems
 {
@@ -7,3 +7,4 @@ namespace Backend.Problems
         public ProblemException(string message) : base(message) { }
     }
 }
+

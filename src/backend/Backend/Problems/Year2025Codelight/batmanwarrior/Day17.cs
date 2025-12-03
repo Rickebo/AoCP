@@ -1,7 +1,6 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Extensions;
-using Lib.Parsing;
+using Lib.Text;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -95,3 +94,4 @@ public class Day17 : ProblemSet
         }
     }
 }
+

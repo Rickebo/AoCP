@@ -1,4 +1,4 @@
-namespace Lib.Enums;
+namespace Lib.Geometry;
 
 /// <summary>
 /// Angle statements
@@ -15,4 +15,5 @@ public enum Angle
     /// <summary> 180 degrees. </summary>
     HalfTurn = 1 << 2, // 180 degrees
 }
+
 

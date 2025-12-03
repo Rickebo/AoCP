@@ -3,12 +3,11 @@ using Common.Updates;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
-using Lib.Grid;
+using Lib.Grids;
 using System.Text;
-using Lib.Coordinate;
+using Lib.Geometry;
 using System.Linq;
-using Lib.Extensions;
-using Lib.Enums;
+using Lib.Geometry;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -163,3 +162,4 @@ public class Day15 : ProblemSet
         }
     }
 }
+

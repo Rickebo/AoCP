@@ -1,8 +1,8 @@
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Grids;
+using Lib.Math;
 
 namespace Lib.Color;
 
@@ -202,7 +202,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
     {
         var l = v * (1 - s / 2);
 
-        return FromHsl(h, l is 0 or 1 ? 0 : (v - l) / Math.Min(l, 1 - l), l);
+        return FromHsl(h, l is 0 or 1 ? 0 : (v - l) / System.Math.Min(l, 1 - l), l);
     }
 
     public static IEnumerable<Color> Generate(int count, double saturation = 0.5, double vibrancy = 0.9) =>
@@ -210,7 +210,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
 
     public static IEnumerable<Color> Generate(double seed, int count, double saturation = 0.5, double vibrancy = 0.9)
     {
-        var goldenRatio = (1 + Math.Sqrt(5)) / 2 - 1;
+        var goldenRatio = (1 + System.Math.Sqrt(5)) / 2 - 1;
         var h = seed;
         for (var i = 0; i < count; i++)
         {
@@ -274,10 +274,10 @@ public readonly struct Color(uint value) : IEquatable<Color>
         percent = percent.Clamp(0.0, 1.0);
 
         // Interpolate R G B A values
-        uint r = (uint)Math.Round(from.R + to.R * percent - from.R * percent);
-        uint g = (uint)Math.Round(from.G + to.G * percent - from.G * percent);
-        uint b = (uint)Math.Round(from.B + to.B * percent - from.B * percent);
-        uint a = (uint)Math.Round(from.A + to.A * percent - from.A * percent);
+        uint r = (uint)System.Math.Round(from.R + to.R * percent - from.R * percent);
+        uint g = (uint)System.Math.Round(from.G + to.G * percent - from.G * percent);
+        uint b = (uint)System.Math.Round(from.B + to.B * percent - from.B * percent);
+        uint a = (uint)System.Math.Round(from.A + to.A * percent - from.A * percent);
 
         return new(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
     }
@@ -348,3 +348,5 @@ public readonly struct Color(uint value) : IEquatable<Color>
     public static Color operator ^(Color left, Color right) => new(left.Value ^ right.Value);
     public static Color operator ~(Color value) => new(~value.Value);
 }
+
+

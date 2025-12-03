@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Extensions;
 
 namespace Backend.Problems.Year2025Codelight.Rickebo;
 
@@ -54,3 +53,4 @@ public class Day17 : ProblemSet
         }
     }
 }
+

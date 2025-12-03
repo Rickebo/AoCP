@@ -75,3 +75,4 @@ public class Day01 : ProblemSet
         right = lines.Select(line => int.Parse(line[1])).OrderBy(x => x).ToList();
     }
 }
+

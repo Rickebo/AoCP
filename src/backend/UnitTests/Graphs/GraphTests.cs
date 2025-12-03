@@ -1,6 +1,6 @@
-using Lib.Graph;
+using Lib.Graphs;
 
-namespace Lib.UnitTests.Graphs;
+namespace Lib.Graphs.Tests;
 
 public class GraphTests
 {
@@ -71,3 +71,4 @@ public class GraphTests
         });
     }
 }
+

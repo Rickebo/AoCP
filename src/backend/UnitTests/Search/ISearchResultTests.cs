@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 public class ISearchResultTests
 {
@@ -19,3 +19,4 @@ public class ISearchResultTests
         });
     }
 }
+

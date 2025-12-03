@@ -1,9 +1,8 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -163,3 +162,4 @@ public class Day21 : ProblemSet
         public record CoffeSeeker(IntegerCoordinate<int> Pos, Direction Dir);
     }
 }
+

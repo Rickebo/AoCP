@@ -1,4 +1,4 @@
-namespace Lib.Enums;
+namespace Lib.Geometry;
 
 [Flags]
 public enum Axis
@@ -7,4 +7,5 @@ public enum Axis
     X = 1 << 0,
     Y = 1 << 1,
 }
+
 

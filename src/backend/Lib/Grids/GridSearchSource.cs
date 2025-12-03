@@ -1,6 +1,6 @@
 using System.Numerics;
-using Lib.Coordinate;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Search;
 
 namespace Lib.Grids;
@@ -56,3 +56,4 @@ public sealed class GridSearchSource<TValue, TCost>(
         }
     }
 }
+

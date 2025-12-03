@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Extensions;
+namespace Lib.Math;
 
 public static class NumberExtensions
 {
@@ -12,4 +12,5 @@ public static class NumberExtensions
         where T : struct, INumber<T>, IMinMaxValue<T> =>
         T.Clamp(value, min ?? T.MinValue, max ?? T.MaxValue);
 }
+
 

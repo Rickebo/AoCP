@@ -103,3 +103,4 @@ public class Day03 : ProblemSet
         public int Product() => left != null && right != null ? left.Value * right.Value : 0;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -6,10 +6,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 
 namespace Backend.Problems.Year2025Codelight.Rickebo;
 
@@ -87,3 +86,4 @@ public class Day21 : ProblemSet
         public record Position(IntegerCoordinate<int> Coordinate, Direction Direction);
     }
 }
+

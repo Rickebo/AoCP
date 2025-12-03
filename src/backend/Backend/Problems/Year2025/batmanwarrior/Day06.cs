@@ -69,3 +69,4 @@ public class Day06 : ProblemSet
         }
     }
 }
+
