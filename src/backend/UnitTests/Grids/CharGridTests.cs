@@ -1,8 +1,8 @@
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 
-namespace Lib.UnitTests.Grids;
+namespace Lib.Grids.Tests;
 
 public class CharGridTests
 {
@@ -44,3 +44,4 @@ public class CharGridTests
         });
     }
 }
+

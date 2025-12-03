@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
-using Lib.Extensions;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -194,3 +193,4 @@ public class Day22 : ProblemSet
         private int GetPrice() => (int)(Secret % 10);
     }
 }
+

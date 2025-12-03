@@ -1,9 +1,7 @@
 using System.Numerics;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Grids;
+using Lib.Geometry;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 {
@@ -67,8 +65,8 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     {
         get
         {
-            var xDir = Math.Sign(x.End.Value - x.Start.Value);
-            var yDir = Math.Sign(y.End.Value - y.Start.Value);
+            var xDir = System.Math.Sign(x.End.Value - x.Start.Value);
+            var yDir = System.Math.Sign(y.End.Value - y.Start.Value);
             for (var cx = x.Start.Value; cx < x.End.Value; cx += xDir)
                 for (var cy = y.Start.Value; cy < y.End.Value; cy += yDir)
                     if (Contains(cx, cy))
@@ -91,7 +89,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public bool OnRadius(IntegerCoordinate<int> coordinate, int radius)
     {
         // Radius must be within grid
-        if (radius > Math.Min(Width, Height))
+        if (radius > System.Math.Min(Width, Height))
             throw new ArgumentException("Radius can not extend outside of grid.");
 
         // Grid mid points
@@ -156,8 +154,8 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public void Fill(IntegerCoordinate<int> coordinate, int width, int height, TValue value)
     {
-        var maxY = Math.Min(coordinate.Y + height, Height);
-        var maxX = Math.Min(coordinate.X + width, Width);
+        var maxY = System.Math.Min(coordinate.Y + height, Height);
+        var maxX = System.Math.Min(coordinate.X + width, Width);
 
         // Fill within the requested rectangle without spilling outside the grid bounds.
         for (var y = coordinate.Y; y < maxY; y++)
@@ -213,8 +211,8 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public IEnumerable<IntegerCoordinate<int>> SectionCoordinates(IntegerCoordinate<int> origin, int width, int height)
     {
-        return Enumerable.Range(origin.Y, Math.Min(Height - origin.Y, height)).SelectMany(
-            y => Enumerable.Range(origin.X, Math.Min(Width - origin.X, width)).Select(
+        return Enumerable.Range(origin.Y, System.Math.Min(Height - origin.Y, height)).SelectMany(
+            y => Enumerable.Range(origin.X, System.Math.Min(Width - origin.X, width)).Select(
                 x => new IntegerCoordinate<int>(x, y)
             )
         );
@@ -228,8 +226,8 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public ArrayGrid<TValue> Section(IntegerCoordinate<int> origin, int width, int height)
     {
-        var sectionWidth = Math.Min(Width - origin.X, width);
-        var sectionHeight = Math.Min(Height - origin.Y, height);
+        var sectionWidth = System.Math.Min(Width - origin.X, width);
+        var sectionHeight = System.Math.Min(Height - origin.Y, height);
         var sectionValues = new TValue[sectionWidth, sectionHeight];
 
         for (var y = 0; y < sectionHeight; y++)
@@ -251,3 +249,5 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             includeDiagonals
         );
 }
+
+

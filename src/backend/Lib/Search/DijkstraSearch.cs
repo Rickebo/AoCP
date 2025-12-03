@@ -71,3 +71,4 @@ public sealed class DijkstraSearch<TSource, TElement, TCost>(TSource dataset)
         return path;
     }
 }
+

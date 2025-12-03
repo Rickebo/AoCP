@@ -1,6 +1,6 @@
 using Lib.Text;
 
-namespace Lib.UnitTests.Text;
+namespace Lib.Text.Tests;
 
 public class InputUtilsTests
 {
@@ -34,3 +34,4 @@ public class InputUtilsTests
         CollectionAssert.AreEqual(new[] { "a", "b", "c" }, parts);
     }
 }
+

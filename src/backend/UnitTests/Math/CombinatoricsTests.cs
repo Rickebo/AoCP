@@ -1,6 +1,6 @@
-using Lib.Numerics;
+using Lib.Math;
 
-namespace Lib.UnitTests.Math;
+namespace Lib.Math.Tests;
 
 public class CombinatoricsTests
 {
@@ -55,3 +55,4 @@ public class CombinatoricsTests
             perms);
     }
 }
+

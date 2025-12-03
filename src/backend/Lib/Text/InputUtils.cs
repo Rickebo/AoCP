@@ -51,3 +51,4 @@ public static partial class InputUtils
     [GeneratedRegex("-?\\d+")]
     private static partial Regex NumberRegex();
 }
+

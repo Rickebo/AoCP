@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 public class BreadthFirstSearchTests
 {
@@ -28,3 +28,4 @@ public class BreadthFirstSearchTests
         Assert.That(result, Is.InstanceOf<BreadthFirstSearch<TestSearchSource, TestNode, int>.UnsuccessfulBreadthFirstSearchResult>());
     }
 }
+

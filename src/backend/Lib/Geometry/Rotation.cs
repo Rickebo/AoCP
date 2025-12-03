@@ -1,4 +1,4 @@
-namespace Lib.Enums;
+namespace Lib.Geometry;
 
 public enum Rotation
 {
@@ -6,3 +6,4 @@ public enum Rotation
     Clockwise = 1,
     CounterClockwise = 2,
 }
+

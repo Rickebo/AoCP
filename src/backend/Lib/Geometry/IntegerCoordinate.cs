@@ -1,8 +1,7 @@
 using System.Numerics;
-using Lib.Enums;
-using Lib.Extensions;
+using Lib.Math;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public readonly struct IntegerCoordinate<T>(T x, T y)
     : ICoordinate<IntegerCoordinate<T>, T>,
@@ -187,3 +186,4 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
     public override int GetHashCode() => HashCode.Combine(X, Y);
     public override string ToString() => $"<{X} {Y}>";
 }
+

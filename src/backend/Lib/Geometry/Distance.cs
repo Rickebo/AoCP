@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public readonly struct Distance<T>(T x, T y) where T : INumber<T>
 {
@@ -45,4 +45,5 @@ public readonly struct Distance<T>(T x, T y) where T : INumber<T>
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
 }
+
 

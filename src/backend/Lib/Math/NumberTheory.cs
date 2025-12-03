@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Numerics;
+namespace Lib.Math;
 
 public static class NumberTheory
 {
@@ -59,3 +59,4 @@ public static class NumberTheory
         }
     }
 }
+

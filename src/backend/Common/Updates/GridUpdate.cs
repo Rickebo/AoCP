@@ -1,5 +1,5 @@
-using Lib.Coordinate;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Color;
 
 namespace Common.Updates;
@@ -33,3 +33,4 @@ public abstract class GridUpdate<T> : OngoingProblemUpdate
         return constructor(grid.Width, grid.Height, rows);
     }
 }
+

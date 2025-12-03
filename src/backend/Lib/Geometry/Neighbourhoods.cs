@@ -1,7 +1,7 @@
 using Lib.Geometry;
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public static class Neighbourhoods
 {
@@ -67,3 +67,4 @@ public static class Neighbourhoods
             );
     }
 }
+

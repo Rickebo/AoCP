@@ -1,13 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 
 namespace Backend.Problems.Year2023.Rickebo;
 
@@ -307,3 +306,4 @@ public class Day10 : ProblemSet
         }
     }
 }
+

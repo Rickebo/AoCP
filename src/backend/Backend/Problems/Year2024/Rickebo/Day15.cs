@@ -1,13 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Common;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Color;
 
 namespace Backend.Problems.Year2024.Rickebo;
@@ -132,7 +130,7 @@ public class Day15 : ProblemSet
             IntegerCoordinate<int> pos,
             Direction direction,
             int depth,
-            PriorityQueue<IntegerCoordinate<int>, int> steps,
+            Lib.Collections.PriorityQueue<IntegerCoordinate<int>, int> steps,
             HashSet<IntegerCoordinate<int>>? visited = null
         )
         {
@@ -171,7 +169,7 @@ public class Day15 : ProblemSet
 
         private void TryPush(IntegerCoordinate<int> pos, Direction direction)
         {
-            var pushQueue = new PriorityQueue<IntegerCoordinate<int>, int>();
+            var pushQueue = new Lib.Collections.PriorityQueue<IntegerCoordinate<int>, int>();
             if (!CanPush(pos, direction, 0, pushQueue))
                 return;
 
@@ -193,3 +191,4 @@ public class Day15 : ProblemSet
             .Sum(coordinate => 100 * (Grid.Height - coordinate.Y - 1) + coordinate.X);
     }
 }
+

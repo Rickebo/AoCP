@@ -1,4 +1,4 @@
-namespace Lib.Numerics;
+namespace Lib.Math;
 
 public static class Combinatorics
 {
@@ -20,7 +20,7 @@ public static class Combinatorics
         if (k == 0 || k == n)
             return 1;
 
-        k = Math.Min(k, n - k);
+        k = System.Math.Min(k, n - k);
         long result = 1;
         for (var i = 1; i <= k; i++)
         {
@@ -81,3 +81,5 @@ public static class Combinatorics
         return true;
     }
 }
+
+

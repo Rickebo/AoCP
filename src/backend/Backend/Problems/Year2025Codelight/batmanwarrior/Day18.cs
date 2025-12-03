@@ -1,4 +1,4 @@
-﻿using Common;
+using Common;
 using Common.Updates;
 using System;
 using System.Collections.Generic;
@@ -69,3 +69,4 @@ public class Day18 : ProblemSet
         }
     }
 }
+

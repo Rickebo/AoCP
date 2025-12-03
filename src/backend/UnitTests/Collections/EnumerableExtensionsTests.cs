@@ -1,6 +1,5 @@
-using Lib.Extensions;
 
-namespace Lib.UnitTests.Collections;
+namespace Lib.Collections.Tests;
 
 public class EnumerableExtensionsTests
 {
@@ -24,3 +23,4 @@ public class EnumerableExtensionsTests
         Assert.That(pair.Contains("missing"), Is.False);
     }
 }
+

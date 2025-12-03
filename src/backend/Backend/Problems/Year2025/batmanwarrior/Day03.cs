@@ -1,5 +1,4 @@
 using Common;
-using Lib.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -139,3 +138,4 @@ public class Day03 : ProblemSet
         }
     }
 }
+

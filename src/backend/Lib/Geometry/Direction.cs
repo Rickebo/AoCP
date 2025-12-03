@@ -1,4 +1,4 @@
-namespace Lib.Enums;
+namespace Lib.Geometry;
 
 [Flags]
 public enum Direction
@@ -21,3 +21,4 @@ public enum Direction
     DownRight = SouthEast,
     DownLeft = SouthWest,
 }
+

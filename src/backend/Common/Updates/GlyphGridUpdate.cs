@@ -1,7 +1,5 @@
-﻿using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Color;
 
 namespace Common.Updates;
@@ -225,3 +223,4 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
     }
 }
+

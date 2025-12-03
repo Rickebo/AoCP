@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 
@@ -223,3 +222,4 @@ public class Day06 : ProblemSet
         }
     }
 }
+

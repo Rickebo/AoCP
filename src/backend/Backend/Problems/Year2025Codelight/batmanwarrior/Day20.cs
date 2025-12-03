@@ -1,6 +1,6 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Parsing;
+using Lib.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -81,3 +81,4 @@ public class Day20 : ProblemSet
         }
     }
 }
+

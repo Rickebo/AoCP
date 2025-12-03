@@ -1,5 +1,5 @@
 using Common;
-using Lib.Parsing;
+using Lib.Text;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -150,3 +150,4 @@ public class Day02 : ProblemSet
         }
     }
 }
+

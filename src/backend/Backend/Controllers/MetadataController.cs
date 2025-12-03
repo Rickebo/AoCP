@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,3 +23,4 @@ public class MetadataController : ControllerBase
         return Ok(meta);
     }
 }
+

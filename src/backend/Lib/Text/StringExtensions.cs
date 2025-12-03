@@ -1,4 +1,4 @@
-namespace Lib.Extensions;
+namespace Lib.Text;
 
 public static class StringExtensions
 {
@@ -9,3 +9,4 @@ public static class StringExtensions
         StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
         ) => str.Split(splits, options);
 }
+

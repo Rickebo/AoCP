@@ -62,3 +62,4 @@ public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISe
     }
 }
 
+

@@ -1,6 +1,5 @@
-using Lib.Extensions;
 
-namespace Lib.UnitTests.Collections;
+namespace Lib.Collections.Tests;
 
 public class DictionaryExtensionsTests
 {
@@ -79,3 +78,4 @@ public class DictionaryExtensionsTests
         });
     }
 }
+

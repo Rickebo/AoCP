@@ -1,4 +1,4 @@
-namespace Lib.UnitTests.Collections;
+namespace Lib.Collections.Tests;
 
 public class PriorityQueueTests
 {
@@ -66,3 +66,4 @@ public class PriorityQueueTests
         Assert.That(queue.Dequeue(), Is.EqualTo(2));
     }
 }
+

@@ -103,3 +103,4 @@ public class Day02 : ProblemSet
         return removes <= maxRemoves;
     }
 }
+

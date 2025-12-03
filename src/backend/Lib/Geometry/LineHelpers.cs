@@ -1,7 +1,7 @@
 using Lib.Geometry;
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public static class LineHelpers
 {
@@ -12,10 +12,10 @@ public static class LineHelpers
     public static IEnumerable<Coordinate<int>> EnumerateSegment(Coordinate<int> start, Coordinate<int> end)
     {
         var delta = new Coordinate<int>(end.X - start.X, end.Y - start.Y);
-        var stepX = Math.Sign(delta.X);
-        var stepY = Math.Sign(delta.Y);
+        var stepX = System.Math.Sign(delta.X);
+        var stepY = System.Math.Sign(delta.Y);
 
-        if (delta.X != 0 && delta.Y != 0 && Math.Abs(delta.X) != Math.Abs(delta.Y))
+        if (delta.X != 0 && delta.Y != 0 && System.Math.Abs(delta.X) != System.Math.Abs(delta.Y))
             throw new ArgumentException("Only horizontal, vertical or 45° diagonal lines are supported.");
 
         var current = start;
@@ -49,3 +49,5 @@ public static class LineHelpers
         return T.Abs(dx) + T.Abs(dy) + T.Abs(dz);
     }
 }
+
+

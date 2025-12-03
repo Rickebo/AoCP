@@ -1,7 +1,6 @@
-using Lib.Coordinate;
-using Lib.Enums;
+using Lib.Geometry;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public static class GridAlgorithms
 {
@@ -43,3 +42,4 @@ public static class GridAlgorithms
         return visited;
     }
 }
+

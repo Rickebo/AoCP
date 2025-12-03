@@ -1,6 +1,6 @@
-using Lib.Strings;
+using Lib.Text;
 
-namespace Lib.UnitTests.Text;
+namespace Lib.Text.Tests;
 
 public class StringSpanTests
 {
@@ -49,3 +49,4 @@ public class StringSpanTests
         });
     }
 }
+

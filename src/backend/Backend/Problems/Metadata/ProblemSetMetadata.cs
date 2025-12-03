@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Backend.Services;
 
@@ -11,3 +11,4 @@ public record ProblemSetMetadata(
     string? SolutionFilePath,
     List<ProblemMetadata> Problems
 );
+

@@ -1,8 +1,7 @@
 using System.Numerics;
-using Lib.Coordinate;
-using Lib.Enums;
+using Lib.Geometry;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public class InfiniteGrid<TValue, TCoordinateNumber>
     : IGrid<TValue, IntegerCoordinate<TCoordinateNumber>, TCoordinateNumber>
@@ -46,3 +45,4 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
         }
     }
 }
+

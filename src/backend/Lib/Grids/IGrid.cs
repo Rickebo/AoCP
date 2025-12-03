@@ -1,7 +1,7 @@
 using System.Numerics;
-using Lib.Coordinate;
+using Lib.Geometry;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public interface IGrid<TValue, in TCoordinate, TCoordinateNumber>
     where TCoordinate : ICoordinate<TCoordinate, TCoordinateNumber>, IStringCoordinate
@@ -9,3 +9,4 @@ public interface IGrid<TValue, in TCoordinate, TCoordinateNumber>
 {
     public TValue this[TCoordinate coordinate] { get; set; }
 }
+

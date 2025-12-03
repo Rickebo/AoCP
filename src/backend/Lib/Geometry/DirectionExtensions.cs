@@ -1,9 +1,7 @@
 using System;
 using System.Numerics;
-using Lib.Coordinate;
-using Lib.Enums;
 
-namespace Lib.Extensions;
+namespace Lib.Geometry;
 
 public static class DirectionExtensions
 {
@@ -256,3 +254,4 @@ public static class DirectionExtensions
         return result == direction && (int)result != 0;
     }
 }
+

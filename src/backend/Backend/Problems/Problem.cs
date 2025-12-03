@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Backend.Problems.Metadata;
 using Common;
@@ -15,3 +15,4 @@ public abstract class Problem
 
     public abstract Task Solve(string input, Reporter reporter);
 }
+

@@ -1,8 +1,8 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Color;
 using System;
 using System.Collections.Generic;
@@ -160,3 +160,4 @@ public class Day27 : ProblemSet
         }
     }
 }
+

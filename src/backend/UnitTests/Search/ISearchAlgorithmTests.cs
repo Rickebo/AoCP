@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 public class ISearchAlgorithmTests
 {
@@ -13,3 +13,4 @@ public class ISearchAlgorithmTests
         Assert.That(algorithm.Dataset, Is.EqualTo(dataset));
     }
 }
+

@@ -1,7 +1,7 @@
-using Lib.Enums;
-using Lib.Extensions;
+using Lib.Geometry;
+using Lib.Math;
 
-namespace Lib.UnitTests.Geometry;
+namespace Lib.Geometry.Tests;
 
 public class AngleExtensionsTests
 {
@@ -153,3 +153,4 @@ public class AngleExtensionsTests
         });
     }
 }
+

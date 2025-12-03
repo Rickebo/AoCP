@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Extensions;
+namespace Lib.Math;
 
 public static class MathExtensions
 {
@@ -41,7 +41,7 @@ public static class MathExtensions
                 );
 
         var val = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
-        var max = (int)Math.Pow(2, 4 * hex.Length) - 1;
+        var max = (int)System.Math.Pow(2, 4 * hex.Length) - 1;
         return ((float)val) / max;
     }
 
@@ -80,3 +80,4 @@ public static class MathExtensions
         return n;
     }
 }
+

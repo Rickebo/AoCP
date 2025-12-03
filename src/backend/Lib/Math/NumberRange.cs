@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
-namespace Lib.Numerics;
+namespace Lib.Math;
 
 public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
 {
@@ -142,3 +142,4 @@ public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
 
     public override string ToString() => $"[{Start},{Stop}]";
 }
+

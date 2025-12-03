@@ -1,4 +1,4 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 using System.Numerics;
 
 namespace Lib.Geometry;
@@ -71,3 +71,4 @@ public readonly struct Coordinate3D<T>(T x, T y, T z)
 
     public override int GetHashCode() => HashCode.Combine(X, Y, Z);
 }
+

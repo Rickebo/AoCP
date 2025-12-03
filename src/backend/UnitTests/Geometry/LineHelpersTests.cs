@@ -1,7 +1,7 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 using Lib.Geometry;
 
-namespace Lib.UnitTests.Geometry;
+namespace Lib.Geometry.Tests;
 
 public class LineHelpersTests
 {
@@ -44,3 +44,4 @@ public class LineHelpersTests
         });
     }
 }
+

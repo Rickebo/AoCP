@@ -33,3 +33,4 @@ internal static class ProblemSourceRegistry
         return Paths.TryGetValue(assembly, out path);
     }
 }
+

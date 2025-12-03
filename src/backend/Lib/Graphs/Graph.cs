@@ -1,4 +1,4 @@
-namespace Lib.Graph;
+namespace Lib.Graphs;
 
 public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode>
 {
@@ -102,3 +102,4 @@ public class Graph<TNode, TEdge> where TNode : notnull where TEdge : IEdge<TNode
         return true;
     }
 }
+

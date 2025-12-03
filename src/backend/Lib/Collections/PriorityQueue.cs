@@ -121,3 +121,4 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         return _comparer.Compare(_heap[a].Priority, _heap[b].Priority);
     }
 }
+

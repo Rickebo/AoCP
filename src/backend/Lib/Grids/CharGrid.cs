@@ -1,8 +1,7 @@
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
+using Lib.Geometry;
+using Lib.Text;
 
-namespace Lib.Grid;
+namespace Lib.Grids;
 
 public class CharGrid : ArrayGrid<char>
 {
@@ -36,3 +35,4 @@ public class CharGrid : ArrayGrid<char>
 
     public override CharGrid Flip(Axis axis) => Flip(values => new CharGrid(values), axis);
 }
+

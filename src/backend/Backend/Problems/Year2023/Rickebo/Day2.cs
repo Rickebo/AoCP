@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -159,3 +159,4 @@ public class Day2 : ProblemSet
         public string Color { get; init; }
     }
 }
+

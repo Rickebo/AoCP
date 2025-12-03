@@ -5,3 +5,4 @@ public interface ISearchSource<TElement, TCost> where TElement : ISearchElement<
     public IEnumerable<SearchNeighbour<TElement, TCost>> GetNeighbours(TElement element);
 }
 
+

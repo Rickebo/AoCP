@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
@@ -7,9 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Http;
 
@@ -127,3 +126,4 @@ public class Day25 : ProblemSet
         }
     }
 }
+

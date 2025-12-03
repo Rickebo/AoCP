@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,8 +11,7 @@ using System.Threading.Tasks;
 using Backend.Services;
 using Common;
 using Common.Updates;
-using Lib.Parsing;
-using Lib.Extensions;
+using Lib.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -232,3 +231,4 @@ public class ProblemController(
         }
     }
 }
+

@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public readonly struct Coordinate<T>(T x, T y)
     : ICoordinate<Coordinate<T>, T>, IStringCoordinate
@@ -66,4 +66,5 @@ public readonly struct Coordinate<T>(T x, T y)
 
     public override int GetHashCode() => HashCode.Combine(X, Y);
 }
+
 

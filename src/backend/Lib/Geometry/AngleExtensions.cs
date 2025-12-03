@@ -1,6 +1,6 @@
-using Lib.Enums;
+using Lib.Math;
 
-namespace Lib.Extensions;
+namespace Lib.Geometry;
 
 public static class AngleExtensions
 {
@@ -91,14 +91,14 @@ public static class AngleExtensions
     /// <summary>Returns true if two angles are perpendicular (90 degrees apart).</summary>
     public static bool IsPerpendicularTo(this Angle angle, Angle other)
     {
-        int diff = Math.Abs(angle.ToDegrees() - other.ToDegrees());
+        int diff = System.Math.Abs(angle.ToDegrees() - other.ToDegrees());
         return diff == 90 || diff == 270;
     }
 
     /// <summary>Returns true if two angles are parallel (0 or 180 degrees apart).</summary>
     public static bool IsParallelTo(this Angle angle, Angle other)
     {
-        int diff = Math.Abs(angle.ToDegrees() - other.ToDegrees());
+        int diff = System.Math.Abs(angle.ToDegrees() - other.ToDegrees());
         return diff == 0 || diff == 180;
     }
 
@@ -146,13 +146,13 @@ public static class AngleExtensions
 
     /// <summary>Gets the shortest rotation direction to another angle (-1 = CCW, 0 = same, 1 = CW).</summary>
     public static int GetRotationDirection(this Angle from, Angle to)
-        => Math.Sign(from.ShortestDistanceTo(to));
+        => System.Math.Sign(from.ShortestDistanceTo(to));
 
     /// <summary>Linearly interpolates between two angles using the shortest path.</summary>
     public static Angle Lerp(this Angle from, Angle to, float t)
     {
         int distance = from.ShortestDistanceTo(to);
-        int result = from.ToDegrees() + (int)(distance * Math.Clamp(t, 0f, 1f));
+        int result = from.ToDegrees() + (int)(distance * System.Math.Clamp(t, 0f, 1f));
         return result.ToAngle();
     }
 
@@ -160,20 +160,20 @@ public static class AngleExtensions
     public static Angle StepToward(this Angle from, Angle to, int stepDegrees)
     {
         int distance = from.ShortestDistanceTo(to);
-        if (Math.Abs(distance) <= stepDegrees)
+        if (System.Math.Abs(distance) <= stepDegrees)
             return to;
 
-        int step = Math.Sign(distance) * stepDegrees;
+        int step = System.Math.Sign(distance) * stepDegrees;
         return (from.ToDegrees() + step).ToAngle();
     }
 
     /// <summary>Snaps degrees to the nearest 45-degree increment.</summary>
     public static Angle SnapToNearest45(int degrees)
-        => ((int)Math.Round(degrees / 45.0) * 45).ToAngle();
+        => ((int)System.Math.Round(degrees / 45.0) * 45).ToAngle();
 
     /// <summary>Snaps degrees to the nearest 90-degree increment.</summary>
     public static Angle SnapToNearest90(int degrees)
-        => ((int)Math.Round(degrees / 90.0) * 90).ToAngle();
+        => ((int)System.Math.Round(degrees / 90.0) * 90).ToAngle();
 
     /// <summary>Returns all valid angle values.</summary>
     public static Angle[] GetAllAngles()
@@ -222,3 +222,5 @@ public static class AngleExtensions
         return false;
     }
 }
+
+

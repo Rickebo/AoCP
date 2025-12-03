@@ -1,6 +1,6 @@
-using Lib.Numerics;
+using Lib.Math;
 
-namespace Lib.UnitTests.Math;
+namespace Lib.Math.Tests;
 
 public class NumberTheoryTests
 {
@@ -33,3 +33,4 @@ public class NumberTheoryTests
         CollectionAssert.AreEqual(new[] { 2, 3, 5, 7, 11, 13, 17, 19 }, primes);
     }
 }
+

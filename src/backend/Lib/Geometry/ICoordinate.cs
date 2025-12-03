@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Lib.Coordinate;
+namespace Lib.Geometry;
 
 public interface ICoordinate<TCoordinate, TNumber> : IStringCoordinate
     where TCoordinate : ICoordinate<TCoordinate, TNumber>
@@ -33,3 +33,4 @@ public interface ICoordinate3D<TCoordinate, TNumber> : ICoordinate<TCoordinate, 
     TNumber Z { get; }
     string? GetStringZ() => Z.ToString();
 }
+

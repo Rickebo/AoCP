@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
 using Common.Updates;
-using Lib.Extensions;
 
 namespace Backend.Problems.Year2023.batmanwarrior;
 
@@ -96,3 +95,4 @@ public class Day1 : ProblemSet
         { "nine", "n9e" }
     };
 }
+

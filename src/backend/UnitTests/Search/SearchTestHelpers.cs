@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 internal readonly record struct TestNode(string Id) : ISearchElement<int>;
 
@@ -36,3 +36,4 @@ internal static class SearchTestHelpers
             });
     }
 }
+

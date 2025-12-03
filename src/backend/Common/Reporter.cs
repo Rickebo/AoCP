@@ -1,8 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Common.Updates;
-using Lib.Coordinate;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Grids;
 using Lib.Color;
 
 namespace Common;
@@ -122,3 +122,4 @@ public class Reporter
         }
     }
 }
+

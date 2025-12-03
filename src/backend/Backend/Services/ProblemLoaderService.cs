@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +18,6 @@ using Basic.Reference.Assemblies;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Hosting;
 using static System.Threading.Tasks.Task;
-using Lib.Extensions;
 
 namespace Backend.Services;
 
@@ -188,3 +187,4 @@ public class ProblemLoaderService : IHostedService
         return CompletedTask;
     }
 }
+

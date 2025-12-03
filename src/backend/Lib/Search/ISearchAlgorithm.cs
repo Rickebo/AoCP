@@ -9,3 +9,4 @@ public interface ISearchAlgorithm<TSource, TElement, TCost>
 
 }
 
+

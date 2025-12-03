@@ -1,10 +1,9 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Lib.Enums;
-using Lib.Grid;
-using Lib.Extensions;
+using Lib.Geometry;
+using Lib.Grids;
 
-namespace Lib.Parsing;
+namespace Lib.Text;
 
 public static partial class Parser
 {
@@ -94,3 +93,4 @@ public static partial class Parser
         return grid;
     }
 }
+

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Common.Updates;
 
@@ -13,3 +13,4 @@ public abstract class ProblemUpdate
     public abstract string Type { get; }
     public ProblemId Id { get; set; }
 }
+

@@ -1,6 +1,6 @@
 using Lib.Search;
 
-namespace Lib.UnitTests.Search;
+namespace Lib.Search.Tests;
 
 public class ISearchElementTests
 {
@@ -12,3 +12,4 @@ public class ISearchElementTests
         Assert.That(element, Is.Not.Null);
     }
 }
+

@@ -1,6 +1,5 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Extensions;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -120,3 +119,4 @@ public class Day25 : ProblemSet
         }
     }
 }
+

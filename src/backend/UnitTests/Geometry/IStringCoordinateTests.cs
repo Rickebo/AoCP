@@ -1,6 +1,6 @@
-using Lib.Coordinate;
+using Lib.Geometry;
 
-namespace Lib.UnitTests.Geometry;
+namespace Lib.Geometry.Tests;
 
 public class IStringCoordinateTests
 {
@@ -16,3 +16,4 @@ public class IStringCoordinateTests
         });
     }
 }
+

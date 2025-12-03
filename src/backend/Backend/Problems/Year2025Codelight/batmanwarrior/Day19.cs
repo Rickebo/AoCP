@@ -1,6 +1,6 @@
-﻿using Common;
+using Common;
 using Common.Updates;
-using Lib.Extensions;
+using Lib.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -130,3 +130,4 @@ public class Day19 : ProblemSet
         }
     }
 }
+

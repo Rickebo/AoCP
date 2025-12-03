@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Common;
-using Lib.Coordinate;
-using Lib.Enums;
-using Lib.Extensions;
-using Lib.Grid;
+using Lib.Geometry;
+using Lib.Geometry;
+using Lib.Grids;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
@@ -174,3 +173,4 @@ public class Day12 : ProblemSet
         }
     }
 }
+
