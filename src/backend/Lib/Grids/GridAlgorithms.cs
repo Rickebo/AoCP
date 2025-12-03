@@ -30,10 +30,10 @@ public static class GridAlgorithms
                 if (neighbour.X < 0 || neighbour.Y < 0 || neighbour.Y >= grid.Height || neighbour.X >= grid.Width)
                     continue;
 
-                if (!visited.Add(neighbour))
+                if (!predicate(grid[neighbour]))
                     continue;
 
-                if (!predicate(grid[neighbour]))
+                if (!visited.Add(neighbour))
                     continue;
 
                 queue.Enqueue(neighbour);

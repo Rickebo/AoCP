@@ -50,6 +50,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
             if (y >= Height)
                 break;
 
+            x = 0;
             foreach (var cell in row)
             {
                 if (x >= Width)
@@ -155,8 +156,12 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public void Fill(IntegerCoordinate<int> coordinate, int width, int height, TValue value)
     {
-        for (var y = coordinate.Y; y < height; y++)
-            for (var x = coordinate.X; x < width; x++)
+        var maxY = Math.Min(coordinate.Y + height, Height);
+        var maxX = Math.Min(coordinate.X + width, Width);
+
+        // Fill within the requested rectangle without spilling outside the grid bounds.
+        for (var y = coordinate.Y; y < maxY; y++)
+            for (var x = coordinate.X; x < maxX; x++)
                 _values[x, y] = value;
     }
 
