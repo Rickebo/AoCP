@@ -57,18 +57,27 @@ public static class DirectionExtensions
 
     public static Direction Max { get; } = (Direction)All().Max(d => (int)d);
 
-    public static Direction Opposite(this Direction direction) => direction switch
+    public static Direction Opposite(this Direction direction)
     {
-        Direction.North => Direction.South,
-        Direction.NorthEast => Direction.SouthWest,
-        Direction.East => Direction.West,
-        Direction.SouthEast => Direction.NorthWest,
-        Direction.South => Direction.North,
-        Direction.SouthWest => Direction.NorthEast,
-        Direction.West => Direction.East,
-        Direction.NorthWest => Direction.SouthEast,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
-    };
+        if (direction == Direction.None)
+            return Direction.None;
+
+        var result = Direction.None;
+
+        if (direction.Has(Direction.North))
+            result |= Direction.South;
+
+        if (direction.Has(Direction.South))
+            result |= Direction.North;
+
+        if (direction.Has(Direction.East))
+            result |= Direction.West;
+
+        if (direction.Has(Direction.West))
+            result |= Direction.East;
+
+        return result;
+    }
 
     public static Direction Parse(char character) => character switch
     {
