@@ -9,6 +9,12 @@
 - When you touch backend and frontend code in the same change, call out cross-cutting implications explicitly in reviews and documentation updates.
 - Keep documentation up to date whenever you add new features or change existing behaviour.
 
+## Keeping this guide current
+- Treat this file as the source of truth for agent workflow: update it whenever processes, entry points, or conventions change.
+- Mirror any new setup steps or defaults you introduce elsewhere (e.g., README, scripts) so instructions stay aligned.
+- When adding a new tech stack area (packages, build targets, environments), add the expectations and testing commands here.
+- If guidance becomes outdated during a task, fix it before handing off your change set.
+
 ## Backend (.NET) guidelines
 - Target .NET 8.0 and keep the existing C# 12 style: file-scoped namespaces, top-level statements where already used, `var` for obvious type inference, collection expressions (e.g. `[]`) instead of explicit constructors, and expression-bodied members when they improve readability. Mirror the patterns used in existing files like `Backend/Program.cs`, `Backend/Startup.cs`, and the problem definitions under `Backend/Problems`.
 - Place new Advent of Code solutions under `src/backend/Backend/Problems/YearYYYY/<author>/`. Derive from `ProblemSet` and nested `Problem` types, set a matching `ReleaseTime`, and provide a non-empty `Name`. Use `Reporter` helpers from `Common/Reporter.cs` to stream updates/results back to the client.
