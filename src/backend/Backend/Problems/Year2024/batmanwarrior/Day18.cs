@@ -120,7 +120,7 @@ public class Day18 : ProblemSet
                     return cost;
 
                 // Check neighbours
-                foreach (var neighbour in pos.Neighbours)
+                foreach (var neighbour in pos.Neighbours())
                 {
                     // If not a corrupted byte
                     if (_grid.Contains(neighbour) && _grid[neighbour] != '#')
@@ -177,7 +177,7 @@ public class Day18 : ProblemSet
                     }
 
                     // Check neighbours
-                    foreach (var neighbour in pos.Neighbours)
+                    foreach (var neighbour in pos.Neighbours())
                     {
                         // If not a corrupted byte
                         if (_grid.Contains(neighbour) && _grid[neighbour] != '#')

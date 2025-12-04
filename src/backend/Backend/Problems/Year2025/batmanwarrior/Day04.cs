@@ -1,4 +1,7 @@
 using Common;
+using Common.Updates;
+using Lib.Color;
+using Lib.Grids;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,7 +18,7 @@ public class Day04 : ProblemSet
         new SecondProblem()
     ];
 
-    public override string Name => "TITLE_DAY_4";
+    public override string Name => "Printing Department";
 
     public class FirstProblem : Problem
     {
@@ -48,6 +51,7 @@ public class Day04 : ProblemSet
     public class Solver
     {
         private readonly Reporter _reporter;
+        private readonly CharGrid _grid;
 
         public Solver(string input, Reporter reporter, int _)
         {
@@ -55,18 +59,82 @@ public class Day04 : ProblemSet
             _reporter = reporter;
 
             // Parse input
+            _grid = new(input);
 
+            // Print grid
+            _reporter.Report(GlyphGridUpdate.FromCharGrid(_grid, ColorHex.White, ColorHex.Black));
         }
 
-        public string PartOne()
+        public int PartOne()
         {
-            return "";
+            int accessibleRolls = 0;
+
+            foreach (var coord in _grid.Coordinates)
+            {
+                if (_grid[coord] == '@' && CountNeighbouringRolls(coord) <= 3)
+                {
+                    _reporter.ReportGlyphGridUpdate(builder => builder.WithEntry(b => b
+                        .WithCoordinate(coord)
+                        .WithChar('x')
+                        .WithForeground(ColorHex.Red)
+                        .WithBackground(ColorHex.Black)
+                    ));
+
+                    accessibleRolls++;
+                }
+            }
+                
+
+            return accessibleRolls;
         }
 
-        public string PartTwo()
+        public int PartTwo()
         {
-            return "";
+            int removedRolls = 0;
+
+            bool hasBeenRemoved = true;
+            while (hasBeenRemoved)
+            {
+                hasBeenRemoved = false;
+                foreach (var coord in _grid.Coordinates)
+                {
+                    if (_grid[coord] == '@' && CountNeighbouringRolls(coord) <= 3)
+                    {
+                        _grid[coord] = '.';
+                        hasBeenRemoved = true;
+
+                        _reporter.ReportGlyphGridUpdate(builder => builder.WithEntry(b => b
+                            .WithCoordinate(coord)
+                            .WithChar('.')
+                            .WithForeground(ColorHex.Red)
+                            .WithBackground(ColorHex.Black)
+                        ));
+
+                        removedRolls++;
+                    }
+                }
+            }
+            
+            return removedRolls;
+        }
+
+        private int CountNeighbouringRolls(IntegerCoordinate<int> coord)
+        {
+            var neighbouringRolls = 0;
+
+            foreach (var neighbour in Neighbourhoods.All2DNeighbours(coord))
+            {
+                if (!_grid.Contains(neighbour))
+                    continue;
+
+                if (_grid[neighbour] == '@')
+                    neighbouringRolls++;
+
+                if (neighbouringRolls > 3)
+                    break;
+            }
+
+            return neighbouringRolls;
         }
     }
 }
-

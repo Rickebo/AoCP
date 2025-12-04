@@ -108,7 +108,7 @@ public class Day10 : ProblemSet
             return 1;
 
         var score = 0;
-        foreach (var neighbour in source.Neighbours)
+        foreach (var neighbour in source.Neighbours())
         {
             if (!grid.Contains(neighbour))
                 continue;

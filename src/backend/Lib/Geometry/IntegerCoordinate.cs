@@ -16,38 +16,10 @@ public readonly struct IntegerCoordinate<T>(T x, T y)
     public static IntegerCoordinate<T> UnitX { get; } = new(T.One, T.Zero);
     public static IntegerCoordinate<T> UnitY { get; } = new(T.Zero, T.One);
 
-    public IEnumerable<IntegerCoordinate<T>> Neighbours
-    {
-        get
-        {
-            var self = this;
-            return DirectionExtensions.Cardinals.Select(
-                direction => self + direction.ToCoordinate<T>()
-            );
-        }
-    }
-
-    public IEnumerable<IntegerCoordinate<T>> HorizontalNeighbours
-    {
-        get
-        {
-            var self = this;
-            return DirectionExtensions.Horizontal.Select(
-                direction => self + direction.ToCoordinate<T>()
-            );
-        }
-    }
-
-    public IEnumerable<IntegerCoordinate<T>> VerticalNeighbours
-    {
-        get
-        {
-            var self = this;
-            return DirectionExtensions.Vertical.Select(
-                direction => self + direction.ToCoordinate<T>()
-            );
-        }
-    }
+    public IEnumerable<IntegerCoordinate<T>> Neighbours(
+        Neighbourhood neighbourhood = Neighbourhood.Cardinal,
+        Direction excluded = Direction.None) =>
+        Neighbourhoods.Neighbours(this, neighbourhood, excluded);
 
     public T ManhattanLength() => T.Abs(X) + T.Abs(Y);
 

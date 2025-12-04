@@ -147,7 +147,7 @@ public class Day20 : ProblemSet
 
 
             int? best = null;
-            foreach (var neighbour in pos.Neighbours)
+            foreach (var neighbour in pos.Neighbours())
             {
                 if (!Grid.Contains(neighbour))
                     continue;

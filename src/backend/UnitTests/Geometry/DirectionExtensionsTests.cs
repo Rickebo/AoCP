@@ -36,6 +36,8 @@ public class DirectionExtensionsTests
         {
             Assert.That(Direction.North.Opposite(), Is.EqualTo(Direction.South));
             Assert.That(Direction.NorthEast.Opposite(), Is.EqualTo(Direction.SouthWest));
+            Assert.That((Direction.North | Direction.South | Direction.East).Opposite(),
+                Is.EqualTo(Direction.North | Direction.South | Direction.West));
         });
     }
 

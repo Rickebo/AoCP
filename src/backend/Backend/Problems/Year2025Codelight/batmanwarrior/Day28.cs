@@ -159,7 +159,7 @@ public class Day28 : ProblemSet
                         }
 
                         // Queue up neighbours
-                        foreach (var neighbour in pos.Neighbours)
+                        foreach (var neighbour in pos.Neighbours())
                             if (!visited.Contains(neighbour))
                                 queue.Enqueue(neighbour, Math.Max(0, _grid[neighbour] - _grid[pos]));
                     }

@@ -108,7 +108,7 @@ public class Day12 : ProblemSet
                         continue;
 
                     // Check neighbours
-                    foreach (var neighbour in currPos.Neighbours)
+                    foreach (var neighbour in currPos.Neighbours())
                     {
                         // Check if tile is outside region or not part of same region type
                         if (!_grid.Contains(neighbour) || _grid[currPos] != _grid[neighbour])
