@@ -31,8 +31,6 @@ public readonly struct Coordinate3D<T>(T x, T y, T z)
 
     public T ManhattanLength() => T.Abs(X) + T.Abs(Y) + T.Abs(Z);
 
-
-
     public Coordinate3D<T> Min(Coordinate3D<T> other) => new(
         T.Min(X, other.X),
         T.Min(Y, other.Y),

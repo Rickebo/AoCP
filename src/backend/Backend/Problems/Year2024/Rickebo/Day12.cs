@@ -94,7 +94,7 @@ public class Day12 : ProblemSet
         remove.Remove(source);
 
         var srcType = grid[source];
-        foreach (var neighbour in source.Neighbours)
+        foreach (var neighbour in source.Neighbours())
         {
             if (!grid.Contains(neighbour) || grid[neighbour] != srcType)
                 neighbours.Add(Edge.From(source, neighbour));

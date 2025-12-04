@@ -88,7 +88,7 @@ public class Day20 : ProblemSet
                 tileCosts[pos] = cost;
 
                 // Queue free neighbouring tiles that has not been visited yet
-                foreach (IntegerCoordinate<int> neighbour in pos.Neighbours.Where(x => _grid[x] != '#' && !tileCosts.ContainsKey(x)))
+                foreach (IntegerCoordinate<int> neighbour in pos.Neighbours().Where(x => _grid[x] != '#' && !tileCosts.ContainsKey(x)))
                     queue.Enqueue(neighbour, cost + 1);
             }
 

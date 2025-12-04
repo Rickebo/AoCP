@@ -1,25 +1,9 @@
-using Lib.Geometry;
 using System.Numerics;
 
 namespace Lib.Geometry;
 
 public static class Neighbourhoods
 {
-    private static readonly IntegerCoordinate<int>[] Orthogonal2D =
-    [
-        new(1, 0),
-        new(-1, 0),
-        new(0, 1),
-        new(0, -1)
-    ];
-
-    private static readonly IntegerCoordinate<int>[] All2D =
-    [
-        new(-1, -1), new(0, -1), new(1, -1),
-        new(-1, 0), /* origin */ new(1, 0),
-        new(-1, 1), new(0, 1), new(1, 1)
-    ];
-
     private static readonly Coordinate3D<int>[] Orthogonal3D =
     [
         new(1, 0, 0), new(-1, 0, 0),
@@ -31,27 +15,15 @@ public static class Neighbourhoods
     /// Returns orthogonal neighbours (N/E/S/W) for a given coordinate.
     /// </summary>
     public static IEnumerable<IntegerCoordinate<T>> Orthogonal<T>(IntegerCoordinate<T> origin)
-        where T : INumber<T>, IBinaryInteger<T>
-    {
-        foreach (var offset in Orthogonal2D)
-            yield return new IntegerCoordinate<T>(
-                origin.X + T.CreateChecked(offset.X),
-                origin.Y + T.CreateChecked(offset.Y)
-            );
-    }
+        where T : INumber<T>, IBinaryInteger<T> =>
+        Neighbours(origin, Neighbourhood.Cardinal);
 
     /// <summary>
     /// Returns 8 surrounding neighbours in 2D (including diagonals).
     /// </summary>
     public static IEnumerable<IntegerCoordinate<T>> All2DNeighbours<T>(IntegerCoordinate<T> origin)
-        where T : INumber<T>, IBinaryInteger<T>
-    {
-        foreach (var offset in All2D)
-            yield return new IntegerCoordinate<T>(
-                origin.X + T.CreateChecked(offset.X),
-                origin.Y + T.CreateChecked(offset.Y)
-            );
-    }
+        where T : INumber<T>, IBinaryInteger<T> =>
+        Neighbours(origin, Neighbourhood.All);
 
     /// <summary>
     /// Returns 6 orthogonal neighbours in 3D.
@@ -66,5 +38,52 @@ public static class Neighbourhoods
                 origin.Z + T.CreateChecked(offset.Z)
             );
     }
-}
 
+    /// <summary>
+    /// Returns the 2D directions for a neighbourhood, optionally excluding any direction that overlaps the mask in <paramref name="excluded"/>.
+    /// </summary>
+    public static IEnumerable<Direction> Directions(Neighbourhood neighbourhood, Direction excluded = Direction.None)
+    {
+        foreach (var direction in Expand(neighbourhood))
+        {
+            if ((direction & excluded) != 0)
+                continue;
+
+            yield return direction;
+        }
+    }
+
+    /// <summary>
+    /// Returns neighbours of <paramref name="origin"/> based on the requested <paramref name="neighbourhood"/>.
+    /// </summary>
+    public static IEnumerable<IntegerCoordinate<T>> Neighbours<T>(
+        IntegerCoordinate<T> origin,
+        Neighbourhood neighbourhood = Neighbourhood.Cardinal,
+        Direction excluded = Direction.None)
+        where T : INumber<T>, IBinaryInteger<T>
+    {
+        foreach (var direction in Directions(neighbourhood, excluded))
+            yield return origin + direction.ToCoordinate<T>();
+    }
+
+    private static IEnumerable<Direction> Expand(Neighbourhood neighbourhood)
+    {
+        if ((neighbourhood & Neighbourhood.Horizontal) != 0)
+        {
+            foreach (var direction in DirectionExtensions.Horizontal)
+                yield return direction;
+        }
+
+        if ((neighbourhood & Neighbourhood.Vertical) != 0)
+        {
+            foreach (var direction in DirectionExtensions.Vertical)
+                yield return direction;
+        }
+
+        if ((neighbourhood & Neighbourhood.Diagonal) != 0)
+        {
+            foreach (var direction in DirectionExtensions.Diagonals)
+                yield return direction;
+        }
+    }
+}

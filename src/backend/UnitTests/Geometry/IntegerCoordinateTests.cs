@@ -1,5 +1,4 @@
 using Lib.Geometry;
-using Lib.Geometry;
 
 namespace Lib.Geometry.Tests;
 
@@ -30,7 +29,7 @@ public class IntegerCoordinateTests
                 new IntegerCoordinate<int>(-1, 0),
                 new IntegerCoordinate<int>(0, -1),
             },
-            origin.Neighbours);
+            origin.Neighbours(Neighbourhood.Cardinal));
 
         CollectionAssert.AreEquivalent(
             new[]
@@ -38,7 +37,7 @@ public class IntegerCoordinateTests
                 new IntegerCoordinate<int>(-1, 0),
                 new IntegerCoordinate<int>(1, 0)
             },
-            origin.HorizontalNeighbours);
+            origin.Neighbours(Neighbourhood.Horizontal));
 
         CollectionAssert.AreEquivalent(
             new[]
@@ -46,7 +45,32 @@ public class IntegerCoordinateTests
                 new IntegerCoordinate<int>(0, 1),
                 new IntegerCoordinate<int>(0, -1)
             },
-            origin.VerticalNeighbours);
+            origin.Neighbours(Neighbourhood.Vertical));
+    }
+
+    [Test]
+    public void NeighboursSelector_SupportsDiagonalAndExclusions()
+    {
+        var origin = new IntegerCoordinate<int>(0, 0);
+
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                new IntegerCoordinate<int>(1, 1),
+                new IntegerCoordinate<int>(1, -1),
+                new IntegerCoordinate<int>(-1, 1),
+                new IntegerCoordinate<int>(-1, -1)
+            },
+            origin.Neighbours(Neighbourhood.Diagonal));
+
+        CollectionAssert.AreEquivalent(
+            new[]
+            {
+                new IntegerCoordinate<int>(0, 1),
+                new IntegerCoordinate<int>(1, 1),
+                new IntegerCoordinate<int>(1, 0)
+            },
+            origin.Neighbours(Neighbourhood.All, Direction.West | Direction.South));
     }
 
     [Test]

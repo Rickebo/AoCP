@@ -239,7 +239,7 @@ public class Day18 : ProblemSet
                     yield break;
                 }
 
-                foreach (var neighbour in pos.Neighbours)
+                foreach (var neighbour in pos.Neighbours())
                 {
                     if (visited.Contains(neighbour) || !Grid.Contains(neighbour) || Grid[neighbour] <= bytes)
                         continue;
