@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Backend.Services;
 using Common;
 using Common.Updates;
-using Lib.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

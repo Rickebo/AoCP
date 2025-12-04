@@ -4,22 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Backend.Problems.Metadata;
-using Backend.Services;
 
 namespace Backend.Problems;
 
-public abstract class ProblemSet
+public abstract class ProblemSet([CallerFilePath] string? sourceFilePath = null)
 {
-    protected ProblemSet([CallerFilePath] string? sourceFilePath = null)
-    {
-        SolutionFilePath = sourceFilePath != null ? Path.GetFullPath(sourceFilePath) : null;
-    }
-
     public abstract DateTime ReleaseTime { get; }
     public abstract List<Problem> Problems { get; }
     public abstract string Name { get; }
-    public string Author { get; internal set; }
-    public string? SolutionFilePath { get; internal set; }
+    public string Author { get; internal set; } = string.Empty;
+    public string? SolutionFilePath { get; internal set; } = sourceFilePath != null ? Path.GetFullPath(sourceFilePath) : null;
 
     public ProblemSetMetadata GetMetadata() =>
         new(
@@ -27,7 +21,7 @@ public abstract class ProblemSet
             Author,
             ReleaseTime,
             SolutionFilePath ?? FindFallbackPath(),
-            Problems.Select(p => p.GetMetadata()).ToList()
+            [.. Problems.Select(p => p.GetMetadata())]
         );
 
     private string? FindFallbackPath()

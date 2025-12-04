@@ -79,11 +79,14 @@ public class Day19 : ProblemSet
                     start = ts;
                 else if (isNow != 3 && was == 3)
                 {
-                    var duration = ts.TimeBetween(start);
-                    reporter.ReportLine($"{start}-{ts} -> {startNames} = {duration} minutes");
-                    count += duration;
+                    if (start is not null)
+                    {
+                        var duration = ts.TimeBetween(start);
+                        reporter.ReportLine($"{start}-{ts} -> {startNames} = {duration} minutes");
+                        count += duration;
+                    }
                 }
-                    
+                     
             }
 
             reporter.Report(

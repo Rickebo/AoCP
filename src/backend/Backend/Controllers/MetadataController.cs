@@ -6,15 +6,10 @@ namespace Backend.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class MetadataController : ControllerBase
+public class MetadataController(ProblemService problemService) : ControllerBase
 {
-    private readonly ProblemService _problemService;
+    private readonly ProblemService _problemService = problemService;
 
-    public MetadataController(ProblemService problemService)
-    {
-        _problemService = problemService;
-    }
-    
     [Route("")]
     public async Task<IActionResult> GetYears()
     {
