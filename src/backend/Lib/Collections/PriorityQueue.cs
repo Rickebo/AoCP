@@ -14,22 +14,44 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
     private readonly List<(TElement Element, TPriority Priority)> _heap = [];
     private readonly IComparer<TPriority> _comparer;
 
+    /// <summary>
+    /// Initializes a new priority queue using the default comparer for <typeparamref name="TPriority"/>.
+    /// </summary>
     public PriorityQueue()
         : this(Comparer<TPriority>.Default) { }
 
+    /// <summary>
+    /// Initializes a new priority queue with a custom priority comparer.
+    /// </summary>
+    /// <param name="comparer">Comparer used to order priorities.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="comparer"/> is <c>null</c>.</exception>
     public PriorityQueue(IComparer<TPriority> comparer)
     {
         _comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
     }
 
+    /// <summary>
+    /// Gets the number of elements contained in the queue.
+    /// </summary>
     public int Count => _heap.Count;
 
+    /// <summary>
+    /// Adds an element with the specified priority to the queue.
+    /// </summary>
+    /// <param name="element">Element to enqueue.</param>
+    /// <param name="priority">Priority associated with the element.</param>
     public void Enqueue(TElement element, TPriority priority)
     {
         _heap.Add((element, priority));
         BubbleUp(_heap.Count - 1);
     }
 
+    /// <summary>
+    /// Attempts to remove and return the element with the highest priority (lowest value) from the queue.
+    /// </summary>
+    /// <param name="element">The removed element if the operation succeeded; otherwise the default value.</param>
+    /// <param name="priority">The priority of the removed element if the operation succeeded; otherwise the default value.</param>
+    /// <returns><c>true</c> if an element was dequeued; otherwise <c>false</c>.</returns>
     public bool TryDequeue([MaybeNullWhen(false)] out TElement element, out TPriority priority)
     {
         if (_heap.Count == 0)
@@ -44,6 +66,11 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         return true;
     }
 
+    /// <summary>
+    /// Removes and returns the element with the highest priority (lowest value) from the queue.
+    /// </summary>
+    /// <returns>The dequeued element.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the queue is empty.</exception>
     public TElement Dequeue()
     {
         if (!TryDequeue(out var element, out _))
@@ -52,6 +79,12 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         return element!;
     }
 
+    /// <summary>
+    /// Attempts to return the element with the highest priority without removing it from the queue.
+    /// </summary>
+    /// <param name="element">The element at the front of the queue if present; otherwise the default value.</param>
+    /// <param name="priority">The priority of the element if present; otherwise the default value.</param>
+    /// <returns><c>true</c> if an element exists; otherwise <c>false</c>.</returns>
     public bool TryPeek([MaybeNullWhen(false)] out TElement element, out TPriority priority)
     {
         if (_heap.Count == 0)
@@ -65,10 +98,16 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         return true;
     }
 
+    /// <summary>
+    /// Returns an enumerator that iterates through the queue elements in heap order.
+    /// </summary>
     public IEnumerator<TElement> GetEnumerator() => _heap.Select(static h => h.Element).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    /// <summary>
+    /// Removes the root of the heap and restores heap invariants.
+    /// </summary>
     private void RemoveRoot()
     {
         var lastIndex = _heap.Count - 1;
@@ -77,6 +116,10 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         SinkDown(0);
     }
 
+    /// <summary>
+    /// Restores heap ordering by moving the element at <paramref name="index"/> up the tree.
+    /// </summary>
+    /// <param name="index">Index of the element to bubble up.</param>
     private void BubbleUp(int index)
     {
         while (index > 0)
@@ -90,6 +133,10 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         }
     }
 
+    /// <summary>
+    /// Restores heap ordering by moving the element at <paramref name="index"/> down the tree.
+    /// </summary>
+    /// <param name="index">Index of the element to sink.</param>
     private void SinkDown(int index)
     {
         while (true)
@@ -111,11 +158,22 @@ public class PriorityQueue<TElement, TPriority> : IEnumerable<TElement>
         }
     }
 
+    /// <summary>
+    /// Swaps two elements in the underlying heap list.
+    /// </summary>
+    /// <param name="a">Index of the first element.</param>
+    /// <param name="b">Index of the second element.</param>
     private void Swap(int a, int b)
     {
         (_heap[a], _heap[b]) = (_heap[b], _heap[a]);
     }
 
+    /// <summary>
+    /// Compares the priorities at two heap indices using the configured comparer.
+    /// </summary>
+    /// <param name="a">Index of the first heap element.</param>
+    /// <param name="b">Index of the second heap element.</param>
+    /// <returns>A signed integer indicating relative priority ordering.</returns>
     private int Compare(int a, int b)
     {
         return _comparer.Compare(_heap[a].Priority, _heap[b].Priority);
