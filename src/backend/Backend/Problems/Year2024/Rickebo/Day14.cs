@@ -104,12 +104,13 @@ public class Day14 : ProblemSet
             reporter.Report(
                 GlyphGridUpdate.FromGrid(
                     grid,
-                    value => new Cell(
-                        null,
-                        value > 9 ? "+" : value.ToString(),
-                        "#FFFFFF",
-                        "#000000"
-                    )
+                    value => new Cell
+                    {
+                        Glyph = null,
+                        Char = value > 9 ? "+" : value.ToString(),
+                        Fg = "#FFFFFF",
+                        Bg = "#000000"
+                    }
                 )
             );
         }

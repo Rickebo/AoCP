@@ -7,6 +7,10 @@ public static class GridAlgorithms
     /// <summary>
     /// Flood fill that returns all coordinates reachable from start while the predicate is true.
     /// </summary>
+    /// <param name="grid">Grid to traverse.</param>
+    /// <param name="start">Starting coordinate.</param>
+    /// <param name="predicate">Predicate that must hold for a cell to be visited.</param>
+    /// <returns>All reachable coordinates satisfying the predicate.</returns>
     public static IReadOnlyCollection<IntegerCoordinate<int>> FloodFill(
         ArrayGrid<char> grid,
         IntegerCoordinate<int> start,

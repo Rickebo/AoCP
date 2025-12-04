@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 
@@ -30,7 +29,14 @@ internal static class ProblemSourceRegistry
             return false;
         }
 
-        return Paths.TryGetValue(assembly, out path);
+        if (Paths.TryGetValue(assembly, out var foundPath))
+        {
+            path = foundPath;
+            return true;
+        }
+
+        path = string.Empty;
+        return false;
     }
 }
 

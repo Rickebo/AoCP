@@ -89,7 +89,7 @@ public class Day2 : ProblemSet
         };
 
         public int Id { get; init; }
-        public Roll[] Rolls { get; init; }
+        public Roll[] Rolls { get; init; } = Array.Empty<Roll>();
 
         public static Game? Parse(string input)
         {
@@ -147,7 +147,7 @@ public class Day2 : ProblemSet
 
     public class Roll
     {
-        public Cube[] Cubes { get; init; }
+        public Cube[] Cubes { get; init; } = Array.Empty<Cube>();
 
         public int CountMinimumCubes(string color) =>
             Cubes.FirstOrDefault(cube => cube.Color == color)?.Count ?? 0;
@@ -156,7 +156,7 @@ public class Day2 : ProblemSet
     public class Cube
     {
         public int Count { get; init; }
-        public string Color { get; init; }
+        public string Color { get; init; } = string.Empty;
     }
 }
 

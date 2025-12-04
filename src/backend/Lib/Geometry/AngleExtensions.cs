@@ -179,14 +179,14 @@ public static class AngleExtensions
     public static Angle[] GetAllAngles()
         =>
         [
-            Angle.None,                                           // 0°
-            Angle.EighthTurn,                                     // 45°
-            Angle.QuarterTurn,                                    // 90°
-            Angle.EighthTurn | Angle.QuarterTurn,                 // 135°
-            Angle.HalfTurn,                                       // 180°
-            Angle.EighthTurn | Angle.HalfTurn,                    // 225°
-            Angle.QuarterTurn | Angle.HalfTurn,                   // 270°
-            Angle.EighthTurn | Angle.QuarterTurn | Angle.HalfTurn // 315°
+            Angle.None,                                           // 0 deg
+            Angle.EighthTurn,                                     // 45 deg
+            Angle.QuarterTurn,                                    // 90 deg
+            Angle.EighthTurn | Angle.QuarterTurn,                 // 135 deg
+            Angle.HalfTurn,                                       // 180 deg
+            Angle.EighthTurn | Angle.HalfTurn,                    // 225 deg
+            Angle.QuarterTurn | Angle.HalfTurn,                   // 270 deg
+            Angle.EighthTurn | Angle.QuarterTurn | Angle.HalfTurn // 315 deg
         ];
 
     /// <summary>Returns all cardinal angles (0, 90, 180, 270).</summary>

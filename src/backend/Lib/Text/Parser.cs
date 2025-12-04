@@ -5,6 +5,9 @@ using Lib.Grids;
 
 namespace Lib.Text;
 
+/// <summary>
+/// Helper methods for extracting numeric values and parsing grid-based inputs.
+/// </summary>
 public static partial class Parser
 {
     [GeneratedRegex(@"\d+")]
@@ -19,6 +22,14 @@ public static partial class Parser
     [GeneratedRegex(@"[+-]?\d+(\,\d+)?")]
     private static partial Regex RegexDecimalsComma();
 
+    /// <summary>
+    /// Extracts numeric values from a string using the requested decimal separator.
+    /// </summary>
+    /// <typeparam name="T">Numeric type to parse.</typeparam>
+    /// <param name="str">Input string.</param>
+    /// <param name="decimalSeparator">Decimal separator for floating-point parsing.</param>
+    /// <returns>Array of parsed numbers.</returns>
+    /// <exception cref="NotSupportedException">Thrown for unsupported types or separators.</exception>
     public static T[] GetValues<T>(string str, string decimalSeparator = ".")
     {
         // Guard decimal separator
@@ -58,6 +69,12 @@ public static partial class Parser
         return numbers ?? [];
     }
 
+    /// <summary>
+    /// Extracts numeric values from multiple strings.
+    /// </summary>
+    /// <typeparam name="T">Numeric type to parse.</typeparam>
+    /// <param name="str">Array of strings to search.</param>
+    /// <returns>All numbers found across the input strings.</returns>
     public static T[] GetValues<T>(string[] str)
     {
         List<T> values = [];
@@ -67,6 +84,12 @@ public static partial class Parser
         return [.. values];
     }
 
+    /// <summary>
+    /// Extracts numeric values from each input string and groups them into arrays.
+    /// </summary>
+    /// <typeparam name="T">Numeric type to parse.</typeparam>
+    /// <param name="str">Array of strings.</param>
+    /// <returns>Array of parsed number arrays corresponding to each input string.</returns>
     public static T[][] GetValueArrays<T>(string[] str)
     {
         List<T[]> values = [];
@@ -76,6 +99,11 @@ public static partial class Parser
         return [.. values];
     }
 
+    /// <summary>
+    /// Parses a grid of directions from a multiline string.
+    /// </summary>
+    /// <param name="text">Input text containing direction characters.</param>
+    /// <returns>A grid of <see cref="Direction"/> values.</returns>
     public static ArrayGrid<Direction> ParseDirectionGrid(string text)
     {
         var lines = text.SplitLines();

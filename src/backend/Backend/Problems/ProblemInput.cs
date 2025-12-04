@@ -4,7 +4,7 @@ namespace Backend.Problems;
 
 public class ProblemInput
 {
-    public ProblemId Problem { get; set; }
-    public string Input { get; set; }
+    public ProblemId Problem { get; set; } = default!;
+    public string Input { get; set; } = string.Empty;
 }
 
