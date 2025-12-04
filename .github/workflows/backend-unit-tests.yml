@@ -41,7 +41,16 @@ jobs:
           --no-build
           --no-restore
           --collect:"XPlat Code Coverage"
-          --results-directory TestResults
+          --results-directory TestResults/Lib
+
+      - name: Run Common unit tests with coverage
+        run: >
+          dotnet test Common.Tests/Common.Tests.csproj
+          --configuration Release
+          --no-build
+          --no-restore
+          --collect:"XPlat Code Coverage"
+          --results-directory TestResults/Common
 
       - name: Install ReportGenerator
         run: dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -50,19 +59,33 @@ jobs:
         run: |
           export PATH="$PATH:/root/.dotnet/tools"
           reportgenerator \
-            -reports:TestResults/**/coverage.cobertura.xml \
-            -targetdir:CoverageReport \
+            -reports:TestResults/Lib/**/coverage.cobertura.xml \
+            -targetdir:CoverageReport/Lib \
             -reporttypes:"Html;TextSummary" \
             -assemblyfilters:"+Lib"
 
+          reportgenerator \
+            -reports:TestResults/Common/**/coverage.cobertura.xml \
+            -targetdir:CoverageReport/Common \
+            -reporttypes:"Html;TextSummary" \
+            -assemblyfilters:"+Common"
+
           echo "## Lib code coverage" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          cat CoverageReport/Summary.txt >> $GITHUB_STEP_SUMMARY
+          cat CoverageReport/Lib/Summary.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Common code coverage" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat CoverageReport/Common/Summary.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Upload coverage HTML artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lib-code-coverage-html
-          path: src/backend/CoverageReport
+          name: backend-code-coverage-html
+          path: |
+            src/backend/CoverageReport/Lib
+            src/backend/CoverageReport/Common
           retention-days: 7
