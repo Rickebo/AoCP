@@ -1,7 +1,9 @@
-using Common;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Common;
+using Lib.Text;
+using Lib.Math;
 
 namespace Backend.Problems.Year2025.batmanwarrior;
 
@@ -15,7 +17,7 @@ public class Day05 : ProblemSet
         new SecondProblem()
     ];
 
-    public override string Name => "TITLE_DAY_5";
+    public override string Name => "Cafeteria";
 
     public class FirstProblem : Problem
     {
@@ -48,6 +50,8 @@ public class Day05 : ProblemSet
     public class Solver
     {
         private readonly Reporter _reporter;
+        private readonly List<NumberRange<long>> _ranges = [];
+        private readonly List<long> _ingredients = [];
 
         public Solver(string input, Reporter reporter, int _)
         {
@@ -55,18 +59,61 @@ public class Day05 : ProblemSet
             _reporter = reporter;
 
             // Parse input
-
+            foreach (var line in input.SplitLines())
+            {
+                var vals = Parser.GetValues<long>(line.Replace('-', ' '));
+                if (vals.Length == 2)
+                    _ranges.Add(new(Math.Min(vals[0], vals[1]), Math.Max(vals[0], vals[1])));
+                else if (vals.Length == 1)
+                    _ingredients.Add(vals[0]);
+            }
         }
 
-        public string PartOne()
+        public int PartOne()
         {
-            return "";
+            // Count fresh ingredients
+            int freshIngredients = 0;
+            foreach (var ingredient in _ingredients)
+            {
+                foreach (var range in _ranges)
+                {
+                    // Fresh
+                    if (range.Contains(ingredient))
+                    {
+                        freshIngredients++;
+                        break;
+                    }
+                }
+            }
+
+            return freshIngredients;
         }
 
-        public string PartTwo()
+        public long PartTwo()
         {
-            return "";
+            // Merge all ranges
+            for (int i = 0; i < _ranges.Count - 1; i++)
+            {
+                for (int j = i + 1; j < _ranges.Count; j++)
+                {
+                    // Intersection
+                    if (_ranges[i].Intersects(_ranges[j]))
+                    {
+                        // Merge
+                        _ranges[i] = _ranges[i].Union(_ranges[j]);
+                        _ranges.RemoveAt(j);
+                        i--; // Re-check with merged
+                        break;
+                    }
+                }
+            }
+
+            // Sum
+            long freshIDs = 0;
+            foreach (var range in _ranges)
+                freshIDs += range.Length;
+
+            return freshIDs;
         }
     }
 }
-

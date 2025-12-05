@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System;
 using Lib.Grids;
 using Lib.Geometry;
-using Lib.Geometry;
 
 namespace Backend.Problems.Year2024.batmanwarrior;
 

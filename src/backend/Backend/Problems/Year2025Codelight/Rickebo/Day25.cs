@@ -9,6 +9,7 @@ using Common;
 using Common.Updates;
 using Lib.Geometry;
 using Lib.Grids;
+using Lib.Text;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Http;
 

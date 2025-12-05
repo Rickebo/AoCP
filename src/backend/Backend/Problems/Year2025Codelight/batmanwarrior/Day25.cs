@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Lib.Text;
 
 namespace Backend.Problems.Year2025Codelight.batmanwarrior;
 public class Day25 : ProblemSet

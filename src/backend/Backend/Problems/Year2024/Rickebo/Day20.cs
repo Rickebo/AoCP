@@ -9,7 +9,6 @@ using Common;
 using Common.Updates;
 using Lib;
 using Lib.Geometry;
-using Lib.Geometry;
 using Lib.Grids;
 
 namespace Backend.Problems.Year2024.Rickebo;

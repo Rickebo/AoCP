@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
+using Lib.Math;
 using Lib.Text;
 
 namespace Backend.Problems.Year2024.Rickebo;
