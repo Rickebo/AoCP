@@ -2,7 +2,6 @@ using System.Text.Json;
 using Lib.Grids;
 using ColorStruct = Lib.Color.Color;
 using ColorConstants = Lib.Color.Colors;
-using ColorJsonConverter = Lib.Color.ColorJsonConverter;
 
 namespace Lib.Color.Tests;
 
@@ -129,7 +128,7 @@ public class ColorTests
         Assert.Multiple(() =>
         {
             Assert.That(first, Has.Count.EqualTo(3));
-            CollectionAssert.AreEqual(first, second);
+            Assert.That(second, Is.EqualTo(first).AsCollection);
             Assert.That(randomSized, Has.Count.EqualTo(2));
         });
     }

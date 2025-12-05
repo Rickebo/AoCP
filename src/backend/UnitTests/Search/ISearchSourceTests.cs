@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 public class ISearchSourceTests
@@ -12,8 +10,8 @@ public class ISearchSourceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(neighbours.Length, Is.EqualTo(2));
-            CollectionAssert.Contains(neighbours.Select(n => n.Element.Id), "B");
+            Assert.That(neighbours, Has.Length.EqualTo(2));
+            Assert.That(neighbours.Select(n => n.Element.Id), Has.Member("B"));
         });
     }
 }

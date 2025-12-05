@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 internal readonly record struct TestNode(string Id) : ISearchElement<int>;
@@ -30,9 +28,9 @@ internal static class SearchTestHelpers
         return new TestSearchSource(
             new Dictionary<string, (string To, int Cost)[]>
             {
-                ["A"] = new[] { ("B", 1), ("C", 5) },
-                ["B"] = new[] { ("C", 1) },
-                ["C"] = Array.Empty<(string, int)>(),
+                ["A"] = [("B", 1), ("C", 5)],
+                ["B"] = [("C", 1)],
+                ["C"] = [],
             });
     }
 }

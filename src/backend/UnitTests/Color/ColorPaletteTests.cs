@@ -1,4 +1,3 @@
-using Lib.Color;
 using ColorStruct = Lib.Color.Color;
 using ColorConstants = Lib.Color.Colors;
 

@@ -1,5 +1,3 @@
-using Lib.Math;
-
 namespace Lib.Math.Tests;
 
 public class CombinatoricsTests
@@ -25,25 +23,26 @@ public class CombinatoricsTests
     [Test]
     public void Combinations_GenerateAllKLengthChoices()
     {
-        var combos = Combinatorics.Combinations(new[] { 1, 2, 3 }, 2).ToArray();
+        var combos = Combinatorics.Combinations([1, 2, 3], 2).ToArray();
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
+        Assert.That(
+            combos,
+            Is.EquivalentTo(
+            [
                 new[] { 1, 2 },
                 new[] { 1, 3 },
                 new[] { 2, 3 }
-            },
-            combos);
+            ]));
     }
 
     [Test]
     public void Permutations_ReturnLexicographicOrder()
     {
-        var perms = Combinatorics.Permutations(new[] { 1, 2, 3 }).ToArray();
+        var perms = Combinatorics.Permutations([1, 2, 3]).ToArray();
 
-        CollectionAssert.AreEqual(
-            new[]
+        Assert.That(
+            perms,
+            Is.EqualTo(new[]
             {
                 new[] { 1, 2, 3 },
                 new[] { 1, 3, 2 },
@@ -51,8 +50,7 @@ public class CombinatoricsTests
                 new[] { 2, 3, 1 },
                 new[] { 3, 1, 2 },
                 new[] { 3, 2, 1 }
-            },
-            perms);
+            }).AsCollection);
     }
 }
 

@@ -5,7 +5,7 @@ public class PriorityQueueTests
     [Test]
     public void TryDequeue_OnEmptyQueueReturnsFalse()
     {
-        var queue = new Lib.Collections.PriorityQueue<string, int>();
+        var queue = new PriorityQueue<string, int>();
 
         var result = queue.TryDequeue(out var element, out var priority);
 
@@ -13,15 +13,15 @@ public class PriorityQueueTests
         {
             Assert.That(result, Is.False);
             Assert.That(element, Is.Null);
-            Assert.That(priority, Is.EqualTo(default(int)));
-            Assert.That(queue.Count, Is.EqualTo(0));
+            Assert.That(priority, Is.Default);
+            Assert.That(queue, Is.Empty);
         });
     }
 
     [Test]
     public void EnqueueAndDequeue_ReturnItemsByPriority()
     {
-        var queue = new Lib.Collections.PriorityQueue<string, int>();
+        var queue = new PriorityQueue<string, int>();
 
         queue.Enqueue("middle", 5);
         queue.Enqueue("low", 1);
@@ -29,9 +29,9 @@ public class PriorityQueueTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(queue.Count, Is.EqualTo(3));
+            Assert.That(queue, Has.Count.EqualTo(3));
             Assert.That(queue.Dequeue(), Is.EqualTo("low"));
-            Assert.That(queue.Count, Is.EqualTo(2));
+            Assert.That(queue, Has.Count.EqualTo(2));
         });
 
         Assert.That(queue.TryPeek(out var peek, out var peekPriority), Is.True);
@@ -45,14 +45,14 @@ public class PriorityQueueTests
     [Test]
     public void Enumerator_ContainsAllElements()
     {
-        var queue = new Lib.Collections.PriorityQueue<int, int>();
+        var queue = new PriorityQueue<int, int>();
         queue.Enqueue(1, 1);
         queue.Enqueue(2, 2);
         queue.Enqueue(3, 3);
 
         var enumerated = queue.ToList();
 
-        CollectionAssert.AreEquivalent(new[] { 1, 2, 3 }, enumerated);
+        Assert.That(enumerated, Is.EquivalentTo([1, 2, 3]));
     }
 
     [Test]

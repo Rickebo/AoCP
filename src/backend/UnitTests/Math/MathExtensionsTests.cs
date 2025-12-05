@@ -1,4 +1,3 @@
-
 namespace Lib.Math.Tests;
 
 public class MathExtensionsTests

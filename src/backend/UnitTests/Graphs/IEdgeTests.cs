@@ -1,5 +1,3 @@
-using Lib.Graphs;
-
 namespace Lib.Graphs.Tests;
 
 public class IEdgeTests

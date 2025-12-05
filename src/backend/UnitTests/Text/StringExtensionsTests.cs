@@ -1,6 +1,4 @@
-
 namespace Lib.Text.Tests;
-
 public class StringExtensionsTests
 {
     [Test]
@@ -8,7 +6,7 @@ public class StringExtensionsTests
     {
         var lines = "a\nb\r\nc".SplitLines();
 
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, lines);
+        Assert.That(lines, Is.EqualTo(new[] { "a", "b", "c" }).AsCollection);
     }
 
     [Test]
@@ -16,7 +14,7 @@ public class StringExtensionsTests
     {
         var parts = "a|b,c".SplitBy(new[] { "|", "," }, StringSplitOptions.RemoveEmptyEntries);
 
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, parts);
+        Assert.That(parts, Is.EqualTo(new[] { "a", "b", "c" }).AsCollection);
     }
 }
 

@@ -1,5 +1,3 @@
-using Lib.Math;
-
 namespace Lib.Math.Tests;
 
 public class NumberRangeTests
@@ -100,10 +98,10 @@ public class NumberRangeTests
         var range = new NumberRange<int>(0, 4);
 
         var splitAtTwo = range.Split(2).ToArray();
-        Assert.That(splitAtTwo.Length, Is.EqualTo(2));
+        Assert.That(splitAtTwo, Has.Length.EqualTo(2));
 
         var splitByRange = range.Split(new NumberRange<int>(1, 2)).ToArray();
-        Assert.That(splitByRange.Length, Is.EqualTo(3));
+        Assert.That(splitByRange, Has.Length.EqualTo(3));
     }
 
     [Test]
@@ -113,7 +111,7 @@ public class NumberRangeTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(range.Equals(new NumberRange<int>(1, 3)), Is.True);
+            Assert.That(range, Is.EqualTo(new NumberRange<int>(1, 3)));
             Assert.That(range.GetHashCode(), Is.Not.Zero);
             Assert.That(range.ToString(), Is.EqualTo("[1,3]"));
         });

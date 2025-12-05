@@ -1,5 +1,3 @@
-using Lib.Math;
-
 namespace Lib.Math.Tests;
 
 public class NumberTheoryTests
@@ -30,7 +28,7 @@ public class NumberTheoryTests
     {
         var primes = NumberTheory.Sieve(20).ToArray();
 
-        CollectionAssert.AreEqual(new[] { 2, 3, 5, 7, 11, 13, 17, 19 }, primes);
+        Assert.That(primes, Is.EqualTo(new[] { 2, 3, 5, 7, 11, 13, 17, 19 }).AsCollection);
     }
 }
 

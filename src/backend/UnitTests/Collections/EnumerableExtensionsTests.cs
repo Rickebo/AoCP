@@ -1,4 +1,3 @@
-
 namespace Lib.Collections.Tests;
 
 public class EnumerableExtensionsTests
@@ -8,9 +7,12 @@ public class EnumerableExtensionsTests
     {
         var pair = (1, 2);
 
-        Assert.That(pair.Contains(1), Is.True);
-        Assert.That(pair.Contains(2), Is.True);
-        Assert.That(pair.Contains(3), Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pair.Contains(1), Is.True);
+            Assert.That(pair.Contains(2), Is.True);
+            Assert.That(pair.Contains(3), Is.False);
+        });
     }
 
     [Test]
@@ -18,9 +20,12 @@ public class EnumerableExtensionsTests
     {
         (string?, string?) pair = ("first", null);
 
-        Assert.That(pair.Contains("first"), Is.True);
-        Assert.That(pair.Contains((string?)null), Is.True);
-        Assert.That(pair.Contains("missing"), Is.False);
+        Assert.Multiple(() =>
+        {
+            Assert.That(pair.Contains("first"), Is.True);
+            Assert.That(pair.Contains((string?)null), Is.True);
+            Assert.That(pair.Contains("missing"), Is.False);
+        });
     }
 }
 

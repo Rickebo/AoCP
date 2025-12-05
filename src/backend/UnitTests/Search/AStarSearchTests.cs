@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 public class AStarSearchTests
@@ -20,7 +18,7 @@ public class AStarSearchTests
         Assert.Multiple(() =>
         {
             Assert.That(success.Cost, Is.EqualTo(2));
-            CollectionAssert.AreEqual(new[] { new TestNode("A"), new TestNode("B"), new TestNode("C") }, success.Path);
+            Assert.That(success.Path, Is.EqualTo(new[] { new TestNode("A"), new TestNode("B"), new TestNode("C") }).AsCollection);
         });
     }
 

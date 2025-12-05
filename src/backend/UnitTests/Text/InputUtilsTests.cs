@@ -1,5 +1,3 @@
-using Lib.Text;
-
 namespace Lib.Text.Tests;
 
 public class InputUtilsTests
@@ -13,8 +11,8 @@ public class InputUtilsTests
         Assert.Multiple(() =>
         {
             Assert.That(groups.Count, Is.EqualTo(2));
-            CollectionAssert.AreEqual(new[] { "a" }, groups[0]);
-            CollectionAssert.AreEqual(new[] { "b", "c" }, groups[1]);
+            Assert.That(groups[0], Is.EqualTo(new[] { "a" }).AsCollection);
+            Assert.That(groups[1], Is.EqualTo(new[] { "b", "c" }).AsCollection);
         });
     }
 
@@ -23,7 +21,7 @@ public class InputUtilsTests
     {
         var numbers = InputUtils.ExtractIntegers("Value -2 and 15");
 
-        CollectionAssert.AreEqual(new long[] { -2, 15 }, numbers);
+        Assert.That(numbers, Is.EqualTo(new long[] { -2, 15 }).AsCollection);
     }
 
     [Test]
@@ -31,7 +29,7 @@ public class InputUtilsTests
     {
         var parts = InputUtils.SplitAndTrim(" a , b ,, c ", ',');
 
-        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, parts);
+        Assert.That(parts, Is.EqualTo(new[] { "a", "b", "c" }).AsCollection);
     }
 }
 

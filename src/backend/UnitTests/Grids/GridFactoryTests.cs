@@ -1,5 +1,3 @@
-using Lib.Grids;
-
 namespace Lib.Grids.Tests;
 
 public class GridFactoryTests
@@ -17,8 +15,8 @@ public class GridFactoryTests
             Assert.That(grid[0, 1], Is.EqualTo('c'));
         });
 
-        Assert.Throws<ArgumentException>(() => GridFactory.ParseCharGrid(Array.Empty<string>()));
-        Assert.Throws<ArgumentException>(() => GridFactory.ParseCharGrid(new[] { "a", "bc" }));
+        Assert.Throws<ArgumentException>(() => GridFactory.ParseCharGrid([]));
+        Assert.Throws<ArgumentException>(() => GridFactory.ParseCharGrid(["a", "bc"]));
     }
 
     [Test]
@@ -34,7 +32,7 @@ public class GridFactoryTests
             Assert.That(grid[1, 1], Is.EqualTo(4));
         });
 
-        Assert.Throws<ArgumentException>(() => GridFactory.ParseIntGrid(new[] { "1x" }));
+        Assert.Throws<ArgumentException>(() => GridFactory.ParseIntGrid(["1x"]));
     }
 }
 
