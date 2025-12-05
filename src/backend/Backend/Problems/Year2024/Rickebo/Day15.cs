@@ -7,6 +7,7 @@ using Common;
 using Lib.Geometry;
 using Lib.Grids;
 using Lib.Color;
+using Lib.Text;
 
 namespace Backend.Problems.Year2024.Rickebo;
 
