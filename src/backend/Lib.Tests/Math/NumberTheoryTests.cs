@@ -1,4 +1,6 @@
-namespace Lib.Math.Tests;
+using Lib.Math;
+
+namespace Lib.Tests.Math;
 
 public class NumberTheoryTests
 {
@@ -31,4 +33,5 @@ public class NumberTheoryTests
         Assert.That(primes, Is.EqualTo(new[] { 2, 3, 5, 7, 11, 13, 17, 19 }).AsCollection);
     }
 }
+
 

@@ -1,4 +1,6 @@
-namespace Lib.Math.Tests;
+using Lib.Math;
+
+namespace Lib.Tests.Math;
 
 public class CombinatoricsTests
 {
@@ -53,4 +55,5 @@ public class CombinatoricsTests
             }).AsCollection);
     }
 }
+
 

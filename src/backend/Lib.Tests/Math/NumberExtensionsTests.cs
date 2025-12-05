@@ -1,4 +1,6 @@
-namespace Lib.Math.Tests;
+using Lib.Math;
+
+namespace Lib.Tests.Math;
 
 public class NumberExtensionsTests
 {
@@ -22,4 +24,5 @@ public class NumberExtensionsTests
         });
     }
 }
+
 

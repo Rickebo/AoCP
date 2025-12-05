@@ -1,4 +1,6 @@
-namespace Lib.Search.Tests;
+using Lib.Search;
+
+namespace Lib.Tests.Search;
 
 public class SearchNeighbourTests
 {
@@ -18,4 +20,5 @@ public class SearchNeighbourTests
         });
     }
 }
+
 

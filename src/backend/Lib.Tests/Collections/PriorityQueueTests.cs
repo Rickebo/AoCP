@@ -1,11 +1,11 @@
-namespace Lib.Collections.Tests;
+namespace Lib.Tests.Collections;
 
 public class PriorityQueueTests
 {
     [Test]
     public void TryDequeue_OnEmptyQueueReturnsFalse()
     {
-        var queue = new PriorityQueue<string, int>();
+        var queue = new Lib.Collections.PriorityQueue<string, int>();
 
         var result = queue.TryDequeue(out var element, out var priority);
 
@@ -21,7 +21,7 @@ public class PriorityQueueTests
     [Test]
     public void EnqueueAndDequeue_ReturnItemsByPriority()
     {
-        var queue = new PriorityQueue<string, int>();
+        var queue = new Lib.Collections.PriorityQueue<string, int>();
 
         queue.Enqueue("middle", 5);
         queue.Enqueue("low", 1);
@@ -45,7 +45,7 @@ public class PriorityQueueTests
     [Test]
     public void Enumerator_ContainsAllElements()
     {
-        var queue = new PriorityQueue<int, int>();
+        var queue = new Lib.Collections.PriorityQueue<int, int>();
         queue.Enqueue(1, 1);
         queue.Enqueue(2, 2);
         queue.Enqueue(3, 3);
@@ -66,4 +66,5 @@ public class PriorityQueueTests
         Assert.That(queue.Dequeue(), Is.EqualTo(2));
     }
 }
+
 

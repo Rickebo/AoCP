@@ -1,4 +1,6 @@
-namespace Lib.Geometry.Tests;
+using Lib.Geometry;
+
+namespace Lib.Tests.Geometry;
 
 public class AngleTests
 {
@@ -16,4 +18,5 @@ public class AngleTests
         Assert.That(Angle.EighthTurn | Angle.QuarterTurn, Is.EqualTo(Angle.QuarterTurn | Angle.EighthTurn));
     }
 }
+
 

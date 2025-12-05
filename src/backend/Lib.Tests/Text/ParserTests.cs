@@ -1,6 +1,7 @@
 using Lib.Geometry;
+using Lib.Text;
 
-namespace Lib.Text.Tests;
+namespace Lib.Tests.Text;
 
 public class ParserTests
 {
@@ -47,4 +48,5 @@ public class ParserTests
         });
     }
 }
+
 

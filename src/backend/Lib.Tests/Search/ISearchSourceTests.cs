@@ -1,4 +1,6 @@
-namespace Lib.Search.Tests;
+using Lib.Search;
+
+namespace Lib.Tests.Search;
 
 public class ISearchSourceTests
 {
@@ -15,4 +17,5 @@ public class ISearchSourceTests
         });
     }
 }
+
 

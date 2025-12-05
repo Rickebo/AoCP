@@ -1,4 +1,6 @@
-namespace Lib.Search.Tests;
+using Lib.Search;
+
+namespace Lib.Tests.Search;
 
 public class AStarSearchTests
 {
@@ -33,4 +35,5 @@ public class AStarSearchTests
         Assert.That(result, Is.InstanceOf<AStarSearch<TestSearchSource, TestNode, int>.UnsuccessfulResult>());
     }
 }
+
 

@@ -1,4 +1,6 @@
-namespace Lib.Geometry.Tests;
+using Lib.Geometry;
+
+namespace Lib.Tests.Geometry;
 
 public class FloatingCoordinateTests
 {
@@ -56,4 +58,5 @@ public class FloatingCoordinateTests
         });
     }
 }
+
 

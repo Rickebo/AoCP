@@ -1,4 +1,6 @@
-namespace Lib.Text.Tests;
+using Lib.Text;
+
+namespace Lib.Tests.Text;
 
 public class InputUtilsTests
 {
@@ -32,4 +34,5 @@ public class InputUtilsTests
         Assert.That(parts, Is.EqualTo(new[] { "a", "b", "c" }).AsCollection);
     }
 }
+
 

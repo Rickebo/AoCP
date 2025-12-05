@@ -1,4 +1,6 @@
-namespace Lib.Collections.Tests;
+using Lib.Collections;
+
+namespace Lib.Tests.Collections;
 
 public class DictionaryExtensionsTests
 {
@@ -77,4 +79,5 @@ public class DictionaryExtensionsTests
         });
     }
 }
+
 

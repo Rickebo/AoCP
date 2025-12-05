@@ -1,4 +1,6 @@
-namespace Lib.Search.Tests;
+using Lib.Search;
+
+namespace Lib.Tests.Search;
 
 public class ISearchAlgorithmTests
 {
@@ -10,4 +12,5 @@ public class ISearchAlgorithmTests
         Assert.That(new BreadthFirstSearch<TestSearchSource, TestNode, int>(dataset).Dataset, Is.EqualTo(dataset));
     }
 }
+
 

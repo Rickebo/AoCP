@@ -1,6 +1,7 @@
 using Lib.Math;
+using Lib.Geometry;
 
-namespace Lib.Geometry.Tests;
+namespace Lib.Tests.Geometry;
 
 public class AngleExtensionsTests
 {
@@ -152,4 +153,5 @@ public class AngleExtensionsTests
         });
     }
 }
+
 

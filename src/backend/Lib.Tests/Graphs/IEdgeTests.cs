@@ -1,4 +1,6 @@
-namespace Lib.Graphs.Tests;
+using Lib.Graphs;
+
+namespace Lib.Tests.Graphs;
 
 public class IEdgeTests
 {
@@ -16,4 +18,5 @@ public class IEdgeTests
         });
     }
 }
+
 

@@ -1,6 +1,7 @@
 using Lib.Geometry;
+using Lib.Grids;
 
-namespace Lib.Grids.Tests;
+namespace Lib.Tests.Grids;
 
 public class CharGridTests
 {
@@ -42,4 +43,5 @@ public class CharGridTests
         });
     }
 }
+
 

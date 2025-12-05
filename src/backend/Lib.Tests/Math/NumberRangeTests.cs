@@ -1,4 +1,6 @@
-namespace Lib.Math.Tests;
+using Lib.Math;
+
+namespace Lib.Tests.Math;
 
 public class NumberRangeTests
 {
@@ -117,4 +119,5 @@ public class NumberRangeTests
         });
     }
 }
+
 

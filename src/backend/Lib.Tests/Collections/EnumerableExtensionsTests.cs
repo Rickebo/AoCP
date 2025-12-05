@@ -1,4 +1,6 @@
-namespace Lib.Collections.Tests;
+using Lib.Collections;
+
+namespace Lib.Tests.Collections;
 
 public class EnumerableExtensionsTests
 {
@@ -28,4 +30,3 @@ public class EnumerableExtensionsTests
         });
     }
 }
-

@@ -1,4 +1,6 @@
-namespace Lib.Text.Tests;
+using Lib.Text;
+
+namespace Lib.Tests.Text;
 public class StringExtensionsTests
 {
     [Test]
@@ -17,4 +19,5 @@ public class StringExtensionsTests
         Assert.That(parts, Is.EqualTo(new[] { "a", "b", "c" }).AsCollection);
     }
 }
+
 
