@@ -1,5 +1,3 @@
-using Lib.Text;
-
 namespace Lib.Text.Tests;
 
 public class StringSpanTests
@@ -42,7 +40,7 @@ public class StringSpanTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(first.Equals(second), Is.True);
+            Assert.That(first, Is.EqualTo(second));
             Assert.That(first == second, Is.True);
             Assert.That(first != new StringSpan("hx", 0, 2), Is.True);
             Assert.That(first.GetHashCode(), Is.EqualTo(second.GetHashCode()));

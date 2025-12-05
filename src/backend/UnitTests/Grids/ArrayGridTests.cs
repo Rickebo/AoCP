@@ -1,6 +1,4 @@
 using Lib.Geometry;
-using Lib.Geometry;
-using Lib.Grids;
 
 namespace Lib.Grids.Tests;
 
@@ -31,7 +29,7 @@ public class ArrayGridTests
             Assert.That(copied[1, 0], Is.EqualTo(3));
         });
 
-        var fromRows = new ArrayGrid<int>(new[] { new[] { 1, 2 }, new[] { 3, 4 } }, 2, 2);
+        var fromRows = new ArrayGrid<int>([[1, 2], [3, 4]], 2, 2);
         Assert.That(fromRows[1, 1], Is.EqualTo(4));
 
         Assert.Multiple(() =>
@@ -55,7 +53,7 @@ public class ArrayGridTests
         });
 
         var rangeValues = grid[0..2, 0..2].ToArray();
-        CollectionAssert.AreEquivalent(new[] { 1, 2, 4, 99 }, rangeValues);
+        Assert.That(rangeValues, Is.EquivalentTo([1, 2, 4, 99]));
     }
 
     [Test]
@@ -102,14 +100,17 @@ public class ArrayGridTests
     {
         var grid = CreateSampleGrid();
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, grid.Row(0));
-        CollectionAssert.AreEqual(new[] { 1, 4, 7 }, grid.Column(0));
+        Assert.Multiple(() =>
+        {
+            Assert.That(grid.Row(0), Is.EqualTo(new[] { 1, 2, 3 }).AsCollection);
+            Assert.That(grid.Column(0), Is.EqualTo(new[] { 1, 4, 7 }).AsCollection);
+        });
 
         var fromCenterNorth = grid.RetrieveDirection(new IntegerCoordinate<int>(1, 1), Direction.North).ToArray();
-        CollectionAssert.AreEqual(new[] { 5, 8 }, fromCenterNorth);
+        Assert.That(fromCenterNorth, Is.EqualTo(new[] { 5, 8 }).AsCollection);
 
         var section = grid.RetrieveSection(new IntegerCoordinate<int>(1, 1), 2, 2).ToArray();
-        CollectionAssert.AreEqual(new[] { 5, 6, 8, 9 }, section);
+        Assert.That(section, Is.EqualTo(new[] { 5, 6, 8, 9 }).AsCollection);
     }
 
     [Test]
@@ -143,9 +144,9 @@ public class ArrayGridTests
         {
             Assert.That(grid.Find(v => v == 5), Is.EqualTo(new IntegerCoordinate<int>(1, 1)));
             Assert.That(grid.FindOrNull(v => v == 99), Is.Null);
-            CollectionAssert.AreEquivalent(
-                new[] { new IntegerCoordinate<int>(0, 0), new IntegerCoordinate<int>(1, 0) },
-                grid.FindAll(v => v <= 2));
+            Assert.That(
+                grid.FindAll(v => v <= 2),
+                Is.EquivalentTo([new IntegerCoordinate<int>(0, 0), new IntegerCoordinate<int>(1, 0)]));
         });
     }
 
@@ -172,18 +173,18 @@ public class ArrayGridTests
         Assert.That(grid.Coordinates.Count(), Is.EqualTo(4));
 
         var sectionCoords = grid.SectionCoordinates(new IntegerCoordinate<int>(1, 0), 2, 2).ToArray();
-        CollectionAssert.AreEqual(new[] { new IntegerCoordinate<int>(1, 0), new IntegerCoordinate<int>(1, 1) }, sectionCoords);
+        Assert.That(sectionCoords, Is.EqualTo(new[] { new IntegerCoordinate<int>(1, 0), new IntegerCoordinate<int>(1, 1) }).AsCollection);
 
         var outline = grid.Outline.ToArray();
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
+        Assert.That(
+            outline,
+            Is.EquivalentTo(
+            [
                 new IntegerCoordinate<int>(0, 0),
                 new IntegerCoordinate<int>(0, 1),
                 new IntegerCoordinate<int>(1, 0),
                 new IntegerCoordinate<int>(1, 1)
-            },
-            outline);
+            ]));
     }
 
     [Test]
@@ -220,7 +221,7 @@ public class ArrayGridTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(neighbours.Length, Is.EqualTo(1));
+            Assert.That(neighbours, Has.Length.EqualTo(1));
             Assert.That(neighbours[0].Cost, Is.EqualTo(1));
             Assert.That(neighbours[0].Element.Value, Is.EqualTo(2));
         });

@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 public class DijkstraSearchTests
@@ -18,14 +16,14 @@ public class DijkstraSearchTests
         Assert.Multiple(() =>
         {
             Assert.That(success.Cost, Is.EqualTo(2));
-            CollectionAssert.AreEqual(new[] { new TestNode("A"), new TestNode("B"), new TestNode("C") }, success.Path);
+            Assert.That(success.Path, Is.EqualTo(new[] { new TestNode("A"), new TestNode("B"), new TestNode("C") }).AsCollection);
         });
     }
 
     [Test]
     public void Find_ReturnsUnsuccessfulWhenNoPathExists()
     {
-        var source = new TestSearchSource(new Dictionary<string, (string To, int Cost)[]>());
+        var source = new TestSearchSource([]);
         var search = new DijkstraSearch<TestSearchSource, TestNode, int>(source);
 
         var result = search.Find(new TestNode("A"), new TestNode("B"));

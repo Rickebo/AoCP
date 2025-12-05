@@ -1,5 +1,3 @@
-using Lib.Graphs;
-
 namespace Lib.Graphs.Tests;
 
 public class GraphTests
@@ -43,7 +41,7 @@ public class GraphTests
         {
             Assert.That(graph.IsConnected("A", "B"), Is.True);
             Assert.That(graph.IsConnected("B", "A"), Is.False);
-            CollectionAssert.AreEqual(new[] { "B" }, graph.GetNeighbours("A"));
+            Assert.That(graph.GetNeighbours("A"), Is.EqualTo(new[] { "B" }).AsCollection);
             Assert.That(graph.GetSourceEdges("A"), Has.Count.EqualTo(1));
             Assert.That(graph.GetDestinationEdges("B"), Has.Count.EqualTo(1));
         });
@@ -58,9 +56,12 @@ public class GraphTests
         var edge = new TestEdge("A", "B");
         graph.AddEdge(edge);
 
-        Assert.That(graph.RemoveEdge(new TestEdge("B", "A")), Is.False);
-        Assert.That(graph.RemoveEdge(edge), Is.True);
-        Assert.That(graph.Edges, Is.Empty);
+        Assert.Multiple(() =>
+        {
+            Assert.That(graph.RemoveEdge(new TestEdge("B", "A")), Is.False);
+            Assert.That(graph.RemoveEdge(edge), Is.True);
+            Assert.That(graph.Edges, Is.Empty);
+        });
 
         Assert.Multiple(() =>
         {

@@ -1,5 +1,4 @@
 using Lib.Geometry;
-using Lib.Grids;
 
 namespace Lib.Grids.Tests;
 

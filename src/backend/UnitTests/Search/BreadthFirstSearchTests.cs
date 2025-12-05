@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 public class BreadthFirstSearchTests
@@ -20,7 +18,7 @@ public class BreadthFirstSearchTests
     [Test]
     public void Find_ReturnsUnsuccessfulWhenMissingPath()
     {
-        var dataset = new TestSearchSource(new Dictionary<string, (string To, int Cost)[]>());
+        var dataset = new TestSearchSource([]);
         var bfs = new BreadthFirstSearch<TestSearchSource, TestNode, int>(dataset);
 
         var result = bfs.Find(new TestNode("A"), 0, new TestNode("B"));

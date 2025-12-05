@@ -1,5 +1,3 @@
-using Lib.Search;
-
 namespace Lib.Search.Tests;
 
 public class ISearchAlgorithmTests
@@ -8,9 +6,8 @@ public class ISearchAlgorithmTests
     public void BreadthFirstSearch_ExposesDatasetThroughInterface()
     {
         var dataset = SearchTestHelpers.CreateDefaultSource();
-        ISearchAlgorithm<TestSearchSource, TestNode, int> algorithm = new BreadthFirstSearch<TestSearchSource, TestNode, int>(dataset);
 
-        Assert.That(algorithm.Dataset, Is.EqualTo(dataset));
+        Assert.That(new BreadthFirstSearch<TestSearchSource, TestNode, int>(dataset).Dataset, Is.EqualTo(dataset));
     }
 }
 

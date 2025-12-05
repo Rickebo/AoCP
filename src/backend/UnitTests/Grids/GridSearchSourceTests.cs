@@ -1,6 +1,4 @@
 using Lib.Geometry;
-using Lib.Grids;
-using Lib.Grids;
 
 namespace Lib.Grids.Tests;
 
@@ -38,8 +36,8 @@ public class GridSearchSourceTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(neighbours.Length, Is.EqualTo(2));
-            CollectionAssert.DoesNotContain(neighbours.Select(n => n.Element.Coordinate), new IntegerCoordinate<int>(1, 0));
+            Assert.That(neighbours, Has.Length.EqualTo(2));
+            Assert.That(neighbours.Select(n => n.Element.Coordinate), Has.No.Member(new IntegerCoordinate<int>(1, 0)));
             Assert.That(neighbours.Any(n => n.Cost == 3), Is.True);
         });
     }

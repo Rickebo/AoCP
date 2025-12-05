@@ -1,4 +1,3 @@
-using Lib.Geometry;
 using Lib.Math;
 
 namespace Lib.Geometry.Tests;

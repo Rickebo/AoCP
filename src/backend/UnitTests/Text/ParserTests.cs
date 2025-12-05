@@ -1,5 +1,4 @@
 using Lib.Geometry;
-using Lib.Text;
 
 namespace Lib.Text.Tests;
 
@@ -15,10 +14,10 @@ public class ParserTests
 
         Assert.Multiple(() =>
         {
-            CollectionAssert.AreEqual(new[] { 1, -2, 3 }, ints);
-            CollectionAssert.AreEqual(new uint[] { 4, 5 }, unsigned);
-            CollectionAssert.AreEqual(new[] { 1.5, -2.5 }, doubles);
-            CollectionAssert.AreEqual(new[] { 1.5m, -2.5m }, decimals);
+            Assert.That(ints, Is.EqualTo(new[] { 1, -2, 3 }).AsCollection);
+            Assert.That(unsigned, Is.EqualTo(new uint[] { 4, 5 }).AsCollection);
+            Assert.That(doubles, Is.EqualTo(new[] { 1.5, -2.5 }).AsCollection);
+            Assert.That(decimals, Is.EqualTo(new[] { 1.5m, -2.5m }).AsCollection);
         });
 
         Assert.Throws<NotSupportedException>(() => Parser.GetValues<DateTime>("1"));
@@ -27,11 +26,11 @@ public class ParserTests
     [Test]
     public void GetValuesFromArrayAndValueArrays_FlattenInput()
     {
-        var values = Parser.GetValues<int>(new[] { "1 2", "3" });
-        var arrays = Parser.GetValueArrays<int>(new[] { "1 2", "3 4" });
+        var values = Parser.GetValues<int>(["1 2", "3"]);
+        var arrays = Parser.GetValueArrays<int>(["1 2", "3 4"]);
 
-        CollectionAssert.AreEqual(new[] { 1, 2, 3 }, values);
-        CollectionAssert.AreEqual(new[] { new[] { 1, 2 }, new[] { 3, 4 } }, arrays);
+        Assert.That(values, Is.EqualTo(new[] { 1, 2, 3 }).AsCollection);
+        Assert.That(arrays, Is.EqualTo(new[] { [1, 2], new[] { 3, 4 } }).AsCollection);
     }
 
     [Test]

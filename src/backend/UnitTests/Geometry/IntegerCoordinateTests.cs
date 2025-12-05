@@ -1,5 +1,3 @@
-using Lib.Geometry;
-
 namespace Lib.Geometry.Tests;
 
 public class IntegerCoordinateTests
@@ -21,31 +19,34 @@ public class IntegerCoordinateTests
     {
         var origin = new IntegerCoordinate<int>(0, 0);
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
-                new IntegerCoordinate<int>(0, 1),
-                new IntegerCoordinate<int>(1, 0),
-                new IntegerCoordinate<int>(-1, 0),
-                new IntegerCoordinate<int>(0, -1),
-            },
-            origin.Neighbours(Neighbourhood.Cardinal));
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                origin.Neighbours(Neighbourhood.Cardinal),
+                Is.EquivalentTo(
+                [
+                    new IntegerCoordinate<int>(0, 1),
+                    new IntegerCoordinate<int>(1, 0),
+                    new IntegerCoordinate<int>(-1, 0),
+                    new IntegerCoordinate<int>(0, -1),
+                ]));
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
-                new IntegerCoordinate<int>(-1, 0),
-                new IntegerCoordinate<int>(1, 0)
-            },
-            origin.Neighbours(Neighbourhood.Horizontal));
+            Assert.That(
+                origin.Neighbours(Neighbourhood.Horizontal),
+                Is.EquivalentTo(
+                [
+                    new IntegerCoordinate<int>(-1, 0),
+                    new IntegerCoordinate<int>(1, 0)
+                ]));
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
-                new IntegerCoordinate<int>(0, 1),
-                new IntegerCoordinate<int>(0, -1)
-            },
-            origin.Neighbours(Neighbourhood.Vertical));
+            Assert.That(
+                origin.Neighbours(Neighbourhood.Vertical),
+                Is.EquivalentTo(
+                [
+                    new IntegerCoordinate<int>(0, 1),
+                    new IntegerCoordinate<int>(0, -1)
+                ]));
+        });
     }
 
     [Test]
@@ -53,24 +54,27 @@ public class IntegerCoordinateTests
     {
         var origin = new IntegerCoordinate<int>(0, 0);
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
-                new IntegerCoordinate<int>(1, 1),
-                new IntegerCoordinate<int>(1, -1),
-                new IntegerCoordinate<int>(-1, 1),
-                new IntegerCoordinate<int>(-1, -1)
-            },
-            origin.Neighbours(Neighbourhood.Diagonal));
+        Assert.Multiple(() =>
+        {
+            Assert.That(
+                origin.Neighbours(Neighbourhood.Diagonal),
+                Is.EquivalentTo(
+                [
+                    new IntegerCoordinate<int>(1, 1),
+                    new IntegerCoordinate<int>(1, -1),
+                    new IntegerCoordinate<int>(-1, 1),
+                    new IntegerCoordinate<int>(-1, -1)
+                ]));
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
-                new IntegerCoordinate<int>(0, 1),
-                new IntegerCoordinate<int>(1, 1),
-                new IntegerCoordinate<int>(1, 0)
-            },
-            origin.Neighbours(Neighbourhood.All, Direction.West | Direction.South));
+            Assert.That(
+                origin.Neighbours(Neighbourhood.All, Direction.West | Direction.South),
+                Is.EquivalentTo(
+                [
+                    new IntegerCoordinate<int>(0, 1),
+                    new IntegerCoordinate<int>(1, 1),
+                    new IntegerCoordinate<int>(1, 0)
+                ]));
+        });
     }
 
     [Test]

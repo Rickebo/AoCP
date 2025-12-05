@@ -1,5 +1,3 @@
-using Lib.Geometry;
-
 namespace Lib.Geometry.Tests;
 
 public class IStringCoordinateTests

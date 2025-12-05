@@ -1,5 +1,4 @@
 using Lib.Geometry;
-using Lib.Grids;
 
 namespace Lib.Grids.Tests;
 
@@ -14,7 +13,7 @@ public class GridSearchElementTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(first.Equals(second), Is.True);
+            Assert.That(first, Is.EqualTo(second));
             Assert.That(first.GetHashCode(), Is.EqualTo(second.GetHashCode()));
             Assert.That(first.ToString(), Is.EqualTo(coord.ToString()));
         });

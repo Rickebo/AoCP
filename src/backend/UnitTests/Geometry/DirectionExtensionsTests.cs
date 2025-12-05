@@ -1,6 +1,3 @@
-using Lib.Geometry;
-using Lib.Geometry;
-
 namespace Lib.Geometry.Tests;
 
 public class DirectionExtensionsTests
@@ -8,8 +5,11 @@ public class DirectionExtensionsTests
     [Test]
     public void HorizontalAndVerticalCollections_AreExpected()
     {
-        CollectionAssert.AreEqual(new[] { Direction.West, Direction.East }, DirectionExtensions.Horizontal);
-        CollectionAssert.AreEqual(new[] { Direction.North, Direction.South }, DirectionExtensions.Vertical);
+        Assert.Multiple(() =>
+        {
+            Assert.That(DirectionExtensions.Horizontal, Is.EqualTo(new[] { Direction.West, Direction.East }).AsCollection);
+            Assert.That(DirectionExtensions.Vertical, Is.EqualTo(new[] { Direction.North, Direction.South }).AsCollection);
+        });
     }
 
     [Test]
@@ -71,7 +71,7 @@ public class DirectionExtensionsTests
         Assert.Multiple(() =>
         {
             Assert.That(DirectionExtensions.All(), Has.Length.GreaterThan(8));
-            Assert.That(distinct.Length, Is.EqualTo(9)); // unique flag combinations
+            Assert.That(distinct, Has.Length.EqualTo(9)); // unique flag combinations
         });
     }
 
@@ -105,9 +105,7 @@ public class DirectionExtensionsTests
     {
         var neighbours = Direction.East.Neighbours().ToArray();
 
-        CollectionAssert.AreEqual(
-            new[] { Direction.North, Direction.East, Direction.South },
-            neighbours);
+        Assert.That(neighbours, Is.EqualTo(new[] { Direction.North, Direction.East, Direction.South }).AsCollection);
     }
 
     [Test]

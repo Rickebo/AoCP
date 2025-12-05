@@ -1,4 +1,3 @@
-
 namespace Lib.Collections.Tests;
 
 public class DictionaryExtensionsTests

@@ -1,5 +1,4 @@
 using Lib.Geometry;
-using Lib.Grids;
 
 namespace Lib.Grids.Tests;
 
@@ -14,9 +13,10 @@ public class GridAlgorithmsTests
         var start = new IntegerCoordinate<int>(0, 0);
         var filled = GridAlgorithms.FloodFill(grid, start, c => c == '.');
 
-        CollectionAssert.AreEquivalent(
-            new[]
-            {
+        Assert.That(
+            filled,
+            Is.EquivalentTo(
+            [
                 new IntegerCoordinate<int>(0, 0),
                 new IntegerCoordinate<int>(1, 0),
                 new IntegerCoordinate<int>(2, 0),
@@ -25,8 +25,7 @@ public class GridAlgorithmsTests
                 new IntegerCoordinate<int>(0, 2),
                 new IntegerCoordinate<int>(1, 2),
                 new IntegerCoordinate<int>(2, 2),
-            },
-            filled);
+            ]));
     }
 }
 
