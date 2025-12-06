@@ -12,6 +12,7 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
     public IntegerCoordinate<TCoordinateNumber> Max { get; private set; } = new();
 
     private readonly Dictionary<TCoordinateNumber, Dictionary<TCoordinateNumber, TValue>> _values = [];
+    private bool _hasValues;
 
     public IEnumerable<IntegerCoordinate<TCoordinateNumber>> Coordinates =>
         _values.SelectMany(
@@ -41,6 +42,14 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
                 row = _values[coordinate.Y] = [];
 
             row[coordinate.X] = value;
+            if (!_hasValues)
+            {
+                Min = coordinate;
+                Max = coordinate;
+                _hasValues = true;
+                return;
+            }
+
             Min = Min.Min(coordinate);
             Max = Max.Max(coordinate);
         }

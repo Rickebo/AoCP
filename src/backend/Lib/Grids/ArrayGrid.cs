@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 using Lib.Geometry;
 
@@ -32,7 +33,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     public ArrayGrid(int width, int height)
     {
         _values = new TValue[width, height];
-    } 
+    }
 
     public ArrayGrid(TValue[,] values)
     {
@@ -73,12 +74,14 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     {
         get
         {
-            var xDir = System.Math.Sign(x.End.Value - x.Start.Value);
-            var yDir = System.Math.Sign(y.End.Value - y.Start.Value);
-            for (var cx = x.Start.Value; cx < x.End.Value; cx += xDir)
-                for (var cy = y.Start.Value; cy < y.End.Value; cy += yDir)
-                    if (Contains(cx, cy))
-                        yield return _values[cx, cy];
+            var (startX, lengthX) = x.GetOffsetAndLength(Width);
+            var (startY, lengthY) = y.GetOffsetAndLength(Height);
+            var endX = startX + lengthX;
+            var endY = startY + lengthY;
+
+            for (var cx = startX; cx < endX; cx++)
+                for (var cy = startY; cy < endY; cy++)
+                    yield return _values[cx, cy];
         }
     }
 
@@ -127,7 +130,7 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
     }
 
     public void Replace(TValue from, TValue to) =>
-        Replace(x => x != null ? x.Equals(from) : to == null, to);
+        Replace(x => EqualityComparer<TValue>.Default.Equals(x, from), to);
 
     public void Replace(Func<TValue, bool> predicate, TValue value) =>
         Apply(v => predicate(v) ? value : v);
@@ -155,8 +158,13 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public IEnumerable<TValue> RetrieveSection(IntegerCoordinate<int> pos, int width, int height)
     {
-        for (int y = pos.Y; y < pos.Y + height && y < Height; y++)
-            for (int x = pos.X; x < pos.X + width && x < Width; x++)
+        var startX = System.Math.Max(0, pos.X);
+        var startY = System.Math.Max(0, pos.Y);
+        var endX = System.Math.Min(Width, pos.X + width);
+        var endY = System.Math.Min(Height, pos.Y + height);
+
+        for (int y = startY; y < endY; y++)
+            for (int x = startX; x < endX; x++)
                 yield return _values[x, y];
     }
 
@@ -228,8 +236,14 @@ public class ArrayGrid<TValue> : IGrid<TValue, IntegerCoordinate<int>, int>
 
     public IEnumerable<IntegerCoordinate<int>> SectionCoordinates(IntegerCoordinate<int> origin, int width, int height)
     {
-        return Enumerable.Range(origin.Y, System.Math.Min(Height - origin.Y, height)).SelectMany(
-            y => Enumerable.Range(origin.X, System.Math.Min(Width - origin.X, width)).Select(
+        var widthCount = System.Math.Max(0, System.Math.Min(Width - origin.X, width));
+        var heightCount = System.Math.Max(0, System.Math.Min(Height - origin.Y, height));
+
+        if (widthCount == 0 || heightCount == 0)
+            return [];
+
+        return Enumerable.Range(origin.Y, heightCount).SelectMany(
+            y => Enumerable.Range(origin.X, widthCount).Select(
                 x => new IntegerCoordinate<int>(x, y)
             )
         );

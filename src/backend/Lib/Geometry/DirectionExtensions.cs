@@ -168,9 +168,9 @@ public static class DirectionExtensions
             225 => Direction.SouthWest,
             270 => Direction.West,
             315 => Direction.NorthWest,
-        _ => throw new ArgumentOutOfRangeException(nameof(angle), angle,
+            _ => throw new ArgumentOutOfRangeException(nameof(angle), angle,
                 "Angle must be a multiple of 45 degrees (0-315).")
-    };
+        };
     }
 
     public static Direction Rotate(this Direction direction, Rotation rotation, Angle by = Angle.QuarterTurn)

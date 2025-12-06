@@ -1,6 +1,7 @@
 using Common;
 using Common.Updates;
 using Lib.Geometry;
+using Lib.Grids;
 
 namespace Common.Tests;
 
@@ -115,6 +116,92 @@ public class ReporterTests
         {
             Assert.That(update!.Rows, Has.Count.EqualTo(1));
             Assert.That(update.Rows["1"]["1"].Glyph, Is.EqualTo("2"));
+        });
+    }
+
+    [Test]
+    public void ReportText_WithNoContent_ThrowsArgumentException()
+    {
+        var reporter = new Reporter();
+
+        Assert.Throws<ArgumentException>(() => reporter.ReportText());
+    }
+
+    [Test]
+    public void ReportText_WithTextAndLines_ThrowsArgumentException()
+    {
+        var reporter = new Reporter();
+
+        Assert.Throws<ArgumentException>(() => reporter.ReportText("text", ["line"]));
+    }
+
+    [Test]
+    public void ReportLine_NullLine_TreatedAsEmptyString()
+    {
+        var reporter = new Reporter();
+
+        reporter.ReportLine(null!);
+
+        var update = reporter.ReadAllCurrent().Single() as TextProblemUpdate;
+        Assert.That(update, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(update!.Lines, Is.EqualTo(new[] { string.Empty }));
+            Assert.That(update.Text, Is.Null);
+        });
+    }
+
+    [Test]
+    public void ReportStringGridUpdate_FromGrid_SetsDimensionsAndEntries()
+    {
+        var reporter = new Reporter();
+        var grid = new ArrayGrid<string>(2, 1);
+        grid[0, 0] = "A";
+        grid[1, 0] = "B";
+
+        reporter.ReportStringGridUpdate(
+            grid,
+            (builder, coord, value) => builder
+                .WithCoordinate(coord)
+                .WithText(value)
+        );
+
+        var update = reporter.ReadAllCurrent().Single() as StringGridUpdate;
+        Assert.That(update, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(update!.Width, Is.EqualTo(2));
+            Assert.That(update.Height, Is.EqualTo(1));
+            Assert.That(update.Rows["0"]["0"], Is.EqualTo("A"));
+            Assert.That(update.Rows["0"]["1"], Is.EqualTo("B"));
+        });
+    }
+
+    [Test]
+    public void ReportGlyphGridUpdate_WithClearFlag_PreservesMetadata()
+    {
+        var reporter = new Reporter();
+
+        reporter.ReportGlyphGridUpdate(
+            builder => builder
+                .WithClear()
+                .WithWidth(1)
+                .WithHeight(1)
+                .WithEntry(
+                    glyph => glyph
+                        .WithCoordinate(new IntegerCoordinate<int>(0, 0))
+                        .WithChar('X')
+                )
+        );
+
+        var update = reporter.ReadAllCurrent().Single() as GlyphGridUpdate;
+        Assert.That(update, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(update!.Clear, Is.True);
+            Assert.That(update.Width, Is.EqualTo(1));
+            Assert.That(update.Height, Is.EqualTo(1));
+            Assert.That(update.Rows["0"]["0"].Char, Is.EqualTo("X"));
         });
     }
 }

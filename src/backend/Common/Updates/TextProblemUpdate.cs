@@ -8,12 +8,17 @@ public class TextProblemUpdate : OngoingProblemUpdate
 
     public string? Text { get; set; }
 
+    private static string[] NormalizeLines(IEnumerable<string> lines) =>
+        lines.Select(line => line ?? string.Empty).ToArray();
+
+    private static string Format(IFormattable value) => value.ToString() ?? string.Empty;
+
     public static TextProblemUpdate FromLine(IFormattable line)
     {
         ArgumentNullException.ThrowIfNull(line);
         return new TextProblemUpdate
         {
-            Lines = [line.ToString() ?? ""],
+            Lines = [Format(line)],
             Text = null
         };
     }
@@ -30,7 +35,7 @@ public class TextProblemUpdate : OngoingProblemUpdate
         ArgumentNullException.ThrowIfNull(lines);
         return new TextProblemUpdate
         {
-            Lines = [.. lines.Select(x => x.ToString() ?? "")],
+            Lines = NormalizeLines(lines.Select(Format)),
             Text = null
         };
     }
@@ -38,7 +43,7 @@ public class TextProblemUpdate : OngoingProblemUpdate
     public static TextProblemUpdate FromLines(string[] lines) =>
         new()
         {
-            Lines = lines ?? [],
+            Lines = lines == null ? [] : NormalizeLines(lines),
             Text = null
         };
 
@@ -47,7 +52,7 @@ public class TextProblemUpdate : OngoingProblemUpdate
         ArgumentNullException.ThrowIfNull(lines);
         return new TextProblemUpdate
         {
-            Lines = [.. lines],
+            Lines = NormalizeLines(lines),
             Text = null
         };
     }
@@ -65,7 +70,7 @@ public class TextProblemUpdate : OngoingProblemUpdate
         return new TextProblemUpdate
         {
             Lines = null,
-            Text = text.ToString() ?? ""
+            Text = Format(text)
         };
     }
 }

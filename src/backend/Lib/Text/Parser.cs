@@ -22,7 +22,8 @@ public static partial class Parser
     public static T[] GetValues<T>(string str, string decimalSeparator = ".")
     {
         // Guard decimal separator
-        if ((typeof(T) == typeof(double) || typeof(T) == typeof(decimal)) && decimalSeparator != "." && decimalSeparator != ",")
+        if ((typeof(T) == typeof(double) || typeof(T) == typeof(decimal)) 
+            && decimalSeparator != "." && decimalSeparator != ",")
             throw new NotSupportedException("Unsupported decimal separator.");
 
         // Choose regex pattern

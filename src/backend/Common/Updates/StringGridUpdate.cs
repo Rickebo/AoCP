@@ -17,29 +17,43 @@ public class StringGridUpdate : GridUpdate<string>
         Rows = rows
     };
 
-    public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid) => FromGrid(
-        grid,
-        cell => cell.ToRgbaString(),
-        Construct
-    );
+    public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            cell => cell.ToRgbaString(),
+            Construct
+        );
+    }
 
-    public static StringGridUpdate FromStringGrid(ArrayGrid<string> grid) => FromGrid(
-        grid,
-        cell => cell ?? string.Empty,
-        Construct
-    );
+    public static StringGridUpdate FromStringGrid(ArrayGrid<string> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            cell => cell ?? string.Empty,
+            Construct
+        );
+    }
 
-    public static StringGridUpdate FromCharGrid(ArrayGrid<char> grid) => FromGrid(
-        grid,
-        ch => ch.ToString(),
-        Construct
-    );
+    public static StringGridUpdate FromCharGrid(ArrayGrid<char> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            ch => ch.ToString(),
+            Construct
+        );
+    }
 
     public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, Color color) =>
         FromRect(origin, width, height, color.ToRgbaString());
 
     public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, string color)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentException.ThrowIfNullOrWhiteSpace(color);
 
         var rows = new Dictionary<string, Dictionary<string, string>>();
@@ -70,13 +84,14 @@ public class StringGridUpdate : GridUpdate<string>
 
         public StringCoordinateBuilder WithCoordinate(IStringCoordinate coordinate)
         {
+            ArgumentNullException.ThrowIfNull(coordinate);
             Coordinate = coordinate;
             return this;
         }
 
         public StringCoordinateBuilder WithText(string text)
         {
-            Text = text;
+            Text = text ?? string.Empty;
             return this;
         }
 

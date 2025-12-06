@@ -11,6 +11,9 @@ public static class MathExtensions
 
     public static T Modulo<T>(T left, T right) where T : INumber<T>, IBinaryInteger<T>
     {
+        if (right == T.Zero)
+            throw new DivideByZeroException("Modulo by zero is undefined.");
+
         var result = left % right;
         if ((result < T.Zero && right > T.Zero) || (result > T.Zero && right < T.Zero))
             result += right;

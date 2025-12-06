@@ -28,8 +28,21 @@ public class Reporter
         ReportText(lines: lines);
     }
 
-    public void ReportText(string? text = null, IEnumerable<string>? lines = null) =>
-        Report(new TextProblemUpdate(){ Text = text, Lines = lines?.ToArray() });
+    public void ReportText(string? text = null, IEnumerable<string>? lines = null)
+    {
+        var hasText = text != null;
+        var hasLines = lines != null;
+
+        if (!hasText && !hasLines)
+            throw new ArgumentException("Provide either text or lines to report.", nameof(text));
+
+        if (hasText && hasLines)
+            throw new ArgumentException("Provide either text or lines, not both.", nameof(text));
+
+        Report(hasLines
+            ? TextProblemUpdate.FromLines(lines!)
+            : TextProblemUpdate.FromText(text!));
+    }
 
     public void ReportSolution(IFormattable solution)
     {

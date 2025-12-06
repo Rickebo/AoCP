@@ -93,10 +93,10 @@ public readonly struct Color(uint value) : IEquatable<Color>
         if (nibbles.Length is 3 or 4)
         {
             // Create components
-            var shortR = nibbles[0] << 4;
-            var shortG = nibbles[1] << 4;
-            var shortB = nibbles[2] << 4;
-            var shortA = nibbles.Length == 4 ? nibbles[3] << 4 : 255;
+            var shortR = (nibbles[0] << 4) | nibbles[0];
+            var shortG = (nibbles[1] << 4) | nibbles[1];
+            var shortB = (nibbles[2] << 4) | nibbles[2];
+            var shortA = nibbles.Length == 4 ? (nibbles[3] << 4) | nibbles[3] : 255;
 
             return new(shortR << RedShift | shortG << GreenShift | shortB << BlueShift | shortA << AlphaShift);
         }
@@ -263,6 +263,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
 
         // Create range
         double range = double.CreateSaturating(max - min);
+        var hasRange = range > double.Epsilon;
 
         // Interpolate each cell value
         foreach (var coord in sourceGrid.Coordinates)
@@ -271,7 +272,7 @@ public readonly struct Color(uint value) : IEquatable<Color>
             TCell clamped = sourceGrid[coord].Clamp(min, max);
 
             // Interpolate
-            double percent = double.CreateSaturating(clamped - min) / range;
+            double percent = hasRange ? double.CreateSaturating(clamped - min) / range : 0d;
             colorGrid[coord.X, coord.Y] = Between(from, to, percent);
         }
 
@@ -283,11 +284,14 @@ public readonly struct Color(uint value) : IEquatable<Color>
         // Clamp percent between 0 and 1
         percent = percent.Clamp(0.0, 1.0);
 
+        static uint Lerp(double start, double end, double t) =>
+            (uint)System.Math.Round(start + (end - start) * t);
+
         // Interpolate R G B A values
-        uint r = (uint)System.Math.Round(from.R + to.R * percent - from.R * percent);
-        uint g = (uint)System.Math.Round(from.G + to.G * percent - from.G * percent);
-        uint b = (uint)System.Math.Round(from.B + to.B * percent - from.B * percent);
-        uint a = (uint)System.Math.Round(from.A + to.A * percent - from.A * percent);
+        uint r = Lerp(from.R, to.R, percent);
+        uint g = Lerp(from.G, to.G, percent);
+        uint b = Lerp(from.B, to.B, percent);
+        uint a = Lerp(from.A, to.A, percent);
 
         return new(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
     }
@@ -297,7 +301,11 @@ public readonly struct Color(uint value) : IEquatable<Color>
         var currD = double.CreateSaturating(curr);
         var minD = double.CreateSaturating(min);
         var maxD = double.CreateSaturating(max);
-        return Between(from, to, (currD - minD) / (maxD - minD));
+        var span = maxD - minD;
+        if (System.Math.Abs(span) < double.Epsilon)
+            return from;
+
+        return Between(from, to, (currD - minD) / span);
     }
 
     public new string ToString() => ToRgbaString();

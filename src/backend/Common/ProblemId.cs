@@ -15,6 +15,8 @@ public sealed record ProblemId
     public string DisplayName =>
         $"{Source}/{Year}/{Author}/{SetName}/{ProblemName}";
 
+    public override string ToString() => DisplayName;
+
     public static ProblemId Create(
         int year,
         string source,
@@ -23,6 +25,7 @@ public sealed record ProblemId
         string problemName
     )
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(year);
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ArgumentException.ThrowIfNullOrWhiteSpace(author);
         ArgumentException.ThrowIfNullOrWhiteSpace(setName);

@@ -4,7 +4,7 @@ using Lib.Color;
 
 namespace Common.Updates;
 
-public sealed record Cell
+public sealed record GlyphCell
 {
     public string? Glyph { get; init; }
 
@@ -15,12 +15,12 @@ public sealed record Cell
     public string? Bg { get; init; }
 }
 
-public class GlyphGridUpdate : GridUpdate<Cell>
+public class GlyphGridUpdate : GridUpdate<GlyphCell>
 {
     private static GlyphGridUpdate Construct(
         int width,
         int height,
-        Dictionary<string, Dictionary<string, Cell>> rows
+        Dictionary<string, Dictionary<string, GlyphCell>> rows
     ) => new()
     {
         Width = width,
@@ -30,7 +30,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
 
     public static GlyphGridUpdate FromGrid<T>(
         ArrayGrid<T> grid,
-        Func<T, Cell> cellConverter
+        Func<T, GlyphCell> cellConverter
     ) => FromGrid(
         grid,
         cellConverter,
@@ -43,7 +43,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         string backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell
+        ch => new GlyphCell
         {
             Glyph = null,
             Char = ch.ToString(),
@@ -59,7 +59,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         Color backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell
+        ch => new GlyphCell
         {
             Glyph = null,
             Char = ch.ToString(),
@@ -85,6 +85,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
 
         public GlyphBuilder WithCoordinate(IStringCoordinate coordinate)
         {
+            ArgumentNullException.ThrowIfNull(coordinate);
             Coordinate = coordinate;
             return this;
         }
@@ -221,7 +222,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
 
         public GlyphGridUpdate Build()
         {
-            var rows = new Dictionary<string, Dictionary<string, Cell>>();
+            var rows = new Dictionary<string, Dictionary<string, GlyphCell>>();
             foreach (var glyph in Glyphs)
             {
                 if (glyph.Coordinate == null)
@@ -239,7 +240,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
                 if (!rows.TryGetValue(y, out var row))
                     row = rows[y] = [];
 
-                row[x] = new Cell
+                row[x] = new GlyphCell
                 {
                     Glyph = glyph.Glyph,
                     Char = glyph.Character?.ToString(),

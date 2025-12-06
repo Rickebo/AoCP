@@ -20,9 +20,9 @@ public class NumberRange<T> where T : INumber<T>, IMinMaxValue<T>
         Stop = stop;
     }
 
-    public bool IsNonEmpty => Stop > Start;
+    public bool IsNonEmpty => Length > T.Zero;
 
-    public bool IsEmpty => Stop == Start;
+    public bool IsEmpty => !IsNonEmpty;
 
     public bool IsValid => Stop >= Start;
 
