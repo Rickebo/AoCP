@@ -3,20 +3,32 @@ using System.Numerics;
 
 namespace Lib.Geometry;
 
+/// <summary>
+/// Extension helpers for working with <see cref="Direction"/> flags.
+/// </summary>
 public static class DirectionExtensions
 {
+    /// <summary>
+    /// Directions representing horizontal movement (west, east).
+    /// </summary>
     public static Direction[] Horizontal =>
     [
         Direction.West,
         Direction.East
     ];
 
+    /// <summary>
+    /// Directions representing vertical movement (north, south).
+    /// </summary>
     public static Direction[] Vertical =>
     [
         Direction.North,
         Direction.South
     ];
 
+    /// <summary>
+    /// The four cardinal directions.
+    /// </summary>
     public static Direction[] Cardinals =>
     [
         Direction.North,
@@ -25,6 +37,9 @@ public static class DirectionExtensions
         Direction.West
     ];
 
+    /// <summary>
+    /// The four diagonal directions.
+    /// </summary>
     public static Direction[] Diagonals =>
     [
         Direction.NorthEast,
@@ -33,6 +48,11 @@ public static class DirectionExtensions
         Direction.NorthWest
     ];
 
+    /// <summary>
+    /// Converts a direction to an ASCII/box-drawing glyph useful for visualization.
+    /// </summary>
+    /// <param name="direction">Direction to convert.</param>
+    /// <returns>The representative glyph.</returns>
     public static char ToGlyph(this Direction direction) =>
         direction switch
         {
@@ -55,8 +75,14 @@ public static class DirectionExtensions
             _ => throw new ArgumentException(null, nameof(direction))
         };
 
+    /// <summary>
+    /// Maximum direction value (used to bound enumerations).
+    /// </summary>
     public static Direction Max { get; } = (Direction)All().Max(d => (int)d);
 
+    /// <summary>
+    /// Returns the opposite direction (e.g., north -> south).
+    /// </summary>
     public static Direction Opposite(this Direction direction)
     {
         if (direction == Direction.None)
@@ -79,6 +105,12 @@ public static class DirectionExtensions
         return result;
     }
 
+    /// <summary>
+    /// Parses a direction from a character glyph.
+    /// </summary>
+    /// <param name="character">Glyph to parse.</param>
+    /// <returns>The parsed <see cref="Direction"/>.</returns>
+    /// <exception cref="ArgumentException">Thrown when the glyph is unknown.</exception>
     public static Direction Parse(char character) => character switch
     {
         '-' => Direction.East | Direction.West,
@@ -101,6 +133,9 @@ public static class DirectionExtensions
         _ => throw new ArgumentException($"Unknown direction for character {character}")
     };
 
+    /// <summary>
+    /// Mirrors a direction over the X axis (swapping east and west when not both set).
+    /// </summary>
     public static Direction FlipX(this Direction direction)
     {
         const Direction both = Direction.East | Direction.West;
@@ -117,6 +152,9 @@ public static class DirectionExtensions
         return result;
     }
 
+    /// <summary>
+    /// Mirrors a direction over the Y axis (swapping north and south when not both set).
+    /// </summary>
     public static Direction FlipY(this Direction direction)
     {
         const Direction both = Direction.North | Direction.South;
@@ -134,12 +172,26 @@ public static class DirectionExtensions
         return result;
     }
 
+    /// <summary>
+    /// Returns all possible direction flag combinations.
+    /// </summary>
     public static Direction[] All() => Enum.GetValues<Direction>();
 
+    /// <summary>
+    /// Rotates 90 degrees clockwise.
+    /// </summary>
     public static Direction Right(this Direction direction) => direction.Rotate(Rotation.Clockwise);
 
+    /// <summary>
+    /// Rotates 90 degrees counter-clockwise.
+    /// </summary>
     public static Direction Left(this Direction direction) => direction.Rotate(Rotation.CounterClockwise);
 
+    /// <summary>
+    /// Converts a direction to its equivalent <see cref="Angle"/>.
+    /// </summary>
+    /// <param name="direction">Direction to convert.</param>
+    /// <returns>The corresponding <see cref="Angle"/>.</returns>
     public static Angle ToAngle(this Direction direction) => direction switch
     {
         Direction.North or Direction.Up => Angle.None,
@@ -154,6 +206,12 @@ public static class DirectionExtensions
             "Unsupported direction for angle conversion.")
     };
 
+    /// <summary>
+    /// Converts a discrete angle (multiple of 45) to a <see cref="Direction"/>.
+    /// </summary>
+    /// <param name="angle">Angle to convert.</param>
+    /// <returns>The matching <see cref="Direction"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the angle is not a supported multiple.</exception>
     public static Direction ToDirection(this Angle angle)
     {
         var degrees = angle.ToDegrees();
@@ -173,6 +231,13 @@ public static class DirectionExtensions
         };
     }
 
+    /// <summary>
+    /// Rotates a direction by the specified rotation and amount.
+    /// </summary>
+    /// <param name="direction">Original direction.</param>
+    /// <param name="rotation">Rotation direction.</param>
+    /// <param name="by">Angle to rotate by.</param>
+    /// <returns>The rotated <see cref="Direction"/>.</returns>
     public static Direction Rotate(this Direction direction, Rotation rotation, Angle by = Angle.QuarterTurn)
     {
         if (direction == Direction.None)
@@ -186,6 +251,12 @@ public static class DirectionExtensions
             : direction.ToAngle().Subtract(by).ToDirection();
     }
 
+    /// <summary>
+    /// Returns the neighbours around a direction for a given arc (default 90 degrees on each side).
+    /// </summary>
+    /// <param name="direction">The base direction.</param>
+    /// <param name="angle">Total arc to include on each side.</param>
+    /// <returns>A sequence of neighbouring directions.</returns>
     public static IEnumerable<Direction> Neighbours(this Direction direction, Angle angle = Angle.QuarterTurn) =>
     [
         direction.Rotate(Rotation.CounterClockwise, angle),
@@ -193,9 +264,15 @@ public static class DirectionExtensions
         direction.Rotate(Rotation.Clockwise, angle)
     ];
 
+    /// <summary>
+    /// Checks if a base direction contains the provided flag.
+    /// </summary>
     public static bool Has(this Direction baseDirection, Direction direction) =>
         (baseDirection & direction) != 0;
 
+    /// <summary>
+    /// Computes a direction from the origin to the coordinate by looking at the sign of each component.
+    /// </summary>
     public static Direction DirectionFromOrigin<TCoordinate, TCoordinateNumber>(
         this ICoordinate<TCoordinate, TCoordinateNumber> coordinate
     ) where TCoordinate : ICoordinate<TCoordinate, TCoordinateNumber>
@@ -216,6 +293,9 @@ public static class DirectionExtensions
         return result;
     }
 
+    /// <summary>
+    /// Converts a direction to a unit integer coordinate.
+    /// </summary>
     public static IntegerCoordinate<T> ToCoordinate<T>(this Direction direction)
         where T : INumber<T>, IBinaryInteger<T>
     {
@@ -227,6 +307,9 @@ public static class DirectionExtensions
         return new IntegerCoordinate<T>(x, y);
     }
 
+    /// <summary>
+    /// Returns an ordinal for the four cardinal directions (N=0, E=1, S=2, W=3).
+    /// </summary>
     public static int Ordinal(this Direction direction) =>
         direction switch
         {
@@ -237,6 +320,9 @@ public static class DirectionExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
 
+    /// <summary>
+    /// Returns a simple arrow glyph representing the direction.
+    /// </summary>
     public static char Arrow(this Direction direction) =>
         direction switch
         {
@@ -247,14 +333,26 @@ public static class DirectionExtensions
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
 
+    /// <summary>
+    /// Converts an ordinal in the range 0-3 to its corresponding cardinal direction.
+    /// </summary>
+    /// <param name="ordinal">Ordinal value (0-3).</param>
+    /// <returns>The corresponding <see cref="Direction"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when ordinal is outside 0-3.</exception>
     public static Direction FromOrdinal(int ordinal) =>
         ordinal is >= 0 and < 4
             ? (Direction)(1 << ordinal)
             : throw new ArgumentOutOfRangeException(nameof(ordinal));
 
+    /// <summary>
+    /// Determines if the direction is purely vertical.
+    /// </summary>
     public static bool IsVertical(this Direction direction) =>
         IsSubsetOf(direction, Direction.North | Direction.South);
 
+    /// <summary>
+    /// Determines if the direction is purely horizontal.
+    /// </summary>
     public static bool IsHorizontal(this Direction direction) =>
         IsSubsetOf(direction, Direction.West | Direction.East);
 

@@ -1,7 +1,16 @@
 namespace Lib.Grids;
 
+/// <summary>
+/// Factory helpers for constructing typed grids from text.
+/// </summary>
 public static class GridFactory
 {
+    /// <summary>
+    /// Parses a character grid from equally-sized lines.
+    /// </summary>
+    /// <param name="lines">Input lines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of characters.</returns>
+    /// <exception cref="ArgumentException">Thrown when input is empty or jagged.</exception>
     public static ArrayGrid<char> ParseCharGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();
@@ -21,6 +30,12 @@ public static class GridFactory
         return new ArrayGrid<char>(data);
     }
 
+    /// <summary>
+    /// Parses an integer grid from equally-sized digit-only lines.
+    /// </summary>
+    /// <param name="lines">Input lines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of integers.</returns>
+    /// <exception cref="ArgumentException">Thrown when input is empty, jagged, or contains non-digits.</exception>
     public static ArrayGrid<int> ParseIntGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();

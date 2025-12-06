@@ -5,6 +5,9 @@ using Lib.Grids;
 
 namespace Lib.Text;
 
+/// <summary>
+/// Parsing helpers for extracting typed values and grids from text.
+/// </summary>
 public static partial class Parser
 {
     [GeneratedRegex(@"\d+")]
@@ -19,6 +22,14 @@ public static partial class Parser
     [GeneratedRegex(@"[+-]?\d+(\,\d+)?")]
     private static partial Regex RegexDecimalsComma();
 
+    /// <summary>
+    /// Extracts numeric values from a string based on the requested type.
+    /// </summary>
+    /// <typeparam name="T">Target numeric type.</typeparam>
+    /// <param name="str">Input text.</param>
+    /// <param name="decimalSeparator">Decimal separator used for floating point parsing.</param>
+    /// <returns>Array of parsed values.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the type or decimal separator is unsupported.</exception>
     public static T[] GetValues<T>(string str, string decimalSeparator = ".")
     {
         // Guard decimal separator
@@ -59,6 +70,9 @@ public static partial class Parser
         return numbers ?? [];
     }
 
+    /// <summary>
+    /// Extracts numeric values from an array of strings.
+    /// </summary>
     public static T[] GetValues<T>(string[] str)
     {
         List<T> values = [];
@@ -68,6 +82,9 @@ public static partial class Parser
         return [.. values];
     }
 
+    /// <summary>
+    /// Extracts numeric arrays from each input string.
+    /// </summary>
     public static T[][] GetValueArrays<T>(string[] str)
     {
         List<T[]> values = [];
@@ -77,6 +94,11 @@ public static partial class Parser
         return [.. values];
     }
 
+    /// <summary>
+    /// Parses a grid of directions from text where each character represents a direction glyph.
+    /// </summary>
+    /// <param name="text">Input text with rows separated by newlines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of <see cref="Direction"/> values.</returns>
     public static ArrayGrid<Direction> ParseDirectionGrid(string text)
     {
         var lines = text.SplitLines();

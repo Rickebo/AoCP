@@ -2,8 +2,18 @@ using System.Numerics;
 
 namespace Lib.Geometry;
 
+/// <summary>
+/// Utility methods for working with line segments and distances.
+/// </summary>
 public static class LineHelpers
 {
+    /// <summary>
+    /// Enumerates all coordinates on a straight horizontal, vertical, or 45-degree diagonal line segment.
+    /// </summary>
+    /// <param name="start">Start coordinate (inclusive).</param>
+    /// <param name="end">End coordinate (inclusive).</param>
+    /// <returns>All coordinates along the segment.</returns>
+    /// <exception cref="ArgumentException">Thrown when the segment is not horizontal, vertical, or 45 degrees.</exception>
     public static IEnumerable<Coordinate<int>> EnumerateSegment(Coordinate<int> start, Coordinate<int> end)
     {
         var delta = new Coordinate<int>(end.X - start.X, end.Y - start.Y);
@@ -23,6 +33,9 @@ public static class LineHelpers
         }
     }
 
+    /// <summary>
+    /// Computes the Manhattan distance between two 2D coordinates.
+    /// </summary>
     public static T ManhattanDistance<T>(Coordinate<T> a, Coordinate<T> b) where T : INumber<T>
     {
         var dx = a.X - b.X;
@@ -30,6 +43,9 @@ public static class LineHelpers
         return T.Abs(dx) + T.Abs(dy);
     }
 
+    /// <summary>
+    /// Computes the Manhattan distance between two 3D coordinates.
+    /// </summary>
     public static T ManhattanDistance<T>(Coordinate3D<T> a, Coordinate3D<T> b) where T : INumber<T>
     {
         var dx = a.X - b.X;

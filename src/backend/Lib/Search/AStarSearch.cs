@@ -2,6 +2,12 @@ using System.Numerics;
 
 namespace Lib.Search;
 
+/// <summary>
+/// Generic A* search implementation.
+/// </summary>
+/// <typeparam name="TSource">Search source type.</typeparam>
+/// <typeparam name="TElement">Element type.</typeparam>
+/// <typeparam name="TCost">Numeric cost type.</typeparam>
 public sealed class AStarSearch<TSource, TElement, TCost>(
     TSource dataset,
     Func<TElement, TElement, TCost> heuristic)
@@ -9,10 +15,22 @@ public sealed class AStarSearch<TSource, TElement, TCost>(
     where TElement : ISearchElement<TCost>
     where TCost : INumber<TCost>
 {
+    /// <summary>
+    /// Source dataset that provides neighbours.
+    /// </summary>
     public TSource Dataset { get; } = dataset;
 
+    /// <summary>
+    /// Heuristic function estimating the cost between two elements.
+    /// </summary>
     public Func<TElement, TElement, TCost> Heuristic { get; } = heuristic;
 
+    /// <summary>
+    /// Executes the A* search between two elements.
+    /// </summary>
+    /// <param name="start">Start element.</param>
+    /// <param name="goal">Target element.</param>
+    /// <returns>A search result describing success or failure.</returns>
     public ISearchResult Find(TElement start, TElement goal)
     {
         var frontier = new System.Collections.Generic.PriorityQueue<TElement, TCost>();
@@ -49,15 +67,30 @@ public sealed class AStarSearch<TSource, TElement, TCost>(
         return new UnsuccessfulResult();
     }
 
+    /// <summary>
+    /// Base type for A* search results.
+    /// </summary>
     public abstract class AStarResult : ISearchResult { }
 
+    /// <summary>
+    /// Successful search result.
+    /// </summary>
     public sealed class SuccessfulResult : AStarResult
     {
+        /// <summary>
+        /// Total path cost.
+        /// </summary>
         public required TCost Cost { get; init; }
 
+        /// <summary>
+        /// Reconstructed path from start to goal.
+        /// </summary>
         public required IReadOnlyList<TElement> Path { get; init; }
     }
 
+    /// <summary>
+    /// Returned when no path is found.
+    /// </summary>
     public sealed class UnsuccessfulResult : AStarResult { }
 
     private static IReadOnlyList<TElement> ReconstructPath(TElement start, TElement goal, IReadOnlyDictionary<TElement, TElement> predecessors)

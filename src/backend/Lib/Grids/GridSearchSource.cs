@@ -5,6 +5,11 @@ using Lib.Search;
 
 namespace Lib.Grids;
 
+/// <summary>
+/// Adapts an <see cref="ArrayGrid{TValue}"/> for use with generic search algorithms.
+/// </summary>
+/// <typeparam name="TValue">Grid cell type.</typeparam>
+/// <typeparam name="TCost">Cost numeric type.</typeparam>
 public sealed class GridSearchSource<TValue, TCost>(
     ArrayGrid<TValue> grid,
     Func<IntegerCoordinate<int>, TValue, bool> isWalkable,
@@ -16,13 +21,23 @@ public sealed class GridSearchSource<TValue, TCost>(
     private readonly Func<IntegerCoordinate<int>, IntegerCoordinate<int>, TValue, TValue, TCost> _costSelector = costSelector;
     private readonly Func<IntegerCoordinate<int>, TValue, bool> _isWalkable = isWalkable;
 
+    /// <summary>
+    /// Underlying grid.
+    /// </summary>
     public ArrayGrid<TValue> Grid { get; } = grid;
 
+    /// <summary>
+    /// Indicates whether diagonal movement is allowed.
+    /// </summary>
     public bool IncludeDiagonals { get; } = includeDiagonals;
 
+    /// <summary>
+    /// Wraps a coordinate into a search element.
+    /// </summary>
     public GridSearchElement<TValue, TCost> ToElement(IntegerCoordinate<int> coordinate) =>
         new(coordinate, Grid[coordinate]);
 
+    /// <inheritdoc />
     public IEnumerable<SearchNeighbour<GridSearchElement<TValue, TCost>, TCost>> GetNeighbours(
         GridSearchElement<TValue, TCost> element
     )

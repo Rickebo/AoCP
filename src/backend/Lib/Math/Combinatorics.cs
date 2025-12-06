@@ -1,7 +1,16 @@
 namespace Lib.Math;
 
+/// <summary>
+/// Combinatorial math helpers.
+/// </summary>
 public static class Combinatorics
 {
+    /// <summary>
+    /// Computes n! for non-negative integers.
+    /// </summary>
+    /// <param name="n">Value to factorial.</param>
+    /// <returns>The factorial of <paramref name="n"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="n"/> is negative.</exception>
     public static long Factorial(int n)
     {
         if (n < 0)
@@ -13,6 +22,12 @@ public static class Combinatorics
         return result;
     }
 
+    /// <summary>
+    /// Computes the binomial coefficient "n choose k".
+    /// </summary>
+    /// <param name="n">Total number of items.</param>
+    /// <param name="k">Number of items to choose.</param>
+    /// <returns>The binomial coefficient.</returns>
     public static long Binomial(int n, int k)
     {
         if (k < 0 || k > n)
@@ -31,6 +46,13 @@ public static class Combinatorics
         return result;
     }
 
+    /// <summary>
+    /// Generates all k-combinations of the input sequence.
+    /// </summary>
+    /// <typeparam name="T">Element type.</typeparam>
+    /// <param name="source">Source collection.</param>
+    /// <param name="k">Number of items per combination.</param>
+    /// <returns>Combinations in lexicographic order of indices.</returns>
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(IReadOnlyList<T> source, int k)
     {
         if (k < 0 || k > source.Count)
@@ -54,6 +76,11 @@ public static class Combinatorics
         }
     }
 
+    /// <summary>
+    /// Generates permutations of the input in lexicographic order.
+    /// </summary>
+    /// <typeparam name="T">Element type.</typeparam>
+    /// <param name="source">Source list.</param>
     public static IEnumerable<IReadOnlyList<T>> Permutations<T>(IReadOnlyList<T> source)
         where T : IComparable<T>
     {

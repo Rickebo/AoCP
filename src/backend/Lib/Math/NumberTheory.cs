@@ -2,8 +2,14 @@ using System.Numerics;
 
 namespace Lib.Math;
 
+/// <summary>
+/// Number theory utilities such as GCD/LCM and prime generation.
+/// </summary>
 public static class NumberTheory
 {
+    /// <summary>
+    /// Computes the greatest common divisor using the Euclidean algorithm.
+    /// </summary>
     public static T GreatestCommonDivisor<T>(T a, T b) where T : INumber<T>
     {
         a = T.Abs(a);
@@ -17,6 +23,9 @@ public static class NumberTheory
         return a;
     }
 
+    /// <summary>
+    /// Computes the least common multiple of two numbers.
+    /// </summary>
     public static T LeastCommonMultiple<T>(T a, T b) where T : INumber<T>
     {
         if (a == T.Zero || b == T.Zero)
@@ -25,6 +34,9 @@ public static class NumberTheory
         return T.Abs(a * b) / GreatestCommonDivisor(a, b);
     }
 
+    /// <summary>
+    /// Computes the least common multiple of a sequence of numbers.
+    /// </summary>
     public static T LeastCommonMultiple<T>(IEnumerable<T> values) where T : INumber<T>
     {
         var enumerator = values.GetEnumerator();
@@ -38,6 +50,9 @@ public static class NumberTheory
         return lcm;
     }
 
+    /// <summary>
+    /// Generates prime numbers up to and including <paramref name="limit"/> using the Sieve of Eratosthenes.
+    /// </summary>
     public static IEnumerable<int> Sieve(int limit)
     {
         if (limit < 2)

@@ -2,13 +2,25 @@ using System.Numerics;
 
 namespace Lib.Search;
 
+/// <summary>
+/// Dijkstra's algorithm for shortest path search on weighted graphs.
+/// </summary>
+/// <typeparam name="TSource">Search source type.</typeparam>
+/// <typeparam name="TElement">Element type.</typeparam>
+/// <typeparam name="TCost">Cost numeric type.</typeparam>
 public sealed class DijkstraSearch<TSource, TElement, TCost>(TSource dataset)
     where TSource : ISearchSource<TElement, TCost>
     where TElement : ISearchElement<TCost>
     where TCost : INumber<TCost>
 {
+    /// <summary>
+    /// Source dataset that provides neighbours.
+    /// </summary>
     public TSource Dataset { get; } = dataset;
 
+    /// <summary>
+    /// Executes the search between <paramref name="start"/> and <paramref name="goal"/>.
+    /// </summary>
     public ISearchResult Find(TElement start, TElement goal)
     {
         var frontier = new System.Collections.Generic.PriorityQueue<TElement, TCost>();
@@ -44,15 +56,30 @@ public sealed class DijkstraSearch<TSource, TElement, TCost>(TSource dataset)
         return new UnsuccessfulResult();
     }
 
+    /// <summary>
+    /// Base class for Dijkstra search results.
+    /// </summary>
     public abstract class DijkstraResult : ISearchResult { }
 
+    /// <summary>
+    /// Successful result containing cost and path.
+    /// </summary>
     public sealed class SuccessfulResult : DijkstraResult
     {
+        /// <summary>
+        /// Total cost from start to goal.
+        /// </summary>
         public required TCost Cost { get; init; }
 
+        /// <summary>
+        /// Path of elements from start to goal.
+        /// </summary>
         public required IReadOnlyList<TElement> Path { get; init; }
     }
 
+    /// <summary>
+    /// Returned when no path is found.
+    /// </summary>
     public sealed class UnsuccessfulResult : DijkstraResult { }
 
     private static IReadOnlyList<TElement> ReconstructPath(TElement start, TElement goal, IReadOnlyDictionary<TElement, TElement> predecessors)

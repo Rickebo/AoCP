@@ -2,6 +2,9 @@ using System.Numerics;
 
 namespace Lib.Geometry;
 
+/// <summary>
+/// Helpers for retrieving neighbouring coordinates and directions.
+/// </summary>
 public static class Neighbourhoods
 {
     private static readonly Coordinate3D<int>[] Orthogonal3D =
@@ -11,14 +14,23 @@ public static class Neighbourhoods
         new(0, 0, 1), new(0, 0, -1)
     ];
 
+    /// <summary>
+    /// Returns the four cardinal neighbours for the specified origin.
+    /// </summary>
     public static IEnumerable<IntegerCoordinate<T>> Orthogonal<T>(IntegerCoordinate<T> origin)
         where T : INumber<T>, IBinaryInteger<T> =>
         Neighbours(origin, Neighbourhood.Cardinal);
 
+    /// <summary>
+    /// Returns all eight neighbours for the specified origin.
+    /// </summary>
     public static IEnumerable<IntegerCoordinate<T>> All2DNeighbours<T>(IntegerCoordinate<T> origin)
         where T : INumber<T>, IBinaryInteger<T> =>
         Neighbours(origin, Neighbourhood.All);
 
+    /// <summary>
+    /// Returns the six orthogonal neighbours in 3D space.
+    /// </summary>
     public static IEnumerable<Coordinate3D<T>> Orthogonal3DNeighbours<T>(Coordinate3D<T> origin)
         where T : INumber<T>
     {
@@ -30,6 +42,9 @@ public static class Neighbourhoods
             );
     }
 
+    /// <summary>
+    /// Enumerates directions contained in a neighbourhood, excluding any flagged directions.
+    /// </summary>
     public static IEnumerable<Direction> Directions(Neighbourhood neighbourhood, Direction excluded = Direction.None)
     {
         foreach (var direction in Expand(neighbourhood))
@@ -41,6 +56,9 @@ public static class Neighbourhoods
         }
     }
 
+    /// <summary>
+    /// Returns the neighbouring coordinates for a grid origin.
+    /// </summary>
     public static IEnumerable<IntegerCoordinate<T>> Neighbours<T>(
         IntegerCoordinate<T> origin,
         Neighbourhood neighbourhood = Neighbourhood.Cardinal,
