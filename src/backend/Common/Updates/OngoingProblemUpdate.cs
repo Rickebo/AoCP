@@ -1,13 +1,11 @@
 namespace Common.Updates;
 
 /// <summary>
-/// Base class for updates that occur while a problem is still executing.
+/// Represents a problem update emitted while execution is still in progress.
 /// </summary>
 public class OngoingProblemUpdate : ProblemUpdate
 {
-    /// <summary>
-    /// Gets the update type string used for ongoing updates.
-    /// </summary>
+    /// <inheritdoc />
     public override string Type => "ongoing";
 }
 

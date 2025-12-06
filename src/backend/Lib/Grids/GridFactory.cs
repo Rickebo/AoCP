@@ -1,13 +1,16 @@
 namespace Lib.Grids;
 
+/// <summary>
+/// Factory helpers for constructing typed grids from text.
+/// </summary>
 public static class GridFactory
 {
     /// <summary>
-    /// Parses a rectangular collection of strings into a character grid.
+    /// Parses a character grid from equally-sized lines.
     /// </summary>
-    /// <param name="lines">Input lines of uniform length.</param>
-    /// <returns>A new grid containing the parsed characters.</returns>
-    /// <exception cref="ArgumentException">Thrown when input is empty or rows differ in length.</exception>
+    /// <param name="lines">Input lines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of characters.</returns>
+    /// <exception cref="ArgumentException">Thrown when input is empty or jagged.</exception>
     public static ArrayGrid<char> ParseCharGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();
@@ -28,11 +31,11 @@ public static class GridFactory
     }
 
     /// <summary>
-    /// Parses a rectangular collection of numeric strings into an integer grid.
+    /// Parses an integer grid from equally-sized digit-only lines.
     /// </summary>
-    /// <param name="lines">Input lines consisting of digits.</param>
-    /// <returns>A new grid populated with parsed digits.</returns>
-    /// <exception cref="ArgumentException">Thrown when input is empty, rows are uneven, or a non-digit is encountered.</exception>
+    /// <param name="lines">Input lines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of integers.</returns>
+    /// <exception cref="ArgumentException">Thrown when input is empty, jagged, or contains non-digits.</exception>
     public static ArrayGrid<int> ParseIntGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();

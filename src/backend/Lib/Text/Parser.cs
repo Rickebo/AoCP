@@ -6,7 +6,7 @@ using Lib.Grids;
 namespace Lib.Text;
 
 /// <summary>
-/// Helper methods for extracting numeric values and parsing grid-based inputs.
+/// Parsing helpers for extracting typed values and grids from text.
 /// </summary>
 public static partial class Parser
 {
@@ -23,17 +23,18 @@ public static partial class Parser
     private static partial Regex RegexDecimalsComma();
 
     /// <summary>
-    /// Extracts numeric values from a string using the requested decimal separator.
+    /// Extracts numeric values from a string based on the requested type.
     /// </summary>
-    /// <typeparam name="T">Numeric type to parse.</typeparam>
-    /// <param name="str">Input string.</param>
-    /// <param name="decimalSeparator">Decimal separator for floating-point parsing.</param>
-    /// <returns>Array of parsed numbers.</returns>
-    /// <exception cref="NotSupportedException">Thrown for unsupported types or separators.</exception>
+    /// <typeparam name="T">Target numeric type.</typeparam>
+    /// <param name="str">Input text.</param>
+    /// <param name="decimalSeparator">Decimal separator used for floating point parsing.</param>
+    /// <returns>Array of parsed values.</returns>
+    /// <exception cref="NotSupportedException">Thrown when the type or decimal separator is unsupported.</exception>
     public static T[] GetValues<T>(string str, string decimalSeparator = ".")
     {
         // Guard decimal separator
-        if ((typeof(T) == typeof(double) || typeof(T) == typeof(decimal)) && decimalSeparator != "." && decimalSeparator != ",")
+        if ((typeof(T) == typeof(double) || typeof(T) == typeof(decimal)) 
+            && decimalSeparator != "." && decimalSeparator != ",")
             throw new NotSupportedException("Unsupported decimal separator.");
 
         // Choose regex pattern
@@ -70,11 +71,8 @@ public static partial class Parser
     }
 
     /// <summary>
-    /// Extracts numeric values from multiple strings.
+    /// Extracts numeric values from an array of strings.
     /// </summary>
-    /// <typeparam name="T">Numeric type to parse.</typeparam>
-    /// <param name="str">Array of strings to search.</param>
-    /// <returns>All numbers found across the input strings.</returns>
     public static T[] GetValues<T>(string[] str)
     {
         List<T> values = [];
@@ -85,11 +83,8 @@ public static partial class Parser
     }
 
     /// <summary>
-    /// Extracts numeric values from each input string and groups them into arrays.
+    /// Extracts numeric arrays from each input string.
     /// </summary>
-    /// <typeparam name="T">Numeric type to parse.</typeparam>
-    /// <param name="str">Array of strings.</param>
-    /// <returns>Array of parsed number arrays corresponding to each input string.</returns>
     public static T[][] GetValueArrays<T>(string[] str)
     {
         List<T[]> values = [];
@@ -100,10 +95,10 @@ public static partial class Parser
     }
 
     /// <summary>
-    /// Parses a grid of directions from a multiline string.
+    /// Parses a grid of directions from text where each character represents a direction glyph.
     /// </summary>
-    /// <param name="text">Input text containing direction characters.</param>
-    /// <returns>A grid of <see cref="Direction"/> values.</returns>
+    /// <param name="text">Input text with rows separated by newlines.</param>
+    /// <returns>An <see cref="ArrayGrid{TValue}"/> of <see cref="Direction"/> values.</returns>
     public static ArrayGrid<Direction> ParseDirectionGrid(string text)
     {
         var lines = text.SplitLines();

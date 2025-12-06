@@ -3,37 +3,37 @@ using System.Text;
 namespace Lib.Text;
 
 /// <summary>
-/// Lightweight view over a substring without allocating new strings.
+/// Lightweight view over a substring without allocations.
 /// </summary>
 public readonly struct StringSpan : IEquatable<StringSpan>
 {
     /// <summary>
-    /// Gets the underlying source string.
+    /// Full source string.
     /// </summary>
     public string Full { get; }
 
     /// <summary>
-    /// Gets the starting offset within <see cref="Full"/>.
+    /// Starting index within <see cref="Full"/>.
     /// </summary>
     public int Start { get; }
 
     /// <summary>
-    /// Gets the length of the span.
+    /// Length of the span.
     /// </summary>
     public int Length { get; }
 
     /// <summary>
-    /// Gets the index immediately after the last character in the span.
+    /// Index immediately after the last character in the span.
     /// </summary>
     public int End => Start + Length;
 
     private readonly int _hash;
 
     /// <summary>
-    /// Initializes a new <see cref="StringSpan"/>.
+    /// Creates a new span over a string.
     /// </summary>
-    /// <param name="full">Source string.</param>
-    /// <param name="start">Start index within the source string.</param>
+    /// <param name="full">Underlying string.</param>
+    /// <param name="start">Start index.</param>
     /// <param name="length">Length of the span.</param>
     public StringSpan(string full, int start = 0, int length = int.MaxValue)
     {
@@ -46,20 +46,15 @@ public readonly struct StringSpan : IEquatable<StringSpan>
     }
 
     /// <summary>
-    /// Creates a subspan relative to the current span.
+    /// Creates a new span relative to the current one.
     /// </summary>
-    /// <param name="start">Start offset relative to this span.</param>
-    /// <param name="length">Length of the new span.</param>
-    /// <returns>A new <see cref="StringSpan"/>.</returns>
     public StringSpan Substring(int start = 0, int length = int.MaxValue)
         => new(Full, Start + start, length);
 
     /// <summary>
-    /// Gets the character at the specified index within the span.
+    /// Gets the character at the given relative index.
     /// </summary>
-    /// <param name="index">Index into the span.</param>
-    /// <returns>Character at the specified index.</returns>
-    /// <exception cref="IndexOutOfRangeException">Thrown when the index lies outside the span.</exception>
+    /// <exception cref="IndexOutOfRangeException">Thrown when index is outside the span.</exception>
     public char this[int index]
     {
         get
@@ -72,10 +67,8 @@ public readonly struct StringSpan : IEquatable<StringSpan>
     }
 
     /// <summary>
-    /// Determines whether the span starts with the specified string.
+    /// Determines whether the span starts with the provided text.
     /// </summary>
-    /// <param name="text">String to compare against.</param>
-    /// <returns><c>true</c> when the prefix matches; otherwise <c>false</c>.</returns>
     public bool StartsWith(string text)
     {
         if (text.Length > Length)
@@ -89,10 +82,8 @@ public readonly struct StringSpan : IEquatable<StringSpan>
     }
 
     /// <summary>
-    /// Determines whether the span starts with the specified span.
+    /// Determines whether the span starts with another span.
     /// </summary>
-    /// <param name="span">Span to compare against.</param>
-    /// <returns><c>true</c> when the prefix matches; otherwise <c>false</c>.</returns>
     public bool StartsWith(StringSpan span)
     {
         if (span.Length > Length)
@@ -106,9 +97,8 @@ public readonly struct StringSpan : IEquatable<StringSpan>
     }
 
     /// <summary>
-    /// Returns the string represented by this span.
+    /// Materializes the span into a new string.
     /// </summary>
-    /// <returns>String content of the span.</returns>
     public override string ToString()
     {
         var sb = new StringBuilder();
@@ -117,40 +107,23 @@ public readonly struct StringSpan : IEquatable<StringSpan>
         return sb.ToString();
     }
 
-    /// <summary>
-    /// Returns the cached hash code for the span.
-    /// </summary>
-    /// <returns>Hash code value.</returns>
+    /// <inheritdoc />
     public override int GetHashCode() => _hash;
 
     /// <summary>
-    /// Compares two spans for equality.
+    /// Determines whether two spans are equal.
     /// </summary>
-    /// <param name="left">Left operand.</param>
-    /// <param name="right">Right operand.</param>
-    /// <returns><c>true</c> when the spans contain identical text.</returns>
     public static bool operator ==(StringSpan left, StringSpan right) => left.Equals(right);
 
     /// <summary>
-    /// Compares two spans for inequality.
+    /// Determines whether two spans differ.
     /// </summary>
-    /// <param name="left">Left operand.</param>
-    /// <param name="right">Right operand.</param>
-    /// <returns><c>true</c> when the spans contain different text.</returns>
     public static bool operator !=(StringSpan left, StringSpan right) => !(left == right);
 
-    /// <summary>
-    /// Determines equality with another object.
-    /// </summary>
-    /// <param name="other">Object to compare.</param>
-    /// <returns><c>true</c> when the other object is an equal <see cref="StringSpan"/>.</returns>
+    /// <inheritdoc />
     public override bool Equals(object? other) => other is StringSpan span && Equals(span);
 
-    /// <summary>
-    /// Determines equality with another span by comparing character content.
-    /// </summary>
-    /// <param name="other">Span to compare.</param>
-    /// <returns><c>true</c> when the spans contain the same text.</returns>
+    /// <inheritdoc />
     public bool Equals(StringSpan other)
     {
         if (other.Length != Length)

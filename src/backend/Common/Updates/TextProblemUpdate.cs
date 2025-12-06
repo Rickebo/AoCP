@@ -1,45 +1,49 @@
 namespace Common.Updates;
 
 /// <summary>
-/// Text-based update emitted while solving a problem.
+/// Conveys textual output produced while a problem is running.
 /// </summary>
 public class TextProblemUpdate : OngoingProblemUpdate
 {
-    /// <summary>
-    /// Gets the update type string used for text payloads.
-    /// </summary>
+    /// <inheritdoc />
     public override string Type => "text";
     
     /// <summary>
-    /// Gets or sets the lines included in the update.
+    /// Gets or sets the lines of text to append to the log.
     /// </summary>
     public string[]? Lines { get; set; }
 
     /// <summary>
-    /// Gets or sets a freeform text payload.
+    /// Gets or sets a block of text to append to the log.
     /// </summary>
     public string? Text { get; set; }
 
+    private static string[] NormalizeLines(IEnumerable<string> lines) =>
+        lines.Select(line => line ?? string.Empty).ToArray();
+
+    private static string Format(IFormattable value) => value.ToString() ?? string.Empty;
+
     /// <summary>
-    /// Creates a text update from a single formatted line.
+    /// Creates an update containing a single formatted line.
     /// </summary>
-    /// <param name="line">Line to include.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="line">Line to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with one line.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="line"/> is null.</exception>
     public static TextProblemUpdate FromLine(IFormattable line)
     {
         ArgumentNullException.ThrowIfNull(line);
         return new TextProblemUpdate
         {
-            Lines = [line.ToString() ?? ""],
+            Lines = [Format(line)],
             Text = null
         };
     }
 
     /// <summary>
-    /// Creates a text update from a single line.
+    /// Creates an update containing a single line.
     /// </summary>
-    /// <param name="line">Line to include.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="line">Line to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with one line.</returns>
     public static TextProblemUpdate FromLine(string line) =>
         new()
         {
@@ -48,53 +52,54 @@ public class TextProblemUpdate : OngoingProblemUpdate
         };
 
     /// <summary>
-    /// Creates a text update from formatted lines.
+    /// Creates an update containing multiple formatted lines.
     /// </summary>
-    /// <param name="lines">Lines to include.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="lines">Lines to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with the given lines.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="lines"/> is null.</exception>
     public static TextProblemUpdate FromLines(IFormattable[] lines)
     {
         ArgumentNullException.ThrowIfNull(lines);
         return new TextProblemUpdate
         {
-            Lines = [.. lines.Select(x => x.ToString() ?? "")],
+            Lines = NormalizeLines(lines.Select(Format)),
             Text = null
         };
     }
 
     /// <summary>
-    /// Creates a text update from string lines.
+    /// Creates an update containing multiple lines.
     /// </summary>
-    /// <param name="lines">Lines to include.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="lines">Lines to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with the given lines.</returns>
     public static TextProblemUpdate FromLines(string[] lines) =>
         new()
         {
-            Lines = lines ?? [],
+            Lines = lines == null ? [] : NormalizeLines(lines),
             Text = null
         };
 
     /// <summary>
-    /// Creates a text update from a general enumerable of lines.
+    /// Creates an update containing multiple lines.
     /// </summary>
-    /// <param name="lines">Lines to include.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="lines">Lines to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with the given lines.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="lines"/> is null.</exception>
     public static TextProblemUpdate FromLines(IEnumerable<string> lines)
     {
         ArgumentNullException.ThrowIfNull(lines);
         return new TextProblemUpdate
         {
-            Lines = [.. lines],
+            Lines = NormalizeLines(lines),
             Text = null
         };
     }
 
     /// <summary>
-    /// Creates a text update from a freeform text payload.
+    /// Creates an update containing a text block.
     /// </summary>
-    /// <param name="text">Text content.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="text">Text to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with the given text.</returns>
     public static TextProblemUpdate FromText(string text) =>
         new()
         {
@@ -103,17 +108,18 @@ public class TextProblemUpdate : OngoingProblemUpdate
         };
 
     /// <summary>
-    /// Creates a text update from a formatted payload.
+    /// Creates an update containing a formatted text block.
     /// </summary>
-    /// <param name="text">Text to format.</param>
-    /// <returns>A configured <see cref="TextProblemUpdate"/>.</returns>
+    /// <param name="text">Text to emit.</param>
+    /// <returns>A <see cref="TextProblemUpdate"/> with the given text.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="text"/> is null.</exception>
     public static TextProblemUpdate FromText(IFormattable text)
     {
         ArgumentNullException.ThrowIfNull(text);
         return new TextProblemUpdate
         {
             Lines = null,
-            Text = text.ToString() ?? ""
+            Text = Format(text)
         };
     }
 }

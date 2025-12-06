@@ -8,18 +8,18 @@ using Lib.Color;
 namespace Common;
 
 /// <summary>
-/// Streams <see cref="ProblemUpdate"/> instances to observers via an asynchronous channel.
+/// Collects and streams updates about a problem execution to interested consumers.
 /// </summary>
 public class Reporter
 {
     private readonly Channel<ProblemUpdate> _updates = Channel.CreateUnbounded<ProblemUpdate>();
 
     /// <summary>
-    /// Enqueues an update for downstream consumers.
+    /// Queues a raw <see cref="ProblemUpdate"/> for downstream readers.
     /// </summary>
-    /// <param name="update">Update to publish.</param>
+    /// <param name="update">The update to enqueue.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="update"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the channel refuses the update.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the update cannot be written to the channel.</exception>
     public void Report(ProblemUpdate update)
     {
         ArgumentNullException.ThrowIfNull(update);
@@ -29,16 +29,17 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a single-line text update.
+    /// Reports a single line of text output.
     /// </summary>
-    /// <param name="line">Line to send.</param>
+    /// <param name="line">The line to emit; null becomes an empty string.</param>
     public void ReportLine(string line) =>
         ReportLines([line ?? string.Empty]);
 
     /// <summary>
-    /// Publishes a text update containing multiple lines.
+    /// Reports multiple lines of textual output.
     /// </summary>
-    /// <param name="lines">Lines to send.</param>
+    /// <param name="lines">The lines to emit.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="lines"/> is null.</exception>
     public void ReportLines(IEnumerable<string> lines)
     {
         ArgumentNullException.ThrowIfNull(lines);
@@ -46,17 +47,35 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a text update containing freeform text and/or lines.
+    /// Reports either a single block of text or a sequence of lines.
     /// </summary>
-    /// <param name="text">Optional freeform text block.</param>
-    /// <param name="lines">Optional lines to include.</param>
-    public void ReportText(string? text = null, IEnumerable<string>? lines = null) =>
-        Report(new TextProblemUpdate(){ Text = text, Lines = lines?.ToArray() });
+    /// <param name="text">Block of text to emit.</param>
+    /// <param name="lines">Lines to emit.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when both <paramref name="text"/> and <paramref name="lines"/> are provided
+    /// or when neither is supplied.
+    /// </exception>
+    public void ReportText(string? text = null, IEnumerable<string>? lines = null)
+    {
+        var hasText = text != null;
+        var hasLines = lines != null;
+
+        if (!hasText && !hasLines)
+            throw new ArgumentException("Provide either text or lines to report.", nameof(text));
+
+        if (hasText && hasLines)
+            throw new ArgumentException("Provide either text or lines, not both.", nameof(text));
+
+        Report(hasLines
+            ? TextProblemUpdate.FromLines(lines!)
+            : TextProblemUpdate.FromText(text!));
+    }
 
     /// <summary>
-    /// Publishes a successful completion update using a formatted value.
+    /// Reports a formatted solution value as a finished update.
     /// </summary>
-    /// <param name="solution">Solution to format.</param>
+    /// <param name="solution">The computed solution value.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="solution"/> is null.</exception>
     public void ReportSolution(IFormattable solution)
     {
         ArgumentNullException.ThrowIfNull(solution);
@@ -64,25 +83,26 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a successful completion update.
+    /// Reports a solution string as a finished update.
     /// </summary>
-    /// <param name="solution">Solution text.</param>
+    /// <param name="solution">The computed solution.</param>
     public void ReportSolution(string solution) =>
         Report(FinishedProblemUpdate.FromSolution(solution));
 
     /// <summary>
-    /// Publishes a failed completion update with an error message.
+    /// Reports an error and optional partial solution as a finished update.
     /// </summary>
-    /// <param name="error">Error description.</param>
-    /// <param name="partialSolution">Optional partial solution value.</param>
+    /// <param name="error">The error message.</param>
+    /// <param name="partialSolution">An optional partial solution to display.</param>
     public void ReportError(string error, string? partialSolution = null) =>
         Report(FinishedProblemUpdate.FromError(error, partialSolution));
 
     /// <summary>
-    /// Publishes a single string-grid update for one coordinate using a <see cref="Color"/> payload.
+    /// Reports a string grid update using the provided coordinate and color.
     /// </summary>
-    /// <param name="coordinate">Coordinate to update.</param>
-    /// <param name="color">Color to render.</param>
+    /// <param name="coordinate">Grid coordinate to update.</param>
+    /// <param name="color">Color to render at the coordinate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinate"/> is null.</exception>
     public void ReportStringGridUpdate(IStringCoordinate coordinate, Color color)
     {
         ArgumentNullException.ThrowIfNull(coordinate);
@@ -90,10 +110,11 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a single string-grid update for one coordinate using a string payload.
+    /// Reports a string grid update for a single coordinate.
     /// </summary>
-    /// <param name="coordinate">Coordinate to update.</param>
-    /// <param name="text">Text or color to render.</param>
+    /// <param name="coordinate">Grid coordinate to update.</param>
+    /// <param name="text">Text to render at the coordinate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinate"/> is null.</exception>
     public void ReportStringGridUpdate(IStringCoordinate coordinate, string text)
     {
         ArgumentNullException.ThrowIfNull(coordinate);
@@ -108,9 +129,10 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a string-grid update configured by a builder delegate.
+    /// Reports a composed string grid update built with a fluent builder.
     /// </summary>
-    /// <param name="configure">Delegate that configures the update builder.</param>
+    /// <param name="configure">Callback to populate the update.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
     public void ReportStringGridUpdate(
         Func<
             StringGridUpdate.StringGridUpdateBuilder,
@@ -122,12 +144,16 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a string-grid update created from a grid structure.
+    /// Reports a string grid update generated from a source grid.
     /// </summary>
-    /// <param name="grid">Source grid.</param>
-    /// <param name="configure">Delegate to configure each coordinate.</param>
-    /// <typeparam name="T">Source grid cell type.</typeparam>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="grid"/> or <paramref name="configure"/> is null.</exception>
+    /// <typeparam name="T">Type stored in the source grid.</typeparam>
+    /// <param name="grid">Grid to read from.</param>
+    /// <param name="configure">
+    /// Callback that maps each coordinate and cell value to a configured string entry.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="grid"/> or <paramref name="configure"/> is null.
+    /// </exception>
     public void ReportStringGridUpdate<T>(
         ArrayGrid<T> grid,
         Func<
@@ -157,9 +183,10 @@ public class Reporter
         );
 
     /// <summary>
-    /// Publishes a glyph-grid update configured by a builder delegate.
+    /// Reports a glyph grid update constructed with a fluent builder.
     /// </summary>
-    /// <param name="configure">Delegate that configures the update builder.</param>
+    /// <param name="configure">Callback to populate the glyph update.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
     public void ReportGlyphGridUpdate(
         Func<
             GlyphGridUpdate.GlyphGridUpdateBuilder,
@@ -172,13 +199,18 @@ public class Reporter
     }
 
     /// <summary>
-    /// Publishes a glyph-grid update created from a grid structure.
+    /// Reports a glyph grid update generated from a source grid.
     /// </summary>
-    /// <param name="grid">Source grid.</param>
-    /// <param name="configure">Delegate to configure each coordinate.</param>
-    /// <param name="predicate">Optional predicate to filter which cells are included.</param>
-    /// <param name="clear">Whether to clear the grid before applying.</param>
-    /// <typeparam name="T">Source grid cell type.</typeparam>
+    /// <typeparam name="T">Type stored in the source grid.</typeparam>
+    /// <param name="grid">Grid to render.</param>
+    /// <param name="configure">
+    /// Callback that maps each coordinate and value to a glyph entry.
+    /// </param>
+    /// <param name="predicate">Optional filter to select which coordinates to emit.</param>
+    /// <param name="clear">Whether to request clearing the target grid before applying entries.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="grid"/> or <paramref name="configure"/> is null.
+    /// </exception>
     public void ReportGlyphGridUpdate<T>(
         ArrayGrid<T> grid,
         Func<GlyphGridUpdate.GlyphBuilder, IntegerCoordinate<int>, T,
@@ -209,9 +241,9 @@ public class Reporter
     );
 
     /// <summary>
-    /// Reads all currently buffered updates without awaiting further items.
+    /// Reads all currently buffered updates without waiting for future items.
     /// </summary>
-    /// <returns>Enumerable of buffered updates.</returns>
+    /// <returns>An enumerable of buffered updates.</returns>
     public IEnumerable<ProblemUpdate> ReadAllCurrent()
     {
         while (_updates.Reader.TryRead(out var item))
@@ -219,10 +251,10 @@ public class Reporter
     }
 
     /// <summary>
-    /// Streams updates until a <see cref="FinishedProblemUpdate"/> is observed.
+    /// Continuously yields updates until a <see cref="FinishedProblemUpdate"/> is read.
     /// </summary>
-    /// <param name="cancellationToken">Cancellation token to stop reading.</param>
-    /// <returns>An asynchronous stream of updates.</returns>
+    /// <param name="cancellationToken">Token that cancels reading.</param>
+    /// <returns>An async stream of updates.</returns>
     public async IAsyncEnumerable<ProblemUpdate> ReadAll(
         [EnumeratorCancellation] CancellationToken cancellationToken = default
     )

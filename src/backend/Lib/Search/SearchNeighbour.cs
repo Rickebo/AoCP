@@ -1,15 +1,18 @@
 namespace Lib.Search;
 
+/// <summary>
+/// Represents a neighbouring element in a search graph and the cost to reach it.
+/// </summary>
 public class SearchNeighbour<TNeighbour, TCost> 
     where TNeighbour : ISearchElement<TCost>
 {
     /// <summary>
-    /// Gets the neighbouring element reachable from the current node.
+    /// The neighbouring element.
     /// </summary>
     public required TNeighbour Element { get; init; }
 
     /// <summary>
-    /// Gets the traversal cost to reach <see cref="Element"/>.
+    /// Cost to traverse to <see cref="Element"/>.
     /// </summary>
     public required TCost Cost { get; init; }
 }

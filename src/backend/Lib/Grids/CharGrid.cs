@@ -4,39 +4,40 @@ using Lib.Text;
 namespace Lib.Grids;
 
 /// <summary>
-/// Specialized <see cref="ArrayGrid{TValue}"/> for character data.
+/// Character grid with helpers for parsing string input.
 /// </summary>
 public class CharGrid : ArrayGrid<char>
 {
     /// <summary>
-    /// Creates a grid from a multiline string, treating the first line as the top row.
+    /// Creates a grid from multiline input, splitting on newlines.
     /// </summary>
-    /// <param name="input">Multiline text to parse.</param>
+    /// <param name="input">Raw input text.</param>
     public CharGrid(string input) : base(ParseFromString(input)) {}
 
     /// <summary>
-    /// Initializes a grid with the specified dimensions, filled with a character.
+    /// Creates a grid from multiline input with custom split options.
     /// </summary>
-    /// <param name="width">Grid width.</param>
-    /// <param name="height">Grid height.</param>
-    /// <param name="c">Character used to fill the grid.</param>
+    /// <param name="input">Raw input text.</param>
+    /// <param name="options">Line splitting options.</param>
+    public CharGrid(string input, StringSplitOptions options) 
+        : base(ParseFromString(input, options)) { }
+
+    /// <summary>
+    /// Creates a grid of the specified size filled with <paramref name="c"/>.
+    /// </summary>
     public CharGrid(int width, int height, char c) : base(width, height, c) {}
 
     /// <summary>
-    /// Initializes a grid backed by an existing 2D character array.
+    /// Creates a grid from an existing backing array.
     /// </summary>
-    /// <param name="values">Values to wrap.</param>
     public CharGrid(char[,] values) : base(values) {}
 
-    /// <summary>
-    /// Parses a multiline string into a 2D character array.
-    /// </summary>
-    /// <param name="str">Text to parse.</param>
-    /// <returns>Parsed array with origin at bottom-left.</returns>
-    private static char[,] ParseFromString(string str)
+    private static char[,] ParseFromString(
+        string str, 
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
     {
         // Parse string input
-        var rows = str.SplitLines();
+        var rows = str.SplitLines(options);
         var height = rows.Length;
         var width = rows[0].Length;
 
@@ -50,28 +51,17 @@ public class CharGrid : ArrayGrid<char>
     }
 
     /// <summary>
-    /// Counts consecutive repeating characters from the starting position in a given direction.
+    /// Counts repeating characters starting at <paramref name="pos"/> moving in <paramref name="dir"/>.
     /// </summary>
-    /// <param name="pos">Starting coordinate.</param>
-    /// <param name="dir">Direction to move.</param>
-    /// <returns>Number of repeating characters including the starting cell.</returns>
     public int CountRepeating(IntegerCoordinate<int> pos, Direction dir) =>
         CountRepeating(pos, dir, this[pos]);
 
     /// <summary>
-    /// Counts consecutive cells matching the supplied source character from the starting position in a given direction.
+    /// Counts repeating characters matching <paramref name="source"/> starting at <paramref name="pos"/> in <paramref name="dir"/>.
     /// </summary>
-    /// <param name="pos">Starting coordinate.</param>
-    /// <param name="dir">Direction to move.</param>
-    /// <param name="source">Character to compare against.</param>
-    /// <returns>Number of matching characters including the starting cell.</returns>
     public int CountRepeating(IntegerCoordinate<int> pos, Direction dir, char source) =>
         RetrieveDirection(pos, dir).TakeWhile(val => val == source).Count();
 
-    /// <summary>
-    /// Returns a flipped copy of the grid along the specified axis.
-    /// </summary>
-    /// <param name="axis">Axis or axes to flip around.</param>
-    /// <returns>A new <see cref="CharGrid"/> containing mirrored values.</returns>
+    /// <inheritdoc />
     public override CharGrid Flip(Axis axis) => Flip(values => new CharGrid(values), axis);
 }

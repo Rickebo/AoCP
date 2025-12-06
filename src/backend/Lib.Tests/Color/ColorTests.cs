@@ -28,9 +28,9 @@ public class ColorTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(shortForm.R, Is.EqualTo(0xA0));
-            Assert.That(shortForm.G, Is.EqualTo(0xB0));
-            Assert.That(shortForm.B, Is.EqualTo(0xC0));
+            Assert.That(shortForm.R, Is.EqualTo(0xAA));
+            Assert.That(shortForm.G, Is.EqualTo(0xBB));
+            Assert.That(shortForm.B, Is.EqualTo(0xCC));
             Assert.That(shortForm.A, Is.EqualTo(0xFF));
 
             Assert.That(longForm.R, Is.EqualTo(0x11));

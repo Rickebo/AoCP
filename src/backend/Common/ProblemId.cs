@@ -1,51 +1,55 @@
 namespace Common;
 
 /// <summary>
-/// Identifies a single Advent of Code problem across source, year, author, and name.
+/// Identifies a specific Advent of Code problem within the platform.
 /// </summary>
 public sealed record ProblemId
 {
     /// <summary>
-    /// Gets the Advent of Code year associated with the problem.
+    /// Gets the Advent of Code year that owns the problem.
     /// </summary>
     public int Year { get; init; }
 
     /// <summary>
-    /// Gets the origin of the problem set (for example, a repository or event name).
+    /// Gets the problem source (e.g. <c>AOC</c>).
     /// </summary>
     public string Source { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the author of the problem implementation.
+    /// Gets the author for the problem implementation.
     /// </summary>
     public string Author { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the logical set or grouping the problem belongs to.
+    /// Gets the name of the problem set (day).
     /// </summary>
     public string SetName { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the specific problem name within the set.
+    /// Gets the display-friendly problem name.
     /// </summary>
     public string ProblemName { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets a human-readable identifier combining all ProblemId components.
+    /// Gets a canonical display name composed from the identifier parts.
     /// </summary>
     public string DisplayName =>
         $"{Source}/{Year}/{Author}/{SetName}/{ProblemName}";
 
+    /// <inheritdoc />
+    public override string ToString() => DisplayName;
+
     /// <summary>
-    /// Creates a validated <see cref="ProblemId"/> instance from the provided components.
+    /// Creates a validated <see cref="ProblemId"/> instance.
     /// </summary>
-    /// <param name="year">Advent of Code year.</param>
+    /// <param name="year">Year of the Advent of Code challenge.</param>
     /// <param name="source">Problem source identifier.</param>
-    /// <param name="author">Author name.</param>
-    /// <param name="setName">Problem set name.</param>
-    /// <param name="problemName">Problem name.</param>
-    /// <returns>A populated <see cref="ProblemId"/>.</returns>
-    /// <exception cref="ArgumentException">Thrown when any textual component is null or whitespace.</exception>
+    /// <param name="author">Name of the solution author.</param>
+    /// <param name="setName">Name of the problem set/day.</param>
+    /// <param name="problemName">Display name of the problem.</param>
+    /// <returns>A constructed <see cref="ProblemId"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="year"/> is negative.</exception>
+    /// <exception cref="ArgumentException">Thrown when any string parameter is null or whitespace.</exception>
     public static ProblemId Create(
         int year,
         string source,
@@ -54,6 +58,7 @@ public sealed record ProblemId
         string problemName
     )
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(year);
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
         ArgumentException.ThrowIfNullOrWhiteSpace(author);
         ArgumentException.ThrowIfNullOrWhiteSpace(setName);

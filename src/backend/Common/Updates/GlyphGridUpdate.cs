@@ -5,40 +5,40 @@ using Lib.Color;
 namespace Common.Updates;
 
 /// <summary>
-/// Represents a glyph cell with optional character and color data.
+/// Represents a single glyph entry within a glyph grid update.
 /// </summary>
-public sealed record Cell
+public sealed record GlyphCell
 {
     /// <summary>
-    /// Gets or sets the glyph to render, typically a multi-character string.
+    /// Gets the glyph identifier to render.
     /// </summary>
     public string? Glyph { get; init; }
 
     /// <summary>
-    /// Gets or sets the single character to render.
+    /// Gets the raw character to render if no glyph is specified.
     /// </summary>
     public string? Char { get; init; }
 
     /// <summary>
-    /// Gets or sets the foreground color as an RGBA string.
+    /// Gets the foreground color.
     /// </summary>
     public string? Fg { get; init; }
 
     /// <summary>
-    /// Gets or sets the background color as an RGBA string.
+    /// Gets the background color.
     /// </summary>
     public string? Bg { get; init; }
 }
 
 /// <summary>
-/// Grid update that carries glyph/character payloads.
+/// Represents an update that renders glyphs on a grid.
 /// </summary>
-public class GlyphGridUpdate : GridUpdate<Cell>
+public class GlyphGridUpdate : GridUpdate<GlyphCell>
 {
     private static GlyphGridUpdate Construct(
         int width,
         int height,
-        Dictionary<string, Dictionary<string, Cell>> rows
+        Dictionary<string, Dictionary<string, GlyphCell>> rows
     ) => new()
     {
         Width = width,
@@ -47,15 +47,15 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     };
 
     /// <summary>
-    /// Creates a glyph grid update from a grid by applying a converter to each cell.
+    /// Creates an update from a generic grid using the provided converter.
     /// </summary>
-    /// <param name="grid">Grid to translate.</param>
-    /// <param name="cellConverter">Function converting grid cells to <see cref="Cell"/>.</param>
-    /// <typeparam name="T">Source grid cell type.</typeparam>
-    /// <returns>A <see cref="GlyphGridUpdate"/>.</returns>
+    /// <typeparam name="T">Type stored in the source grid.</typeparam>
+    /// <param name="grid">Source grid.</param>
+    /// <param name="cellConverter">Converts a source cell to a <see cref="GlyphCell"/>.</param>
+    /// <returns>A <see cref="GlyphGridUpdate"/> describing the grid.</returns>
     public static GlyphGridUpdate FromGrid<T>(
         ArrayGrid<T> grid,
-        Func<T, Cell> cellConverter
+        Func<T, GlyphCell> cellConverter
     ) => FromGrid(
         grid,
         cellConverter,
@@ -63,19 +63,19 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     );
 
     /// <summary>
-    /// Creates a glyph grid update from a character grid using explicit color strings.
+    /// Creates an update from a character grid using string colors.
     /// </summary>
-    /// <param name="grid">Character grid.</param>
-    /// <param name="foregroundColor">Foreground color string.</param>
-    /// <param name="backgroundColor">Background color string.</param>
-    /// <returns>A <see cref="GlyphGridUpdate"/>.</returns>
+    /// <param name="grid">Source grid of characters.</param>
+    /// <param name="foregroundColor">Foreground color applied to each cell.</param>
+    /// <param name="backgroundColor">Background color applied to each cell.</param>
+    /// <returns>A <see cref="GlyphGridUpdate"/> describing the grid.</returns>
     public static GlyphGridUpdate FromCharGrid(
         CharGrid grid,
         string foregroundColor,
         string backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell
+        ch => new GlyphCell
         {
             Glyph = null,
             Char = ch.ToString(),
@@ -86,19 +86,19 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     );
 
     /// <summary>
-    /// Creates a glyph grid update from a character grid using <see cref="Color"/> values.
+    /// Creates an update from a character grid using <see cref="Color"/> values.
     /// </summary>
-    /// <param name="grid">Character grid.</param>
-    /// <param name="foregroundColor">Foreground color.</param>
-    /// <param name="backgroundColor">Background color.</param>
-    /// <returns>A <see cref="GlyphGridUpdate"/>.</returns>
+    /// <param name="grid">Source grid of characters.</param>
+    /// <param name="foregroundColor">Foreground color applied to each cell.</param>
+    /// <param name="backgroundColor">Background color applied to each cell.</param>
+    /// <returns>A <see cref="GlyphGridUpdate"/> describing the grid.</returns>
     public static GlyphGridUpdate FromCharGrid(
         CharGrid grid,
         Color foregroundColor,
         Color backgroundColor
     ) => FromGrid(
         grid,
-        ch => new Cell
+        ch => new GlyphCell
         {
             Glyph = null,
             Char = ch.ToString(),
@@ -109,57 +109,59 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     );
 
     /// <summary>
-    /// Creates a builder for composing glyph grid updates.
+    /// Creates a new builder for composing glyph grid updates.
     /// </summary>
     /// <returns>A new <see cref="GlyphGridUpdateBuilder"/>.</returns>
     public static GlyphGridUpdateBuilder Builder() => new();
 
     /// <summary>
-    /// Builder for configuring individual glyph entries.
+    /// Fluent builder for configuring a single glyph entry.
     /// </summary>
     public class GlyphBuilder
     {
         /// <summary>
-        /// Gets or sets the grid coordinate for the glyph.
+        /// Gets or sets the coordinate to update.
         /// </summary>
         public IStringCoordinate Coordinate { get; set; } = default!;
 
         /// <summary>
-        /// Gets or sets the single character to render.
+        /// Gets or sets the character to render.
         /// </summary>
         public char? Character { get; set; }
 
         /// <summary>
-        /// Gets or sets a glyph string (for example, arrows or box-drawing characters).
+        /// Gets or sets the glyph identifier to render.
         /// </summary>
         public string? Glyph { get; set; }
 
         /// <summary>
-        /// Gets or sets the foreground color as an RGBA string.
+        /// Gets or sets the foreground color.
         /// </summary>
         public string? Foreground { get; set; }
 
         /// <summary>
-        /// Gets or sets the background color as an RGBA string.
+        /// Gets or sets the background color.
         /// </summary>
         public string? Background { get; set; }
 
         /// <summary>
-        /// Assigns the coordinate for the glyph entry.
+        /// Sets the coordinate to update.
         /// </summary>
-        /// <param name="coordinate">Target coordinate.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="coordinate">Coordinate to update.</param>
+        /// <returns>The same builder for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinate"/> is null.</exception>
         public GlyphBuilder WithCoordinate(IStringCoordinate coordinate)
         {
+            ArgumentNullException.ThrowIfNull(coordinate);
             Coordinate = coordinate;
             return this;
         }
 
         /// <summary>
-        /// Assigns a character for the glyph entry.
+        /// Sets the character to render.
         /// </summary>
         /// <param name="ch">Character to render.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithChar(char ch)
         {
             Character = ch;
@@ -167,18 +169,18 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Assigns a glyph string from a character.
+        /// Sets the glyph identifier from a character.
         /// </summary>
         /// <param name="glyph">Glyph character.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithGlyph(char glyph) =>
             WithGlyph(glyph.ToString());
 
         /// <summary>
-        /// Assigns a glyph string.
+        /// Sets the glyph identifier.
         /// </summary>
-        /// <param name="glyph">Glyph text.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="glyph">Glyph identifier.</param>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithGlyph(string glyph)
         {
             Glyph = glyph;
@@ -186,10 +188,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the foreground color from a <see cref="Color"/> value.
+        /// Sets the foreground color.
         /// </summary>
         /// <param name="color">Foreground color.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithForeground(Color color)
         {
             Foreground = color.ToRgbaString();
@@ -197,10 +199,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the background color from a <see cref="Color"/> value.
+        /// Sets the background color.
         /// </summary>
         /// <param name="color">Background color.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithBackground(Color color)
         {
             Background = color.ToRgbaString();
@@ -208,10 +210,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the foreground color from a string.
+        /// Sets the foreground color.
         /// </summary>
-        /// <param name="foreground">Foreground color string.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="foreground">Foreground color.</param>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithForeground(string foreground)
         {
             Foreground = foreground;
@@ -219,10 +221,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the background color from a string.
+        /// Sets the background color.
         /// </summary>
-        /// <param name="background">Background color string.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="background">Background color.</param>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphBuilder WithBackground(string background)
         {
             Background = background;
@@ -231,7 +233,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
     }
 
     /// <summary>
-    /// Builder for composing a glyph grid update.
+    /// Fluent builder for creating <see cref="GlyphGridUpdate"/> instances.
     /// </summary>
     public class GlyphGridUpdateBuilder
     {
@@ -241,12 +243,12 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         private List<GlyphBuilder> Glyphs { get; } = [];
 
         /// <summary>
-        /// Adds a visual path to the grid using connected cardinal directions.
+        /// Adds a path of glyph entries representing the provided coordinates.
         /// </summary>
-        /// <param name="coordinates">Coordinates forming the path.</param>
+        /// <param name="coordinates">Coordinates that form the path.</param>
         /// <param name="foreground">Optional foreground color.</param>
         /// <param name="background">Optional background color.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinates"/> is null.</exception>
         public GlyphGridUpdateBuilder WithPath(
             IEnumerable<IntegerCoordinate<int>> coordinates,
@@ -291,10 +293,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the total grid width.
+        /// Sets the grid width to communicate to the client.
         /// </summary>
         /// <param name="width">Grid width.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphGridUpdateBuilder WithWidth(int width)
         {
             Width = width;
@@ -302,10 +304,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Sets the total grid height.
+        /// Sets the grid height to communicate to the client.
         /// </summary>
         /// <param name="height">Grid height.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphGridUpdateBuilder WithHeight(int height)
         {
             Height = height;
@@ -313,10 +315,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Requests that the client clears existing grid state before applying this update.
+        /// Flags whether the client should clear the grid before applying updates.
         /// </summary>
-        /// <param name="clear">Flag indicating whether to clear.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="clear">Whether to request a clear.</param>
+        /// <returns>The same builder for chaining.</returns>
         public GlyphGridUpdateBuilder WithClear(bool clear = true)
         {
             Clear = clear;
@@ -324,10 +326,10 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Adds a single glyph entry to the grid update.
+        /// Adds a single glyph entry configured via a callback.
         /// </summary>
-        /// <param name="configure">Configuration delegate for the entry.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="configure">Callback to populate the entry.</param>
+        /// <returns>The same builder for chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
         public GlyphGridUpdateBuilder WithEntry(
             Func<GlyphBuilder, GlyphBuilder> configure
@@ -339,13 +341,15 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Adds multiple glyph entries to the grid update.
+        /// Adds multiple glyph entries configured from a collection.
         /// </summary>
-        /// <param name="entries">Entries to translate into grid updates.</param>
-        /// <param name="configure">Configuration delegate that maps entries to a builder.</param>
-        /// <typeparam name="T">Type of the source entries.</typeparam>
-        /// <returns>The same builder instance.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="entries"/> or <paramref name="configure"/> is null.</exception>
+        /// <typeparam name="T">Type of source entries.</typeparam>
+        /// <param name="entries">Source entries to convert.</param>
+        /// <param name="configure">Callback that maps an entry to a builder configuration.</param>
+        /// <returns>The same builder for chaining.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="entries"/> or <paramref name="configure"/> is null.
+        /// </exception>
         public GlyphGridUpdateBuilder WithEntries<T>(
             IEnumerable<T> entries,
             Func<GlyphBuilder, T, GlyphBuilder> configure
@@ -361,13 +365,15 @@ public class GlyphGridUpdate : GridUpdate<Cell>
         }
 
         /// <summary>
-        /// Creates the immutable <see cref="GlyphGridUpdate"/> instance.
+        /// Builds the immutable <see cref="GlyphGridUpdate"/> instance.
         /// </summary>
-        /// <returns>A configured <see cref="GlyphGridUpdate"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when required data is missing.</exception>
+        /// <returns>The composed glyph grid update.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when required coordinate or glyph information is missing.
+        /// </exception>
         public GlyphGridUpdate Build()
         {
-            var rows = new Dictionary<string, Dictionary<string, Cell>>();
+            var rows = new Dictionary<string, Dictionary<string, GlyphCell>>();
             foreach (var glyph in Glyphs)
             {
                 if (glyph.Coordinate == null)
@@ -385,7 +391,7 @@ public class GlyphGridUpdate : GridUpdate<Cell>
                 if (!rows.TryGetValue(y, out var row))
                     row = rows[y] = [];
 
-                row[x] = new Cell
+                row[x] = new GlyphCell
                 {
                     Glyph = glyph.Glyph,
                     Char = glyph.Character?.ToString(),

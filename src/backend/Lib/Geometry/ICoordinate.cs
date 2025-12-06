@@ -2,93 +2,92 @@ using System.Numerics;
 
 namespace Lib.Geometry;
 
+/// <summary>
+/// Defines a numeric 2D coordinate with helper members for common operations.
+/// </summary>
+/// <typeparam name="TCoordinate">Concrete coordinate type.</typeparam>
+/// <typeparam name="TNumber">Numeric component type.</typeparam>
 public interface ICoordinate<TCoordinate, TNumber> : IStringCoordinate
     where TCoordinate : ICoordinate<TCoordinate, TNumber>
     where TNumber : INumber<TNumber>
 {
     /// <summary>
-    /// Gets the x-component.
+    /// X component.
     /// </summary>
     TNumber X { get; }
 
     /// <summary>
-    /// Gets the y-component.
+    /// Y component.
     /// </summary>
     TNumber Y { get; }
 
     /// <summary>
-    /// Gets a coordinate with all components set to zero.
+    /// Coordinate at (0, 0).
     /// </summary>
     static abstract TCoordinate Zero { get; }
 
     /// <summary>
-    /// Gets a coordinate with all components set to one.
+    /// Coordinate at (1, 1).
     /// </summary>
     static abstract TCoordinate One { get; }
 
     /// <summary>
-    /// Gets the unit vector along the X axis.
+    /// Unit vector along X.
     /// </summary>
     static abstract TCoordinate UnitX { get; }
 
     /// <summary>
-    /// Gets the unit vector along the Y axis.
+    /// Unit vector along Y.
     /// </summary>
     static abstract TCoordinate UnitY { get; }
 
     /// <summary>
-    /// Returns the component-wise minimum between this coordinate and another.
+    /// Component-wise minimum.
     /// </summary>
-    /// <param name="other">Coordinate to compare with.</param>
-    /// <returns>The minimum coordinate values.</returns>
     TCoordinate Min(TCoordinate other);
 
     /// <summary>
-    /// Returns the component-wise maximum between this coordinate and another.
+    /// Component-wise maximum.
     /// </summary>
-    /// <param name="other">Coordinate to compare with.</param>
-    /// <returns>The maximum coordinate values.</returns>
     TCoordinate Max(TCoordinate other);
 
     /// <summary>
-    /// Clamps each component between the provided minimum and maximum coordinates.
+    /// Clamps each component between bounds.
     /// </summary>
-    /// <param name="min">Minimum values.</param>
-    /// <param name="max">Maximum values.</param>
-    /// <returns>The clamped coordinate.</returns>
     TCoordinate Clamp(TCoordinate min, TCoordinate max);
 
     /// <summary>
-    /// Copies the sign of each component from another coordinate.
+    /// Copies the sign of another coordinate.
     /// </summary>
-    /// <param name="sign">Coordinate providing sign information.</param>
-    /// <returns>Coordinate with magnitudes from this and signs from <paramref name="sign"/>.</returns>
     TCoordinate CopySign(TCoordinate sign);
 
     /// <summary>
     /// Returns the absolute value of each component.
     /// </summary>
-    /// <returns>Component-wise absolute value.</returns>
     TCoordinate Abs();
 
     /// <summary>
-    /// Computes the Manhattan length (sum of absolute components).
+    /// Computes the Manhattan length of the coordinate.
     /// </summary>
-    /// <returns>Sum of <see cref="X"/> and <see cref="Y"/>.</returns>
-    TNumber ManhattanLength() => X + Y;
+    TNumber ManhattanLength() => TNumber.Abs(X) + TNumber.Abs(Y);
 }
 
+/// <summary>
+/// Defines a numeric 3D coordinate with string accessors for each component.
+/// </summary>
+/// <typeparam name="TCoordinate">Concrete coordinate type.</typeparam>
+/// <typeparam name="TNumber">Numeric component type.</typeparam>
 public interface ICoordinate3D<TCoordinate, TNumber> : ICoordinate<TCoordinate, TNumber>
     where TCoordinate : ICoordinate<TCoordinate, TNumber>
     where TNumber : INumber<TNumber>
 {
     /// <summary>
-    /// Gets the z-component.
+    /// Z component.
     /// </summary>
     TNumber Z { get; }
 
     /// <summary>
-    /// Gets the z-component as a string for display purposes.
+    /// Returns the Z component as a string.
     /// </summary>
     string? GetStringZ() => Z.ToString();
 }

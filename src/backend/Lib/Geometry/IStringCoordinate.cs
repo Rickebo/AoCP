@@ -1,14 +1,17 @@
 namespace Lib.Geometry;
 
+/// <summary>
+/// Exposes string representations for coordinate components.
+/// </summary>
 public interface IStringCoordinate
 {
     /// <summary>
-    /// Gets the x-coordinate as a string for display purposes.
+    /// Returns the X component as a string.
     /// </summary>
     string? GetStringX();
 
     /// <summary>
-    /// Gets the y-coordinate as a string for display purposes.
+    /// Returns the Y component as a string.
     /// </summary>
     string? GetStringY();
 }

@@ -5,7 +5,7 @@ using Lib.Grids;
 namespace Common.Updates;
 
 /// <summary>
-/// Grid update that carries string payloads for each addressed cell.
+/// Represents an update that renders text content on a grid.
 /// </summary>
 public class StringGridUpdate : GridUpdate<string>
 {
@@ -21,60 +21,80 @@ public class StringGridUpdate : GridUpdate<string>
     };
 
     /// <summary>
-    /// Creates a string grid update from a <see cref="Color"/> grid.
+    /// Creates an update from a color grid, converting each cell to its RGBA representation.
     /// </summary>
-    /// <param name="grid">Grid to translate.</param>
-    /// <returns>A <see cref="StringGridUpdate"/> containing RGBA string values.</returns>
-    public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid) => FromGrid(
-        grid,
-        cell => cell.ToRgbaString(),
-        Construct
-    );
+    /// <param name="grid">Source grid of colors.</param>
+    /// <returns>A <see cref="StringGridUpdate"/> describing the grid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="grid"/> is null.</exception>
+    public static StringGridUpdate FromColorGrid(ArrayGrid<Color> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            cell => cell.ToRgbaString(),
+            Construct
+        );
+    }
 
     /// <summary>
-    /// Creates a string grid update from a string grid.
+    /// Creates an update from a grid of strings.
     /// </summary>
-    /// <param name="grid">Grid to translate.</param>
-    /// <returns>A <see cref="StringGridUpdate"/>.</returns>
-    public static StringGridUpdate FromStringGrid(ArrayGrid<string> grid) => FromGrid(
-        grid,
-        cell => cell ?? string.Empty,
-        Construct
-    );
+    /// <param name="grid">Source grid of strings.</param>
+    /// <returns>A <see cref="StringGridUpdate"/> describing the grid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="grid"/> is null.</exception>
+    public static StringGridUpdate FromStringGrid(ArrayGrid<string> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            cell => cell ?? string.Empty,
+            Construct
+        );
+    }
 
     /// <summary>
-    /// Creates a string grid update from a char grid.
+    /// Creates an update from a grid of characters.
     /// </summary>
-    /// <param name="grid">Grid to translate.</param>
-    /// <returns>A <see cref="StringGridUpdate"/>.</returns>
-    public static StringGridUpdate FromCharGrid(ArrayGrid<char> grid) => FromGrid(
-        grid,
-        ch => ch.ToString(),
-        Construct
-    );
+    /// <param name="grid">Source grid of characters.</param>
+    /// <returns>A <see cref="StringGridUpdate"/> describing the grid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="grid"/> is null.</exception>
+    public static StringGridUpdate FromCharGrid(ArrayGrid<char> grid)
+    {
+        ArgumentNullException.ThrowIfNull(grid);
+        return FromGrid(
+            grid,
+            ch => ch.ToString(),
+            Construct
+        );
+    }
 
     /// <summary>
-    /// Creates a rectangular fill starting at an origin with the provided color.
+    /// Creates an update that paints a rectangle of a single color.
     /// </summary>
-    /// <param name="origin">Top-left origin for the rectangle.</param>
-    /// <param name="width">Rectangle width.</param>
-    /// <param name="height">Rectangle height.</param>
-    /// <param name="color">Fill color.</param>
-    /// <returns>A <see cref="StringGridUpdate"/> describing the fill.</returns>
+    /// <param name="origin">Top-left origin of the rectangle.</param>
+    /// <param name="width">Width of the rectangle.</param>
+    /// <param name="height">Height of the rectangle.</param>
+    /// <param name="color">Color to paint.</param>
+    /// <returns>A <see cref="StringGridUpdate"/> describing the rectangle.</returns>
     public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, Color color) =>
         FromRect(origin, width, height, color.ToRgbaString());
 
     /// <summary>
-    /// Creates a rectangular fill starting at an origin with a string payload.
+    /// Creates an update that paints a rectangle of a single color.
     /// </summary>
-    /// <param name="origin">Top-left origin for the rectangle.</param>
-    /// <param name="width">Rectangle width.</param>
-    /// <param name="height">Rectangle height.</param>
-    /// <param name="color">Value to set for each cell.</param>
-    /// <returns>A <see cref="StringGridUpdate"/> describing the fill.</returns>
+    /// <param name="origin">Top-left origin of the rectangle.</param>
+    /// <param name="width">Width of the rectangle.</param>
+    /// <param name="height">Height of the rectangle.</param>
+    /// <param name="color">Color to paint, expressed as a string.</param>
+    /// <returns>A <see cref="StringGridUpdate"/> describing the rectangle.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="width"/> or <paramref name="height"/> is non-positive.
+    /// </exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="color"/> is null or whitespace.</exception>
     public static StringGridUpdate FromRect(IntegerCoordinate<int> origin, int width, int height, string color)
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         ArgumentException.ThrowIfNullOrWhiteSpace(color);
 
         var rows = new Dictionary<string, Dictionary<string, string>>();
@@ -96,18 +116,18 @@ public class StringGridUpdate : GridUpdate<string>
     }
 
     /// <summary>
-    /// Creates a builder for composing a string grid update fluently.
+    /// Creates a new builder for composing string grid updates.
     /// </summary>
     /// <returns>A new <see cref="StringGridUpdateBuilder"/>.</returns>
     public static StringGridUpdateBuilder Builder() => new();
 
     /// <summary>
-    /// Builder for configuring an individual string entry within a grid update.
+    /// Fluent builder for configuring a single string grid entry.
     /// </summary>
     public class StringCoordinateBuilder
     {
         /// <summary>
-        /// Gets or sets the coordinate targeted by the entry.
+        /// Gets or sets the coordinate to update.
         /// </summary>
         public IStringCoordinate Coordinate { get; set; } = default!;
 
@@ -117,32 +137,34 @@ public class StringGridUpdate : GridUpdate<string>
         public string Text { get; set; } = string.Empty;
 
         /// <summary>
-        /// Sets the coordinate for the entry.
+        /// Sets the coordinate to update.
         /// </summary>
-        /// <param name="coordinate">Coordinate for the string entry.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="coordinate">Coordinate to update.</param>
+        /// <returns>The same builder for chaining.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinate"/> is null.</exception>
         public StringCoordinateBuilder WithCoordinate(IStringCoordinate coordinate)
         {
+            ArgumentNullException.ThrowIfNull(coordinate);
             Coordinate = coordinate;
             return this;
         }
 
         /// <summary>
-        /// Sets the text for the entry.
+        /// Sets the text to render.
         /// </summary>
         /// <param name="text">Text to render.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public StringCoordinateBuilder WithText(string text)
         {
-            Text = text;
+            Text = text ?? string.Empty;
             return this;
         }
 
         /// <summary>
-        /// Sets the text for the entry using the RGBA string for a <see cref="Color"/>.
+        /// Sets the text to the provided color string.
         /// </summary>
         /// <param name="color">Color to render.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public StringCoordinateBuilder WithColor(Color color)
         {
             Text = color.ToRgbaString();
@@ -151,7 +173,7 @@ public class StringGridUpdate : GridUpdate<string>
     }
 
     /// <summary>
-    /// Builder for composing a complete string grid update.
+    /// Fluent builder for creating <see cref="StringGridUpdate"/> instances.
     /// </summary>
     public class StringGridUpdateBuilder
     {
@@ -161,10 +183,10 @@ public class StringGridUpdate : GridUpdate<string>
         private List<StringCoordinateBuilder> Texts { get; } = [];
         
         /// <summary>
-        /// Sets the total grid width.
+        /// Sets the grid width to communicate to the client.
         /// </summary>
         /// <param name="width">Grid width.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public StringGridUpdateBuilder WithWidth(int width)
         {
             Width = width;
@@ -172,10 +194,10 @@ public class StringGridUpdate : GridUpdate<string>
         }
 
         /// <summary>
-        /// Sets the total grid height.
+        /// Sets the grid height to communicate to the client.
         /// </summary>
         /// <param name="height">Grid height.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <returns>The same builder for chaining.</returns>
         public StringGridUpdateBuilder WithHeight(int height)
         {
             Height = height;
@@ -183,10 +205,10 @@ public class StringGridUpdate : GridUpdate<string>
         }
 
         /// <summary>
-        /// Requests that the client clears existing grid state before applying this update.
+        /// Flags whether the client should clear the grid before applying updates.
         /// </summary>
-        /// <param name="clear">Flag indicating whether to clear.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="clear">Whether to request a clear.</param>
+        /// <returns>The same builder for chaining.</returns>
         public StringGridUpdateBuilder WithClear(bool clear = true)
         {
             Clear = clear;
@@ -194,10 +216,10 @@ public class StringGridUpdate : GridUpdate<string>
         }
 
         /// <summary>
-        /// Adds a single entry to the grid update.
+        /// Adds a single entry configured via a callback.
         /// </summary>
-        /// <param name="configure">Configuration delegate for the entry.</param>
-        /// <returns>The same builder instance.</returns>
+        /// <param name="configure">Callback to populate the entry.</param>
+        /// <returns>The same builder for chaining.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
         public StringGridUpdateBuilder WithEntry(
             Func<StringCoordinateBuilder, StringCoordinateBuilder> configure
@@ -209,13 +231,15 @@ public class StringGridUpdate : GridUpdate<string>
         }
 
         /// <summary>
-        /// Adds multiple entries to the grid update.
+        /// Adds multiple entries configured from a collection.
         /// </summary>
-        /// <param name="entries">Entries to translate into grid updates.</param>
-        /// <param name="configure">Configuration delegate that maps entries to a builder.</param>
-        /// <typeparam name="T">Type of the source entries.</typeparam>
-        /// <returns>The same builder instance.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="entries"/> or <paramref name="configure"/> is null.</exception>
+        /// <typeparam name="T">Type of source entries.</typeparam>
+        /// <param name="entries">Source entries to convert.</param>
+        /// <param name="configure">Callback that maps an entry to a builder configuration.</param>
+        /// <returns>The same builder for chaining.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// Thrown when <paramref name="entries"/> or <paramref name="configure"/> is null.
+        /// </exception>
         public StringGridUpdateBuilder WithEntries<T>(
             IEnumerable<T> entries,
             Func<StringCoordinateBuilder, T, StringCoordinateBuilder> configure
@@ -231,10 +255,12 @@ public class StringGridUpdate : GridUpdate<string>
         }
 
         /// <summary>
-        /// Creates the immutable <see cref="StringGridUpdate"/> instance.
+        /// Builds the immutable <see cref="StringGridUpdate"/> instance.
         /// </summary>
-        /// <returns>A configured <see cref="StringGridUpdate"/>.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when coordinates are missing or invalid.</exception>
+        /// <returns>The composed string grid update.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when an entry is missing a coordinate or when coordinate components are blank.
+        /// </exception>
         public StringGridUpdate Build()
         {
             var rows = new Dictionary<string, Dictionary<string, string>>();

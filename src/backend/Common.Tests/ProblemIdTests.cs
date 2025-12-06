@@ -52,4 +52,36 @@ public class ProblemIdTests
             () => ProblemId.Create(2024, "Source", "Author", "Set", "  ")
         );
     }
+
+    [Test]
+    public void Create_WithNegativeYear_ThrowsArgumentOutOfRangeException()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => ProblemId.Create(-1, "Source", "Author", "Set", "Problem")
+        );
+    }
+
+    [Test]
+    public void ToString_ReturnsDisplayName()
+    {
+        var id = ProblemId.Create(2025, "Source", "Author", "Set", "Problem");
+
+        Assert.That(id.ToString(), Is.EqualTo(id.DisplayName));
+    }
+
+    [TestCase(null, "Author", "Set", "Problem")]
+    [TestCase("Source", null, "Set", "Problem")]
+    [TestCase("Source", "Author", null, "Problem")]
+    [TestCase("Source", "Author", "Set", null)]
+    public void Create_WithNullString_ThrowsArgumentNullException(
+        string? source,
+        string? author,
+        string? set,
+        string? problem
+    )
+    {
+        Assert.Throws<ArgumentNullException>(
+            () => ProblemId.Create(2024, source!, author!, set!, problem!)
+        );
+    }
 }

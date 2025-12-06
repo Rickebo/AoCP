@@ -1,10 +1,10 @@
 namespace Lib.Search;
 
+/// <summary>
+/// Marker interface representing the outcome of a search algorithm.
+/// </summary>
 public interface ISearchResult
 {
-    /// <summary>
-    /// Represents the result of a search operation.
-    /// </summary>
 }
 
 

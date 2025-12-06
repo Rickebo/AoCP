@@ -4,41 +4,50 @@ using Lib.Text;
 namespace Lib.Grids;
 
 /// <summary>
-/// <see cref="ArrayGrid{TValue}"/> specialized for integer values.
+/// Integer grid with parsing helpers.
 /// </summary>
 public class IntGrid : ArrayGrid<int>
 {
     /// <summary>
-    /// Creates a grid from a multiline string of digits, optionally providing a default value for non-digits.
+    /// Creates a grid from multiline input of digits.
     /// </summary>
-    /// <param name="input">Text to parse.</param>
-    /// <param name="defaultValue">Default value for any non-digit characters.</param>
-    public IntGrid(string input, int? defaultValue = null) : base(ParseFromString(input, defaultValue)) {}
+    public IntGrid(string input) : base(ParseFromString(input)) { }
 
     /// <summary>
-    /// Initializes a grid with the specified dimensions and fills it with the provided number.
+    /// Creates a grid from multiline input, replacing non-digits with <paramref name="defaultValue"/>.
     /// </summary>
-    /// <param name="width">Grid width.</param>
-    /// <param name="height">Grid height.</param>
-    /// <param name="num">Value used to populate each cell.</param>
-    public IntGrid(int width, int height, int num) : base(width, height, num) {}
+    public IntGrid(string input, int defaultValue)
+        : base(ParseFromString(input, defaultValue)) { }
 
     /// <summary>
-    /// Wraps an existing integer array as a grid.
+    /// Creates a grid from multiline input using custom split options.
     /// </summary>
-    /// <param name="values">Backing array.</param>
-    public IntGrid(int[,] values) : base(values) {}
+    public IntGrid(string input, StringSplitOptions options)
+        : base(ParseFromString(input, options: options)) { }
 
     /// <summary>
-    /// Parses a multiline string of digits into an integer array.
+    /// Creates a grid from multiline input, replacing non-digits with <paramref name="defaultValue"/> using custom split options.
     /// </summary>
-    /// <param name="str">Input text.</param>
-    /// <param name="defaultValue">Optional default value for non-digit characters.</param>
-    /// <returns>Parsed grid values.</returns>
-    private static int[,] ParseFromString(string str, int? defaultValue)
+    public IntGrid(string input, int defaultValue, StringSplitOptions options)
+        : base(ParseFromString(input, defaultValue, options)) { }
+
+    /// <summary>
+    /// Creates a grid of the given size filled with <paramref name="num"/>.
+    /// </summary>
+    public IntGrid(int width, int height, int num) : base(width, height, num) { }
+
+    /// <summary>
+    /// Creates a grid from an existing backing array.
+    /// </summary>
+    public IntGrid(int[,] values) : base(values) { }
+
+    private static int[,] ParseFromString(
+        string str, 
+        int? defaultValue = null, 
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
     {
         // Parse string input
-        var rows = str.SplitLines();
+        var rows = str.SplitLines(options);
         var height = rows.Length;
         var width = rows[0].Length;
 
@@ -60,28 +69,17 @@ public class IntGrid : ArrayGrid<int>
     }
 
     /// <summary>
-    /// Counts consecutive repeating integers starting at a coordinate in the specified direction.
+    /// Counts repeating values starting at <paramref name="pos"/> in <paramref name="dir"/>.
     /// </summary>
-    /// <param name="pos">Starting coordinate.</param>
-    /// <param name="dir">Direction to move.</param>
-    /// <returns>Number of repeating values including the starting cell.</returns>
     public int CountRepeating(IntegerCoordinate<int> pos, Direction dir) =>
         CountRepeating(pos, dir, this[pos]);
 
     /// <summary>
-    /// Counts consecutive cells equal to <paramref name="source"/> starting at a coordinate in the specified direction.
+    /// Counts repeating values matching <paramref name="source"/> starting at <paramref name="pos"/> in <paramref name="dir"/>.
     /// </summary>
-    /// <param name="pos">Starting coordinate.</param>
-    /// <param name="dir">Direction to move.</param>
-    /// <param name="source">Value that must repeat.</param>
-    /// <returns>Number of matching values including the starting cell.</returns>
     public int CountRepeating(IntegerCoordinate<int> pos, Direction dir, int source) =>
         RetrieveDirection(pos, dir).TakeWhile(val => val == source).Count();
 
-    /// <summary>
-    /// Returns a flipped copy of the grid along the specified axis.
-    /// </summary>
-    /// <param name="axis">Axis or axes to flip around.</param>
-    /// <returns>A new <see cref="IntGrid"/> containing mirrored values.</returns>
+    /// <inheritdoc />
     public override IntGrid Flip(Axis axis) => Flip(values => new IntGrid(values), axis);
 }

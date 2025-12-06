@@ -18,8 +18,8 @@ public class InfiniteGridTests
             Assert.That(grid.Contains(coord), Is.True);
             Assert.That(grid.TryGetValue(coord, out var value), Is.True);
             Assert.That(value, Is.EqualTo('x'));
-            Assert.That(grid.Min, Is.EqualTo(new IntegerCoordinate<int>(-1, 0)));
-            Assert.That(grid.Max, Is.EqualTo(new IntegerCoordinate<int>(0, 2)));
+            Assert.That(grid.Min, Is.EqualTo(coord));
+            Assert.That(grid.Max, Is.EqualTo(coord));
         });
     }
 }

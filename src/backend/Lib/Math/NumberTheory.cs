@@ -2,15 +2,14 @@ using System.Numerics;
 
 namespace Lib.Math;
 
+/// <summary>
+/// Number theory utilities such as GCD/LCM and prime generation.
+/// </summary>
 public static class NumberTheory
 {
     /// <summary>
-    /// Computes the greatest common divisor of two numbers using the Euclidean algorithm.
+    /// Computes the greatest common divisor using the Euclidean algorithm.
     /// </summary>
-    /// <typeparam name="T">Numeric type.</typeparam>
-    /// <param name="a">First value.</param>
-    /// <param name="b">Second value.</param>
-    /// <returns>The greatest common divisor of the two values.</returns>
     public static T GreatestCommonDivisor<T>(T a, T b) where T : INumber<T>
     {
         a = T.Abs(a);
@@ -27,10 +26,6 @@ public static class NumberTheory
     /// <summary>
     /// Computes the least common multiple of two numbers.
     /// </summary>
-    /// <typeparam name="T">Numeric type.</typeparam>
-    /// <param name="a">First value.</param>
-    /// <param name="b">Second value.</param>
-    /// <returns>The least common multiple, or zero when either input is zero.</returns>
     public static T LeastCommonMultiple<T>(T a, T b) where T : INumber<T>
     {
         if (a == T.Zero || b == T.Zero)
@@ -40,12 +35,8 @@ public static class NumberTheory
     }
 
     /// <summary>
-    /// Computes the least common multiple of a collection of values.
+    /// Computes the least common multiple of a sequence of numbers.
     /// </summary>
-    /// <typeparam name="T">Numeric type.</typeparam>
-    /// <param name="values">Sequence of values.</param>
-    /// <returns>Least common multiple of the sequence.</returns>
-    /// <exception cref="ArgumentException">Thrown when the sequence is empty.</exception>
     public static T LeastCommonMultiple<T>(IEnumerable<T> values) where T : INumber<T>
     {
         var enumerator = values.GetEnumerator();
@@ -60,10 +51,8 @@ public static class NumberTheory
     }
 
     /// <summary>
-    /// Yields all prime numbers up to the given limit using the sieve of Eratosthenes.
+    /// Generates prime numbers up to and including <paramref name="limit"/> using the Sieve of Eratosthenes.
     /// </summary>
-    /// <param name="limit">Largest number to consider.</param>
-    /// <returns>Sequence of primes up to <paramref name="limit"/>.</returns>
     public static IEnumerable<int> Sieve(int limit)
     {
         if (limit < 2)

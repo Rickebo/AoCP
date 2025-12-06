@@ -2,15 +2,18 @@ using Lib.Geometry;
 
 namespace Lib.Grids;
 
+/// <summary>
+/// Common grid traversal algorithms.
+/// </summary>
 public static class GridAlgorithms
 {
     /// <summary>
-    /// Flood fill that returns all coordinates reachable from start while the predicate is true.
+    /// Performs a flood fill from <paramref name="start"/> selecting cells that satisfy <paramref name="predicate"/>.
     /// </summary>
-    /// <param name="grid">Grid to traverse.</param>
+    /// <param name="grid">Grid to search.</param>
     /// <param name="start">Starting coordinate.</param>
-    /// <param name="predicate">Predicate that must hold for a cell to be visited.</param>
-    /// <returns>All reachable coordinates satisfying the predicate.</returns>
+    /// <param name="predicate">Predicate that determines if a cell is fillable.</param>
+    /// <returns>All coordinates reached by the fill.</returns>
     public static IReadOnlyCollection<IntegerCoordinate<int>> FloodFill(
         ArrayGrid<char> grid,
         IntegerCoordinate<int> start,

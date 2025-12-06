@@ -4,26 +4,29 @@ using Lib.Geometry;
 namespace Lib.Grids;
 
 /// <summary>
-/// Sparse grid that grows as values are written, tracked by integer coordinates.
+/// Sparse grid that grows as values are assigned.
 /// </summary>
+/// <typeparam name="TValue">Cell value type.</typeparam>
+/// <typeparam name="TCoordinateNumber">Numeric type for coordinates.</typeparam>
 public class InfiniteGrid<TValue, TCoordinateNumber>
     : IGrid<TValue, IntegerCoordinate<TCoordinateNumber>, TCoordinateNumber>
     where TCoordinateNumber : INumber<TCoordinateNumber>, IBinaryInteger<TCoordinateNumber>
 {
     /// <summary>
-    /// Gets the minimum coordinate that has been written so far.
+    /// Minimum coordinate that has been assigned.
     /// </summary>
     public IntegerCoordinate<TCoordinateNumber> Min { get; private set; } = new();
 
     /// <summary>
-    /// Gets the maximum coordinate that has been written so far.
+    /// Maximum coordinate that has been assigned.
     /// </summary>
     public IntegerCoordinate<TCoordinateNumber> Max { get; private set; } = new();
 
     private readonly Dictionary<TCoordinateNumber, Dictionary<TCoordinateNumber, TValue>> _values = [];
+    private bool _hasValues;
 
     /// <summary>
-    /// Enumerates all coordinates that currently have stored values.
+    /// All coordinates that currently have stored values.
     /// </summary>
     public IEnumerable<IntegerCoordinate<TCoordinateNumber>> Coordinates =>
         _values.SelectMany(
@@ -33,19 +36,14 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
         );
 
     /// <summary>
-    /// Determines whether a value exists at the given coordinate.
+    /// Determines whether a coordinate has an assigned value.
     /// </summary>
-    /// <param name="coordinate">Coordinate to check.</param>
-    /// <returns><c>true</c> when a value is present; otherwise <c>false</c>.</returns>
     public bool Contains(IntegerCoordinate<TCoordinateNumber> coordinate) =>
         _values.TryGetValue(coordinate.Y, out var row) && row.ContainsKey(coordinate.X);
 
     /// <summary>
-    /// Attempts to retrieve the value at the given coordinate.
+    /// Attempts to retrieve the value at a coordinate.
     /// </summary>
-    /// <param name="coordinate">Coordinate to read.</param>
-    /// <param name="value">Value found at the coordinate, if present.</param>
-    /// <returns><c>true</c> when a value is present; otherwise <c>false</c>.</returns>
     public bool TryGetValue(IntegerCoordinate<TCoordinateNumber> coordinate, out TValue? value)
     {
         if (_values.TryGetValue(coordinate.Y, out var row))
@@ -56,10 +54,8 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
     }
 
     /// <summary>
-    /// Gets or sets the value stored at the specified coordinate.
+    /// Gets or sets the value at the specified coordinate, tracking the observed bounds.
     /// </summary>
-    /// <param name="coordinate">Coordinate to address.</param>
-    /// <returns>The stored value.</returns>
     public TValue this[IntegerCoordinate<TCoordinateNumber> coordinate]
     {
         get => _values[coordinate.Y][coordinate.X];
@@ -69,6 +65,14 @@ public class InfiniteGrid<TValue, TCoordinateNumber>
                 row = _values[coordinate.Y] = [];
 
             row[coordinate.X] = value;
+            if (!_hasValues)
+            {
+                Min = coordinate;
+                Max = coordinate;
+                _hasValues = true;
+                return;
+            }
+
             Min = Min.Min(coordinate);
             Max = Max.Max(coordinate);
         }

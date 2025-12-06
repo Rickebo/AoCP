@@ -1,13 +1,11 @@
 namespace Common.Updates;
 
 /// <summary>
-/// Represents a terminal update produced when a problem run has completed.
+/// Signals that a problem execution has completed.
 /// </summary>
 public class FinishedProblemUpdate : ProblemUpdate
 {
-    /// <summary>
-    /// Gets the update type string used for completion notifications.
-    /// </summary>
+    /// <inheritdoc />
     public override string Type => "finished";
 
     /// <summary>
@@ -16,33 +14,37 @@ public class FinishedProblemUpdate : ProblemUpdate
     public bool Successful { get; set; }
 
     /// <summary>
-    /// Gets or sets the textual solution produced by the problem run.
+    /// Gets or sets the rendered solution when available.
     /// </summary>
     public string? Solution { get; set; }
 
     /// <summary>
-    /// Gets or sets the error message associated with a failed run.
+    /// Gets or sets an error message when the run fails.
     /// </summary>
     public string? Error { get; set; }
 
     /// <summary>
-    /// Gets or sets the elapsed runtime of the problem in nanoseconds.
+    /// Gets or sets the elapsed execution time in nanoseconds.
     /// </summary>
     public long ElapsedNanoseconds { get; set; }
 
     /// <summary>
-    /// Creates a successful update from a formatted solution value.
+    /// Creates a successful update from a formattable solution.
     /// </summary>
-    /// <param name="solution">Solution value that can be formatted as a string.</param>
-    /// <returns>A successful <see cref="FinishedProblemUpdate"/> instance.</returns>
-    public static FinishedProblemUpdate FromSolution(IFormattable solution) =>
-        FromSolution(solution.ToString() ?? string.Empty);
+    /// <param name="solution">Solution value to render.</param>
+    /// <returns>A <see cref="FinishedProblemUpdate"/> marked as successful.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="solution"/> is null.</exception>
+    public static FinishedProblemUpdate FromSolution(IFormattable solution)
+    {
+        ArgumentNullException.ThrowIfNull(solution);
+        return FromSolution(solution.ToString() ?? string.Empty);
+    }
 
     /// <summary>
-    /// Creates a successful update from a string solution.
+    /// Creates a successful update from a solution string.
     /// </summary>
-    /// <param name="solution">Solution text.</param>
-    /// <returns>A successful <see cref="FinishedProblemUpdate"/> instance.</returns>
+    /// <param name="solution">Solution string to emit.</param>
+    /// <returns>A <see cref="FinishedProblemUpdate"/> marked as successful.</returns>
     public static FinishedProblemUpdate FromSolution(string solution) =>
         new()
         {
@@ -52,11 +54,11 @@ public class FinishedProblemUpdate : ProblemUpdate
         };
 
     /// <summary>
-    /// Creates a failed update carrying an error description.
+    /// Creates a failed update with an error message and optional partial solution.
     /// </summary>
     /// <param name="error">Error message describing the failure.</param>
-    /// <param name="solution">Optional solution text when partial results exist.</param>
-    /// <returns>A failed <see cref="FinishedProblemUpdate"/> instance.</returns>
+    /// <param name="solution">Optional partial solution computed before failing.</param>
+    /// <returns>A <see cref="FinishedProblemUpdate"/> marked as unsuccessful.</returns>
     public static FinishedProblemUpdate FromError(string error, string? solution = null) =>
         new()
         {

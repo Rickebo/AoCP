@@ -3,25 +3,28 @@ using System.Numerics;
 namespace Lib.Search;
 
 /// <summary>
-/// Basic breadth-first search implementation for the shared search abstractions.
+/// Breadth-first search implementation for unweighted graphs.
 /// </summary>
+/// <typeparam name="TSource">Search source type.</typeparam>
+/// <typeparam name="TElement">Element type.</typeparam>
+/// <typeparam name="TCost">Cost numeric type.</typeparam>
 public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISearchAlgorithm<TSource, TElement, TCost> 
     where TSource : ISearchSource<TElement, TCost>
     where TElement : ISearchElement<TCost>
     where TCost : INumber<TCost>
 {
     /// <summary>
-    /// Gets the search dataset providing neighbours.
+    /// Source dataset that provides neighbours.
     /// </summary>
     public TSource Dataset { get; init; } = dataset;
 
     /// <summary>
-    /// Performs a breadth-first traversal until the end element is reached or no nodes remain.
+    /// Runs breadth-first search from <paramref name="start"/> to <paramref name="end"/>.
     /// </summary>
-    /// <param name="start">Element to begin the search from.</param>
-    /// <param name="initialCost">Initial cost applied to the starting element.</param>
-    /// <param name="end">Target element to locate.</param>
-    /// <returns>A successful result when the target is found; otherwise an unsuccessful result.</returns>
+    /// <param name="start">Starting element.</param>
+    /// <param name="initialCost">Initial cost value.</param>
+    /// <param name="end">Target element.</param>
+    /// <returns>Search result indicating success or failure.</returns>
     public ISearchResult Find(TElement start, TCost initialCost, TElement end)
     {
         var frontier = new Queue<(TElement Element, TCost Cost)>();
@@ -60,7 +63,7 @@ public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISe
     }
 
     /// <summary>
-    /// Base type for breadth-first search results.
+    /// Base result for breadth-first search.
     /// </summary>
     public abstract class BreadthFirstSearchResult : ISearchResult
     {
@@ -68,18 +71,18 @@ public class BreadthFirstSearch<TSource, TElement, TCost>(TSource dataset) : ISe
     }
 
     /// <summary>
-    /// Represents a successful breadth-first search with the resulting traversal cost.
+    /// Successful breadth-first search result with cumulative cost.
     /// </summary>
     public class SuccessfulBreadthFirstSearchResult : BreadthFirstSearchResult
     {
         /// <summary>
-        /// Gets the cumulative cost from the start node to the found end node.
+        /// Total cost accumulated along the found path.
         /// </summary>
         public required TCost Cost { get; init; }
     }
 
     /// <summary>
-    /// Represents an unsuccessful breadth-first search.
+    /// Returned when no path is found.
     /// </summary>
     public class UnsuccessfulBreadthFirstSearchResult : BreadthFirstSearchResult
     {

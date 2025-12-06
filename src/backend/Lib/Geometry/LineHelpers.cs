@@ -2,16 +2,18 @@ using System.Numerics;
 
 namespace Lib.Geometry;
 
+/// <summary>
+/// Utility methods for working with line segments and distances.
+/// </summary>
 public static class LineHelpers
 {
     /// <summary>
-    /// Enumerates every integer coordinate on a straight segment between start and end, provided the
-    /// line is horizontal, vertical, or a 45-degree diagonal. Throws otherwise.
+    /// Enumerates all coordinates on a straight horizontal, vertical, or 45-degree diagonal line segment.
     /// </summary>
-    /// <param name="start">Start coordinate for the segment.</param>
-    /// <param name="end">End coordinate for the segment.</param>
-    /// <returns>All coordinates along the segment, including start and end.</returns>
-    /// <exception cref="ArgumentException">Thrown when the line is not axis-aligned or 45 degrees.</exception>
+    /// <param name="start">Start coordinate (inclusive).</param>
+    /// <param name="end">End coordinate (inclusive).</param>
+    /// <returns>All coordinates along the segment.</returns>
+    /// <exception cref="ArgumentException">Thrown when the segment is not horizontal, vertical, or 45 degrees.</exception>
     public static IEnumerable<Coordinate<int>> EnumerateSegment(Coordinate<int> start, Coordinate<int> end)
     {
         var delta = new Coordinate<int>(end.X - start.X, end.Y - start.Y);
@@ -32,11 +34,8 @@ public static class LineHelpers
     }
 
     /// <summary>
-    /// Calculates the Manhattan distance between two 2D coordinates.
+    /// Computes the Manhattan distance between two 2D coordinates.
     /// </summary>
-    /// <param name="a">First coordinate.</param>
-    /// <param name="b">Second coordinate.</param>
-    /// <returns>Manhattan distance between the two points.</returns>
     public static T ManhattanDistance<T>(Coordinate<T> a, Coordinate<T> b) where T : INumber<T>
     {
         var dx = a.X - b.X;
@@ -45,11 +44,8 @@ public static class LineHelpers
     }
 
     /// <summary>
-    /// Calculates the Manhattan distance between two 3D coordinates.
+    /// Computes the Manhattan distance between two 3D coordinates.
     /// </summary>
-    /// <param name="a">First coordinate.</param>
-    /// <param name="b">Second coordinate.</param>
-    /// <returns>Manhattan distance between the two points.</returns>
     public static T ManhattanDistance<T>(Coordinate3D<T> a, Coordinate3D<T> b) where T : INumber<T>
     {
         var dx = a.X - b.X;

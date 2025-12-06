@@ -1,14 +1,17 @@
 namespace Lib.Graphs;
 
+/// <summary>
+/// Represents a directed connection between two nodes.
+/// </summary>
 public interface IEdge<TNode> where TNode : notnull
 {
     /// <summary>
-    /// Gets the node this edge originates from.
+    /// Source node.
     /// </summary>
     TNode From { get; }
 
     /// <summary>
-    /// Gets the node this edge points to.
+    /// Destination node.
     /// </summary>
     TNode To { get; }
 }

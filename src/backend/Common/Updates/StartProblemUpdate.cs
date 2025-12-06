@@ -1,13 +1,11 @@
 namespace Common.Updates;
 
 /// <summary>
-/// Signals that a problem has started running.
+/// Marks the beginning of a problem execution.
 /// </summary>
 public class StartProblemUpdate : OngoingProblemUpdate
 { 
-    /// <summary>
-    /// Gets the update type string used for start notifications.
-    /// </summary>
+    /// <inheritdoc />
     public override string Type => "start";
 }
 

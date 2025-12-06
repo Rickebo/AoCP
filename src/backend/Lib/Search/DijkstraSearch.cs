@@ -3,24 +3,24 @@ using System.Numerics;
 namespace Lib.Search;
 
 /// <summary>
-/// Generic Dijkstra search that operates on the existing ISearchSource/ISearchElement abstractions.
+/// Dijkstra's algorithm for shortest path search on weighted graphs.
 /// </summary>
+/// <typeparam name="TSource">Search source type.</typeparam>
+/// <typeparam name="TElement">Element type.</typeparam>
+/// <typeparam name="TCost">Cost numeric type.</typeparam>
 public sealed class DijkstraSearch<TSource, TElement, TCost>(TSource dataset)
     where TSource : ISearchSource<TElement, TCost>
     where TElement : ISearchElement<TCost>
     where TCost : INumber<TCost>
 {
     /// <summary>
-    /// Gets the dataset supplying neighbours for traversal.
+    /// Source dataset that provides neighbours.
     /// </summary>
     public TSource Dataset { get; } = dataset;
 
     /// <summary>
-    /// Finds the lowest-cost path between <paramref name="start"/> and <paramref name="goal"/> using Dijkstra's algorithm.
+    /// Executes the search between <paramref name="start"/> and <paramref name="goal"/>.
     /// </summary>
-    /// <param name="start">Element to start from.</param>
-    /// <param name="goal">Element to reach.</param>
-    /// <returns>A successful result with the path and cost when reachable; otherwise an unsuccessful result.</returns>
     public ISearchResult Find(TElement start, TElement goal)
     {
         var frontier = new System.Collections.Generic.PriorityQueue<TElement, TCost>();
@@ -57,38 +57,31 @@ public sealed class DijkstraSearch<TSource, TElement, TCost>(TSource dataset)
     }
 
     /// <summary>
-    /// Base type for Dijkstra search results.
+    /// Base class for Dijkstra search results.
     /// </summary>
     public abstract class DijkstraResult : ISearchResult { }
 
     /// <summary>
-    /// Represents a successful Dijkstra search containing the resulting path and cost.
+    /// Successful result containing cost and path.
     /// </summary>
     public sealed class SuccessfulResult : DijkstraResult
     {
         /// <summary>
-        /// Gets the total traversal cost of the discovered path.
+        /// Total cost from start to goal.
         /// </summary>
         public required TCost Cost { get; init; }
 
         /// <summary>
-        /// Gets the nodes visited from start to goal.
+        /// Path of elements from start to goal.
         /// </summary>
         public required IReadOnlyList<TElement> Path { get; init; }
     }
 
     /// <summary>
-    /// Represents a Dijkstra search that could not reach the goal.
+    /// Returned when no path is found.
     /// </summary>
     public sealed class UnsuccessfulResult : DijkstraResult { }
 
-    /// <summary>
-    /// Reconstructs the path using the stored predecessors from goal back to start.
-    /// </summary>
-    /// <param name="start">Start element.</param>
-    /// <param name="goal">Goal element.</param>
-    /// <param name="predecessors">Mapping of elements to their predecessor on the optimal path.</param>
-    /// <returns>An ordered list of elements representing the full path.</returns>
     private static IReadOnlyList<TElement> ReconstructPath(TElement start, TElement goal, IReadOnlyDictionary<TElement, TElement> predecessors)
     {
         var path = new List<TElement> { goal };

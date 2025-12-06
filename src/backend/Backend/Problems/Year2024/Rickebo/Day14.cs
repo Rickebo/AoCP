@@ -104,7 +104,7 @@ public class Day14 : ProblemSet
             reporter.Report(
                 GlyphGridUpdate.FromGrid(
                     grid,
-                    value => new Cell
+                    value => new GlyphCell
                     {
                         Glyph = null,
                         Char = value > 9 ? "+" : value.ToString(),
