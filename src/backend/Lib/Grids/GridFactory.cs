@@ -2,12 +2,6 @@ namespace Lib.Grids;
 
 public static class GridFactory
 {
-    /// <summary>
-    /// Parses a rectangular collection of strings into a character grid.
-    /// </summary>
-    /// <param name="lines">Input lines of uniform length.</param>
-    /// <returns>A new grid containing the parsed characters.</returns>
-    /// <exception cref="ArgumentException">Thrown when input is empty or rows differ in length.</exception>
     public static ArrayGrid<char> ParseCharGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();
@@ -27,12 +21,6 @@ public static class GridFactory
         return new ArrayGrid<char>(data);
     }
 
-    /// <summary>
-    /// Parses a rectangular collection of numeric strings into an integer grid.
-    /// </summary>
-    /// <param name="lines">Input lines consisting of digits.</param>
-    /// <returns>A new grid populated with parsed digits.</returns>
-    /// <exception cref="ArgumentException">Thrown when input is empty, rows are uneven, or a non-digit is encountered.</exception>
     public static ArrayGrid<int> ParseIntGrid(IEnumerable<string> lines)
     {
         var rows = lines.ToList();

@@ -4,7 +4,6 @@ namespace Lib.Geometry;
 
 public static class AngleExtensions
 {
-    /// <summary>Converts the angle to degrees (0-315).</summary>
     public static int ToDegrees(this Angle angle)
     {
         int degrees = 0;
@@ -14,7 +13,6 @@ public static class AngleExtensions
         return degrees;
     }
 
-    /// <summary>Converts degrees to an Angle enum value.</summary>
     public static Angle ToAngle(this int degrees)
     {
         // Normalize to 0-359 range
@@ -40,69 +38,54 @@ public static class AngleExtensions
         return result;
     }
 
-    /// <summary>Adds two angles together, normalizing the result to 0-315 degrees.</summary>
     public static Angle Add(this Angle angle, Angle other)
         => (angle.ToDegrees() + other.ToDegrees()).ToAngle();
 
-    /// <summary>Subtracts an angle, normalizing the result to 0-315 degrees.</summary>
     public static Angle Subtract(this Angle angle, Angle other)
         => (angle.ToDegrees() - other.ToDegrees()).ToAngle();
 
-    /// <summary>Rotates the angle by a specified amount.</summary>
     public static Angle RotateBy(this Angle angle, Angle rotation)
         => angle.Add(rotation);
 
-    /// <summary>Rotates the angle clockwise by the specified amount.</summary>
     public static Angle RotateClockwise(this Angle angle, Angle amount)
         => angle.Add(amount);
 
-    /// <summary>Rotates the angle counter-clockwise by the specified amount.</summary>
     public static Angle RotateCounterClockwise(this Angle angle, Angle amount)
         => angle.Subtract(amount);
 
-    /// <summary>Gets the opposite angle (rotated by 180 degrees).</summary>
     public static Angle Opposite(this Angle angle)
         => angle.Add(Angle.HalfTurn);
 
-    /// <summary>Negates the angle (360 - angle).</summary>
     public static Angle Negate(this Angle angle)
         => (-angle.ToDegrees()).ToAngle();
 
-    /// <summary>Normalizes the angle to a valid 0-315 degree range.</summary>
     public static Angle Normalize(this Angle angle)
         => angle.ToDegrees().ToAngle();
 
-    /// <summary>Returns true if the angle is cardinal (0, 90, 180, or 270 degrees).</summary>
     public static bool IsCardinal(this Angle angle)
         => !angle.HasFlag(Angle.EighthTurn);
 
-    /// <summary>Returns true if the angle is diagonal (45, 135, 225, or 315 degrees).</summary>
     public static bool IsDiagonal(this Angle angle)
         => angle.HasFlag(Angle.EighthTurn);
 
-    /// <summary>Returns true if the angle is axis-aligned (0 or 180 degrees).</summary>
     public static bool IsHorizontal(this Angle angle)
         => angle == Angle.None || angle == Angle.HalfTurn;
 
-    /// <summary>Returns true if the angle is axis-aligned (90 or 270 degrees).</summary>
     public static bool IsVertical(this Angle angle)
         => angle == Angle.QuarterTurn || angle == (Angle.QuarterTurn | Angle.HalfTurn);
 
-    /// <summary>Returns true if two angles are perpendicular (90 degrees apart).</summary>
     public static bool IsPerpendicularTo(this Angle angle, Angle other)
     {
         int diff = System.Math.Abs(angle.ToDegrees() - other.ToDegrees());
         return diff == 90 || diff == 270;
     }
 
-    /// <summary>Returns true if two angles are parallel (0 or 180 degrees apart).</summary>
     public static bool IsParallelTo(this Angle angle, Angle other)
     {
         int diff = System.Math.Abs(angle.ToDegrees() - other.ToDegrees());
         return diff == 0 || diff == 180;
     }
 
-    /// <summary>Gets the quadrant (1-4) of the angle. Returns 0 for axis-aligned angles.</summary>
     public static int GetQuadrant(this Angle angle)
     {
         int degrees = angle.ToDegrees();
@@ -116,7 +99,6 @@ public static class AngleExtensions
         };
     }
 
-    /// <summary>Returns the sign of the horizontal component (-1, 0, or 1).</summary>
     public static int HorizontalSign(this Angle angle)
     {
         int degrees = angle.ToDegrees();
@@ -124,7 +106,6 @@ public static class AngleExtensions
         return (degrees > 90 && degrees < 270) ? -1 : 1;
     }
 
-    /// <summary>Returns the sign of the vertical component (-1, 0, or 1).</summary>
     public static int VerticalSign(this Angle angle)
     {
         int degrees = angle.ToDegrees();
@@ -132,7 +113,6 @@ public static class AngleExtensions
         return (degrees > 180) ? -1 : 1;
     }
 
-    /// <summary>Gets the shortest angular distance to another angle.</summary>
     public static int ShortestDistanceTo(this Angle from, Angle to)
     {
         int diff = to.ToDegrees() - from.ToDegrees();
@@ -144,11 +124,9 @@ public static class AngleExtensions
         return diff;
     }
 
-    /// <summary>Gets the shortest rotation direction to another angle (-1 = CCW, 0 = same, 1 = CW).</summary>
     public static int GetRotationDirection(this Angle from, Angle to)
         => System.Math.Sign(from.ShortestDistanceTo(to));
 
-    /// <summary>Linearly interpolates between two angles using the shortest path.</summary>
     public static Angle Lerp(this Angle from, Angle to, float t)
     {
         int distance = from.ShortestDistanceTo(to);
@@ -156,7 +134,6 @@ public static class AngleExtensions
         return result.ToAngle();
     }
 
-    /// <summary>Steps toward the target angle by the specified amount.</summary>
     public static Angle StepToward(this Angle from, Angle to, int stepDegrees)
     {
         int distance = from.ShortestDistanceTo(to);
@@ -167,15 +144,12 @@ public static class AngleExtensions
         return (from.ToDegrees() + step).ToAngle();
     }
 
-    /// <summary>Snaps degrees to the nearest 45-degree increment.</summary>
     public static Angle SnapToNearest45(int degrees)
         => ((int)System.Math.Round(degrees / 45.0) * 45).ToAngle();
 
-    /// <summary>Snaps degrees to the nearest 90-degree increment.</summary>
     public static Angle SnapToNearest90(int degrees)
         => ((int)System.Math.Round(degrees / 90.0) * 90).ToAngle();
 
-    /// <summary>Returns all valid angle values.</summary>
     public static Angle[] GetAllAngles()
         =>
         [
@@ -189,7 +163,6 @@ public static class AngleExtensions
             Angle.EighthTurn | Angle.QuarterTurn | Angle.HalfTurn // 315 deg
         ];
 
-    /// <summary>Returns all cardinal angles (0, 90, 180, 270).</summary>
     public static Angle[] GetCardinalAngles()
         =>
         [
@@ -199,7 +172,6 @@ public static class AngleExtensions
             Angle.QuarterTurn | Angle.HalfTurn
         ];
 
-    /// <summary>Returns all diagonal angles (45, 135, 225, 315).</summary>
     public static Angle[] GetDiagonalAngles()
         =>
         [
@@ -209,7 +181,6 @@ public static class AngleExtensions
             Angle.EighthTurn | Angle.QuarterTurn | Angle.HalfTurn
         ];
 
-    /// <summary>Clamps an arbitrary degree value to the nearest valid angle increment.</summary>
     public static bool TryGetExactAngle(int degrees, out Angle angle)
     {
         degrees = ((degrees % 360) + 360) % 360;

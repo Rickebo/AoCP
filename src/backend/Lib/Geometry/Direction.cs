@@ -21,4 +21,3 @@ public enum Direction
     DownRight = SouthEast,
     DownLeft = SouthWest,
 }
-

@@ -2,12 +2,6 @@ namespace Lib.Math;
 
 public static class Combinatorics
 {
-    /// <summary>
-    /// Calculates the factorial of a non-negative integer.
-    /// </summary>
-    /// <param name="n">Value to compute the factorial for.</param>
-    /// <returns><paramref name="n"/>!.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="n"/> is negative.</exception>
     public static long Factorial(int n)
     {
         if (n < 0)
@@ -19,12 +13,6 @@ public static class Combinatorics
         return result;
     }
 
-    /// <summary>
-    /// Calculates the binomial coefficient "n choose k".
-    /// </summary>
-    /// <param name="n">Total number of items.</param>
-    /// <param name="k">Number of items to choose.</param>
-    /// <returns>Number of ways to choose <paramref name="k"/> items from <paramref name="n"/>.</returns>
     public static long Binomial(int n, int k)
     {
         if (k < 0 || k > n)
@@ -43,13 +31,6 @@ public static class Combinatorics
         return result;
     }
 
-    /// <summary>
-    /// Generates all k-length combinations of the source list.
-    /// </summary>
-    /// <typeparam name="T">Item type.</typeparam>
-    /// <param name="source">Source items.</param>
-    /// <param name="k">Number of items per combination.</param>
-    /// <returns>All unique combinations of length <paramref name="k"/>.</returns>
     public static IEnumerable<IReadOnlyList<T>> Combinations<T>(IReadOnlyList<T> source, int k)
     {
         if (k < 0 || k > source.Count)
@@ -73,12 +54,6 @@ public static class Combinatorics
         }
     }
 
-    /// <summary>
-    /// Generates permutations of the source list in lexicographic order.
-    /// </summary>
-    /// <typeparam name="T">Item type.</typeparam>
-    /// <param name="source">Items to permute.</param>
-    /// <returns>All permutations of the source list.</returns>
     public static IEnumerable<IReadOnlyList<T>> Permutations<T>(IReadOnlyList<T> source)
         where T : IComparable<T>
     {
@@ -89,12 +64,6 @@ public static class Combinatorics
             yield return arr.ToArray();
     }
 
-    /// <summary>
-    /// Advances the array to the next lexicographic permutation.
-    /// </summary>
-    /// <typeparam name="T">Item type.</typeparam>
-    /// <param name="array">Array to permute in place.</param>
-    /// <returns><c>true</c> if the next permutation exists; otherwise <c>false</c>.</returns>
     private static bool NextPermutation<T>(T[] array) where T : IComparable<T>
     {
         var i = array.Length - 2;

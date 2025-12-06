@@ -8,165 +8,65 @@ namespace Lib.Color;
 
 public class ColorJsonConverter : JsonConverter<Color>
 {
-    /// <summary>
-    /// Reads a color value from a JSON string using <see cref="Color.Parse(string)"/>.
-    /// </summary>
-    /// <param name="reader">JSON reader.</param>
-    /// <param name="typeToConvert">Type being converted.</param>
-    /// <param name="options">Serializer options.</param>
-    /// <returns>Parsed <see cref="Color"/> value.</returns>
     public override Color Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         Color.Parse(reader.GetString() ?? "#000000FF");
 
-    /// <summary>
-    /// Writes the color as a hexadecimal RGBA string.
-    /// </summary>
-    /// <param name="writer">JSON writer.</param>
-    /// <param name="value">Color to write.</param>
-    /// <param name="options">Serializer options.</param>
     public override void Write(Utf8JsonWriter writer, Color value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value.ToString());
 }
 
-/// <summary>
-/// Represents a 32-bit RGBA color with helper operations.
-/// </summary>
 public readonly struct Color(uint value) : IEquatable<Color>
 {
     private static readonly int BaseHashCode = typeof(Color).GetHashCode();
 
-    /// <summary>
-    /// Gets an opaque black color.
-    /// </summary>
     public static readonly Color Black = new(0x000000FF);
 
-    /// <summary>
-    /// Gets an opaque white color.
-    /// </summary>
     public static readonly Color White = new(0xFFFFFFFF);
 
-    /// <summary>
-    /// Gets a fully transparent black color.
-    /// </summary>
     public static readonly Color TransparentBlack = new(0x00000000);
 
-    /// <summary>
-    /// Gets a fully transparent white color.
-    /// </summary>
     public static readonly Color TransparentWhite = new(0xFFFFFF00);
 
-    /// <summary>
-    /// Gets the packed RGBA value.
-    /// </summary>
     public uint Value => value;
 
-    /// <summary>
-    /// Bitmask for the red component within the packed value.
-    /// </summary>
     public const uint RedMask = 0xFFu << RedShift;
 
-    /// <summary>
-    /// Bitmask for the green component within the packed value.
-    /// </summary>
     public const uint GreenMask = 0xFFu << GreenShift;
 
-    /// <summary>
-    /// Bitmask for the blue component within the packed value.
-    /// </summary>
     public const uint BlueMask = 0xFFu << BlueShift;
 
-    /// <summary>
-    /// Bitmask for the alpha component within the packed value.
-    /// </summary>
     public const uint AlphaMask = 0xFFu << AlphaShift;
 
-    /// <summary>
-    /// Bit shift for the red component.
-    /// </summary>
     public const int RedShift = 8 * 3;
 
-    /// <summary>
-    /// Bit shift for the green component.
-    /// </summary>
     public const int GreenShift = 8 * 2;
 
-    /// <summary>
-    /// Bit shift for the blue component.
-    /// </summary>
     public const int BlueShift = 8 * 1;
 
-    /// <summary>
-    /// Bit shift for the alpha component.
-    /// </summary>
     public const int AlphaShift = 8 * 0;
 
-    /// <summary>
-    /// Gets the red byte component (0-255).
-    /// </summary>
     public uint R => (Value & RedMask) >> RedShift;
 
-    /// <summary>
-    /// Gets the green byte component (0-255).
-    /// </summary>
     public uint G => (Value & GreenMask) >> GreenShift;
 
-    /// <summary>
-    /// Gets the blue byte component (0-255).
-    /// </summary>
     public uint B => (Value & BlueMask) >> BlueShift;
 
-    /// <summary>
-    /// Gets the alpha byte component (0-255).
-    /// </summary>
     public uint A => (Value & AlphaMask) >> AlphaShift;
 
-    /// <summary>
-    /// Gets the red component normalized to the range [0,1].
-    /// </summary>
     public double Red => R / 255d;
 
-    /// <summary>
-    /// Gets the green component normalized to the range [0,1].
-    /// </summary>
     public double Green => G / 255d;
 
-    /// <summary>
-    /// Gets the blue component normalized to the range [0,1].
-    /// </summary>
     public double Blue => B / 255d;
 
-    /// <summary>
-    /// Gets the alpha component normalized to the range [0,1].
-    /// </summary>
     public double Alpha => A / 255d;
 
-    /// <summary>
-    /// Creates a color from a packed RGBA value.
-    /// </summary>
-    /// <param name="rgba">Packed color value in RGBA order.</param>
-    /// <returns>A new <see cref="Color"/> instance.</returns>
     public static Color FromRgba(uint rgba) => new(rgba);
 
-    /// <summary>
-    /// Creates a color from a packed ARGB value.
-    /// </summary>
-    /// <param name="argb">Packed color value in ARGB order.</param>
-    /// <returns>A new <see cref="Color"/> instance.</returns>
     public static Color FromArgb(uint argb) => new(argb << 8 | argb >> 24);
 
-    /// <summary>
-    /// Converts a normalized component value to a byte.
-    /// </summary>
-    /// <param name="v">Component value in the range [0,1].</param>
-    /// <returns>Converted byte or <c>null</c> when <paramref name="v"/> is <c>null</c>.</returns>
     public static byte? FromRange(double? v) => v != null ? (byte)(v.Value.Clamp(0, 1) * 255) : null;
 
-    /// <summary>
-    /// Parses a single hexadecimal nibble.
-    /// </summary>
-    /// <param name="ch">Character to parse.</param>
-    /// <returns>Numeric value of the nibble.</returns>
-    /// <exception cref="ArgumentException">Thrown when the character is not hexadecimal.</exception>
     public static uint ParseNibble(char ch)
     {
         if (char.IsDigit(ch))
@@ -180,13 +80,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return ordinal;
     }
 
-    /// <summary>
-    /// Parse a Color from a hex string on the format of "#RRGGBBAA", "#RRGGBB", "#RGBA", "#RGB". 
-    /// If components are specified as a single digit, such as for "#RGB", then each value is shifted 
-    /// to represent the corresponding components most significant bits. Alpha component defaults to 255. 
-    /// </summary>
-    /// <param name="text">The text to parse as a color</param>
-    /// <returns>The parsed color</returns>
     public static Color Parse(string text)
     {
         // # optional
@@ -221,18 +114,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return new(longR << RedShift | longG << GreenShift | longB << BlueShift | longA << AlphaShift);
     }
 
-    /// <summary>
-    /// Creates a color from optional byte or normalized component values.
-    /// </summary>
-    /// <param name="r">Red byte component.</param>
-    /// <param name="g">Green byte component.</param>
-    /// <param name="b">Blue byte component.</param>
-    /// <param name="a">Alpha byte component.</param>
-    /// <param name="red">Normalized red component.</param>
-    /// <param name="green">Normalized green component.</param>
-    /// <param name="blue">Normalized blue component.</param>
-    /// <param name="alpha">Normalized alpha component.</param>
-    /// <returns>New <see cref="Color"/> with provided components.</returns>
     public static Color From(
         byte? r = null,
         byte? g = null,
@@ -252,18 +133,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return new(rv << RedShift | gv << GreenShift | bv << BlueShift | av << AlphaShift);
     }
 
-    /// <summary>
-    /// Returns a copy of this color with overridden byte or normalized component values.
-    /// </summary>
-    /// <param name="r">Override red byte component.</param>
-    /// <param name="g">Override green byte component.</param>
-    /// <param name="b">Override blue byte component.</param>
-    /// <param name="a">Override alpha byte component.</param>
-    /// <param name="red">Override normalized red component.</param>
-    /// <param name="green">Override normalized green component.</param>
-    /// <param name="blue">Override normalized blue component.</param>
-    /// <param name="alpha">Override normalized alpha component.</param>
-    /// <returns>New <see cref="Color"/> with updated components.</returns>
     public Color With(
         byte? r = null,
         byte? g = null,
@@ -280,14 +149,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         ((a ?? FromRange(alpha) ?? A) << AlphaShift)
     );
 
-    /// <summary>
-    /// Multiplies normalized components by the provided factors.
-    /// </summary>
-    /// <param name="red">Red multiplier.</param>
-    /// <param name="green">Green multiplier.</param>
-    /// <param name="blue">Blue multiplier.</param>
-    /// <param name="alpha">Alpha multiplier.</param>
-    /// <returns>New <see cref="Color"/> with scaled components.</returns>
     public Color Multiply(double? red = null, double? green = null, double? blue = null, double? alpha = null) =>
         With(
             red: red != null ? Red * red.Value : null,
@@ -296,14 +157,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
             alpha: alpha != null ? Alpha * alpha.Value : null
         );
 
-    /// <summary>
-    /// Adds offsets to normalized components.
-    /// </summary>
-    /// <param name="red">Red offset.</param>
-    /// <param name="green">Green offset.</param>
-    /// <param name="blue">Blue offset.</param>
-    /// <param name="alpha">Alpha offset.</param>
-    /// <returns>New <see cref="Color"/> with adjusted components.</returns>
     public Color Add(double? red = null, double? green = null, double? blue = null, double? alpha = null) =>
         With(
             red: red != null ? Red + red.Value : null,
@@ -312,13 +165,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
             alpha: alpha != null ? Alpha + alpha.Value : null
         );
 
-    /// <summary>
-    /// Helper for converting HSL values to RGB components.
-    /// </summary>
-    /// <param name="p">Lower bound component.</param>
-    /// <param name="q">Upper bound component.</param>
-    /// <param name="h">Hue value.</param>
-    /// <returns>Computed color channel.</returns>
     private static double GetHue(double p, double q, double h)
     {
         if (h < 0) h++;
@@ -333,13 +179,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         };
     }
 
-    /// <summary>
-    /// Creates a color from HSL components in the range [0,1].
-    /// </summary>
-    /// <param name="h">Hue.</param>
-    /// <param name="s">Saturation.</param>
-    /// <param name="l">Lightness.</param>
-    /// <returns>New <see cref="Color"/> corresponding to the HSL values.</returns>
     public static Color FromHsl(double h, double s, double l)
     {
         double r, g, b;
@@ -369,13 +208,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return From(red: r, green: g, blue: b);
     }
 
-    /// <summary>
-    /// Creates a color from HSV components in the range [0,1].
-    /// </summary>
-    /// <param name="h">Hue.</param>
-    /// <param name="s">Saturation.</param>
-    /// <param name="v">Value component.</param>
-    /// <returns>New <see cref="Color"/> corresponding to the HSV values.</returns>
     public static Color FromHsv(double h, double s, double v)
     {
         var l = v * (1 - s / 2);
@@ -383,24 +215,9 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return FromHsl(h, l is 0 or 1 ? 0 : (v - l) / System.Math.Min(l, 1 - l), l);
     }
 
-    /// <summary>
-    /// Generates a sequence of distinct colors using a random starting hue.
-    /// </summary>
-    /// <param name="count">Number of colors to generate.</param>
-    /// <param name="saturation">Saturation component for each color.</param>
-    /// <param name="vibrancy">Value component for each color.</param>
-    /// <returns>Sequence of colors.</returns>
     public static IEnumerable<Color> Generate(int count, double saturation = 0.5, double vibrancy = 0.9) =>
         Generate(Random.Shared.NextDouble(), count, saturation, vibrancy);
 
-    /// <summary>
-    /// Generates a sequence of distinct colors using the golden ratio for hue spacing.
-    /// </summary>
-    /// <param name="seed">Starting hue seed.</param>
-    /// <param name="count">Number of colors to generate.</param>
-    /// <param name="saturation">Saturation component for each color.</param>
-    /// <param name="vibrancy">Value component for each color.</param>
-    /// <returns>Sequence of colors.</returns>
     public static IEnumerable<Color> Generate(double seed, int count, double saturation = 0.5, double vibrancy = 0.9)
     {
         var goldenRatio = (1 + System.Math.Sqrt(5)) / 2 - 1;
@@ -412,16 +229,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         }
     }
 
-    /// <summary>
-    /// Converts a numeric grid into a color heatmap between two colors.
-    /// </summary>
-    /// <typeparam name="TCell">Numeric cell type.</typeparam>
-    /// <param name="sourceGrid">Grid containing numeric values.</param>
-    /// <param name="from">Color representing the minimum value.</param>
-    /// <param name="to">Color representing the maximum value.</param>
-    /// <param name="minClamp">Optional minimum clamp value.</param>
-    /// <param name="maxClamp">Optional maximum clamp value.</param>
-    /// <returns>A grid of colors interpolated between <paramref name="from"/> and <paramref name="to"/>.</returns>
     public static ArrayGrid<Color> Heatmap<TCell>(
         ArrayGrid<TCell> sourceGrid,
         Color from,
@@ -471,13 +278,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return colorGrid;
     }
 
-    /// <summary>
-    /// Linearly interpolates between two colors by the given percentage.
-    /// </summary>
-    /// <param name="from">Start color.</param>
-    /// <param name="to">End color.</param>
-    /// <param name="percent">Interpolation factor in the range [0,1].</param>
-    /// <returns>Interpolated color.</returns>
     public static Color Between(Color from, Color to, double percent)
     {
         // Clamp percent between 0 and 1
@@ -492,16 +292,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return new(r << RedShift | g << GreenShift | b << BlueShift | a << AlphaShift);
     }
 
-    /// <summary>
-    /// Linearly interpolates between two colors based on a value within a numeric range.
-    /// </summary>
-    /// <typeparam name="T">Numeric type.</typeparam>
-    /// <param name="from">Start color.</param>
-    /// <param name="to">End color.</param>
-    /// <param name="curr">Current value.</param>
-    /// <param name="min">Minimum bound.</param>
-    /// <param name="max">Maximum bound.</param>
-    /// <returns>Interpolated color corresponding to <paramref name="curr"/>.</returns>
     public static Color Between<T>(Color from, Color to, T curr, T min, T max) where T : INumber<T>
     {
         var currD = double.CreateSaturating(curr);
@@ -510,67 +300,24 @@ public readonly struct Color(uint value) : IEquatable<Color>
         return Between(from, to, (currD - minD) / (maxD - minD));
     }
 
-    /// <summary>
-    /// Returns the RGBA string representation of the color.
-    /// </summary>
-    /// <returns>String in <c>#RRGGBBAA</c> format.</returns>
     public new string ToString() => ToRgbaString();
 
-    /// <summary>
-    /// Returns the RGBA string representation of the color.
-    /// </summary>
-    /// <returns>String in <c>#RRGGBBAA</c> format.</returns>
     public string ToRgbaString() => $"#{R:X2}{G:X2}{B:X2}{A:X2}";
 
-    /// <summary>
-    /// Returns the RGB string representation of the color, excluding alpha.
-    /// </summary>
-    /// <returns>String in <c>#RRGGBB</c> format.</returns>
     public string ToRgbString() => $"#{R:X2}{G:X2}{B:X2}";
 
-    /// <summary>
-    /// Returns the ARGB string representation of the color.
-    /// </summary>
-    /// <returns>String in <c>#AARRGGBB</c> format.</returns>
     public string ToArgbString() => $"#{A:X2}{R:X2}{G:X2}{B:X2}";
 
-    /// <summary>
-    /// Determines equality with another object based on the packed color value.
-    /// </summary>
-    /// <param name="other">Object to compare.</param>
-    /// <returns><c>true</c> when the object represents the same color.</returns>
     public override bool Equals(object? other) => other is Color color && color.Value == Value;
 
-    /// <summary>
-    /// Determines equality with another color based on the packed value.
-    /// </summary>
-    /// <param name="other">Color to compare.</param>
-    /// <returns><c>true</c> when the colors are identical.</returns>
     public bool Equals(Color other) => other.Value == Value;
 
-    /// <summary>
-    /// Generates a hash code for the color.
-    /// </summary>
-    /// <returns>Hash code value.</returns>
     public override int GetHashCode() => BaseHashCode ^ Value.GetHashCode();
 
-    /// <summary>
-    /// Compares two colors for equality.
-    /// </summary>
     public static bool operator ==(Color left, Color right) => left.Value == right.Value;
 
-    /// <summary>
-    /// Compares two colors for inequality.
-    /// </summary>
     public static bool operator !=(Color left, Color right) => left.Value != right.Value;
 
-    /// <summary>
-    /// Applies a binary operation component-wise between two colors.
-    /// </summary>
-    /// <param name="left">Left color.</param>
-    /// <param name="right">Right color.</param>
-    /// <param name="op">Operator to apply.</param>
-    /// <returns>Resulting color.</returns>
     private static Color ApplyOperator(Color left, Color right, Func<double, double, double> op) =>
         left.With(
             red: op(left.Red, right.Red),
@@ -579,13 +326,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
             alpha: op(left.Alpha, right.Alpha)
         );
 
-    /// <summary>
-    /// Applies a binary operation between a color and a scalar across RGB components.
-    /// </summary>
-    /// <param name="left">Color operand.</param>
-    /// <param name="right">Scalar operand.</param>
-    /// <param name="op">Operator to apply.</param>
-    /// <returns>Resulting color.</returns>
     private static Color ApplyOperator(Color left, double right, Func<double, double, double> op) =>
         left.With(
             red: op(left.Red, right),
@@ -594,13 +334,6 @@ public readonly struct Color(uint value) : IEquatable<Color>
             alpha: left.Alpha
         );
 
-    /// <summary>
-    /// Applies a binary operation between a scalar and a color across RGB components.
-    /// </summary>
-    /// <param name="left">Scalar operand.</param>
-    /// <param name="right">Color operand.</param>
-    /// <param name="op">Operator to apply.</param>
-    /// <returns>Resulting color.</returns>
     private static Color ApplyOperator(double left, Color right, Func<double, double, double> op) =>
         right.With(
             red: op(left, right.Red),
@@ -609,84 +342,36 @@ public readonly struct Color(uint value) : IEquatable<Color>
             alpha: right.Alpha
         );
 
-    /// <summary>
-    /// Adds a scalar to each RGB component of the color.
-    /// </summary>
     public static Color operator +(Color left, double right) => ApplyOperator(left, right, (a, b) => a + b);
 
-    /// <summary>
-    /// Subtracts a scalar from each RGB component of the color.
-    /// </summary>
     public static Color operator -(Color left, double right) => ApplyOperator(left, right, (a, b) => a - b);
 
-    /// <summary>
-    /// Multiplies each RGB component of the color by a scalar.
-    /// </summary>
     public static Color operator *(Color left, double right) => ApplyOperator(left, right, (a, b) => a * b);
 
-    /// <summary>
-    /// Divides each RGB component of the color by a scalar.
-    /// </summary>
     public static Color operator /(Color left, double right) => ApplyOperator(left, right, (a, b) => a / b);
 
-    /// <summary>
-    /// Adds each RGB component of the color to a scalar.
-    /// </summary>
     public static Color operator +(double left, Color right) => ApplyOperator(left, right, (a, b) => a + b);
 
-    /// <summary>
-    /// Subtracts each RGB component of the color from a scalar.
-    /// </summary>
     public static Color operator -(double left, Color right) => ApplyOperator(left, right, (a, b) => a - b);
 
-    /// <summary>
-    /// Multiplies a scalar by each RGB component of the color.
-    /// </summary>
     public static Color operator *(double left, Color right) => ApplyOperator(left, right, (a, b) => a * b);
 
-    /// <summary>
-    /// Divides a scalar by each RGB component of the color.
-    /// </summary>
     public static Color operator /(double left, Color right) => ApplyOperator(left, right, (a, b) => a / b);
 
-    /// <summary>
-    /// Adds two colors component-wise.
-    /// </summary>
     public static Color operator +(Color left, Color right) => ApplyOperator(left, right, (a, b) => a + b);
 
-    /// <summary>
-    /// Subtracts two colors component-wise.
-    /// </summary>
     public static Color operator -(Color left, Color right) => ApplyOperator(left, right, (a, b) => a - b);
 
-    /// <summary>
-    /// Multiplies two colors component-wise.
-    /// </summary>
     public static Color operator *(Color left, Color right) => ApplyOperator(left, right, (a, b) => a * b);
 
-    /// <summary>
-    /// Divides two colors component-wise.
-    /// </summary>
     public static Color operator /(Color left, Color right) => ApplyOperator(left, right, (a, b) => a / b);
 
-    /// <summary>
-    /// Performs a bitwise OR on the packed color values.
-    /// </summary>
     public static Color operator |(Color left, Color right) => new(left.Value | right.Value);
 
-    /// <summary>
-    /// Performs a bitwise AND on the packed color values.
-    /// </summary>
     public static Color operator &(Color left, Color right) => new(left.Value & right.Value);
 
-    /// <summary>
-    /// Performs a bitwise XOR on the packed color values.
-    /// </summary>
     public static Color operator ^(Color left, Color right) => new(left.Value ^ right.Value);
 
-    /// <summary>
-    /// Performs a bitwise NOT on the packed color value.
-    /// </summary>
     public static Color operator ~(Color value) => new(~value.Value);
 }
 

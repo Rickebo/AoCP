@@ -4,11 +4,6 @@ namespace Lib.Text;
 
 public static partial class InputUtils
 {
-    /// <summary>
-    /// Splits the input into groups separated by blank lines.
-    /// </summary>
-    /// <param name="lines">Input lines.</param>
-    /// <returns>List of grouped lines.</returns>
     public static IReadOnlyList<IReadOnlyList<string>> SplitOnBlankLines(IEnumerable<string> lines)
     {
         var groups = new List<List<string>> { new() };
@@ -30,11 +25,6 @@ public static partial class InputUtils
         return groups;
     }
 
-    /// <summary>
-    /// Returns all signed integers found in the string.
-    /// </summary>
-    /// <param name="line">Input text.</param>
-    /// <returns>Collection of parsed integers.</returns>
     public static IReadOnlyList<long> ExtractIntegers(string line)
     {
         return NumberRegex()
@@ -43,12 +33,6 @@ public static partial class InputUtils
             .ToArray();
     }
 
-    /// <summary>
-    /// Splits the string using the provided separators, trimming whitespace and discarding empties.
-    /// </summary>
-    /// <param name="input">String to split.</param>
-    /// <param name="separators">Characters to split on.</param>
-    /// <returns>Split and trimmed segments.</returns>
     public static IReadOnlyList<string> SplitAndTrim(string input, params char[] separators)
     {
         return input

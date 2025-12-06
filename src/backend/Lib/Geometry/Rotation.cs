@@ -6,4 +6,3 @@ public enum Rotation
     Clockwise = 1,
     CounterClockwise = 2,
 }
-
