@@ -14,6 +14,9 @@ public class CharGrid : ArrayGrid<char>
     /// <param name="input">Multiline text to parse.</param>
     public CharGrid(string input) : base(ParseFromString(input)) {}
 
+    public CharGrid(string input, StringSplitOptions options) 
+        : base(ParseFromString(input, options)) { }
+
     /// <summary>
     /// Initializes a grid with the specified dimensions, filled with a character.
     /// </summary>
@@ -33,10 +36,12 @@ public class CharGrid : ArrayGrid<char>
     /// </summary>
     /// <param name="str">Text to parse.</param>
     /// <returns>Parsed array with origin at bottom-left.</returns>
-    private static char[,] ParseFromString(string str)
+    private static char[,] ParseFromString(
+        string str, 
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
     {
         // Parse string input
-        var rows = str.SplitLines();
+        var rows = str.SplitLines(options);
         var height = rows.Length;
         var width = rows[0].Length;
 

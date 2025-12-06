@@ -13,7 +13,16 @@ public class IntGrid : ArrayGrid<int>
     /// </summary>
     /// <param name="input">Text to parse.</param>
     /// <param name="defaultValue">Default value for any non-digit characters.</param>
-    public IntGrid(string input, int? defaultValue = null) : base(ParseFromString(input, defaultValue)) {}
+    public IntGrid(string input) : base(ParseFromString(input)) { }
+
+    public IntGrid(string input, int defaultValue)
+        : base(ParseFromString(input, defaultValue)) { }
+
+    public IntGrid(string input, StringSplitOptions options)
+        : base(ParseFromString(input, options: options)) { }
+
+    public IntGrid(string input, int defaultValue, StringSplitOptions options)
+        : base(ParseFromString(input, defaultValue, options)) { }
 
     /// <summary>
     /// Initializes a grid with the specified dimensions and fills it with the provided number.
@@ -21,13 +30,13 @@ public class IntGrid : ArrayGrid<int>
     /// <param name="width">Grid width.</param>
     /// <param name="height">Grid height.</param>
     /// <param name="num">Value used to populate each cell.</param>
-    public IntGrid(int width, int height, int num) : base(width, height, num) {}
+    public IntGrid(int width, int height, int num) : base(width, height, num) { }
 
     /// <summary>
     /// Wraps an existing integer array as a grid.
     /// </summary>
     /// <param name="values">Backing array.</param>
-    public IntGrid(int[,] values) : base(values) {}
+    public IntGrid(int[,] values) : base(values) { }
 
     /// <summary>
     /// Parses a multiline string of digits into an integer array.
@@ -35,10 +44,13 @@ public class IntGrid : ArrayGrid<int>
     /// <param name="str">Input text.</param>
     /// <param name="defaultValue">Optional default value for non-digit characters.</param>
     /// <returns>Parsed grid values.</returns>
-    private static int[,] ParseFromString(string str, int? defaultValue)
+    private static int[,] ParseFromString(
+        string str, 
+        int? defaultValue = null, 
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
     {
         // Parse string input
-        var rows = str.SplitLines();
+        var rows = str.SplitLines(options);
         var height = rows.Length;
         var width = rows[0].Length;
 

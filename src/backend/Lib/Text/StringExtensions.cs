@@ -7,8 +7,9 @@ public static class StringExtensions
     /// </summary>
     /// <param name="str">String to split.</param>
     /// <returns>Array of lines.</returns>
-    public static string[] SplitLines(this string str) =>
-        str.SplitBy(["\r\n", "\n"]);
+    public static string[] SplitLines(this string str, 
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries) =>
+        str.SplitBy(["\r\n", "\n"], options);
 
     /// <summary>
     /// Splits a string by the provided separators with trimming and empty-entry removal enabled by default.
@@ -18,7 +19,7 @@ public static class StringExtensions
     /// <param name="options">String split options.</param>
     /// <returns>Array of split segments.</returns>
     public static string[] SplitBy(this string str, string[] splits,
-        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries
-        ) => str.Split(splits, options);
+        StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries) => 
+        str.Split(splits, options);
 }
 
