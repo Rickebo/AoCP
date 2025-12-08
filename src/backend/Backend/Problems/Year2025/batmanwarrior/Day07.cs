@@ -160,8 +160,8 @@ public class Day07 : ProblemSet
             // Split
             if (_grid[next] == '^')
             {
-                IntegerCoordinate<int> left = pos.Move(Direction.West);
-                IntegerCoordinate<int> right = pos.Move(Direction.East);
+                IntegerCoordinate<int> left = next.Move(Direction.West);
+                IntegerCoordinate<int> right = next.Move(Direction.East);
                 long timeLines = Timelines(left, cache) + Timelines(right, cache);
                 cache.Add(pos, timeLines);
                 return timeLines;
