@@ -271,8 +271,6 @@ public class GlyphGridUpdate : GridUpdate<GlyphCell>
                                 ? current | offset
                                 : current
                     );
-                
-                dir = dir.FlipY();
 
                 WithEntry(
                     builder =>

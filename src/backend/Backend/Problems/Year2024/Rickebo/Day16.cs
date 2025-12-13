@@ -154,7 +154,7 @@ public class Day16 : ProblemSet
     {
         public static Data Parse(string input)
         {
-            var grid = new CharGrid(input).Flip(Axis.Y);
+            var grid = new CharGrid(input);
             grid.Replace('.', ' ');
             var src = grid.Find(cell => cell == 'S');
             var dst = grid.Find(cell => cell == 'E');
@@ -173,6 +173,7 @@ public class Day16 : ProblemSet
                 builder => builder
                     .WithWidth(Grid.Width)
                     .WithHeight(Grid.Height)
+                    .WithClear()
                     .WithEntries(
                         Grid.Coordinates.Where(c => Grid[c] == '#'),
                         (gb, c) => gb
@@ -217,7 +218,6 @@ public class Day16 : ProblemSet
                         foreground: Color.From(red: 1)
                     )
             );
-
 
             return positions.Count;
         }

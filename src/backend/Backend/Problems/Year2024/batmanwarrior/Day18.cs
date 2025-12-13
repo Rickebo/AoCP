@@ -83,8 +83,12 @@ public class Day18 : ProblemSet
                 height = Math.Max(height, coords[1] + 1);
             }
 
+            // Translate falling bytes to top left origin
+            for (int i = 0; i < _fallingBytes.Count; i++)
+                _fallingBytes[i] = new(_fallingBytes[i].X, height - 1 - _fallingBytes[i].Y);
+
             // Create empty space
-            _grid = new(width, height, '.');
+            _grid = new(width, height, ' ');
 
             // Print grid
             _reporter.Report(GlyphGridUpdate.FromCharGrid(_grid, "#FFFFFF", "#000000"));
@@ -103,7 +107,7 @@ public class Day18 : ProblemSet
             PriorityQueue<IntegerCoordinate<int>, int> queue = new();
 
             // Enqueue start pos
-            queue.Enqueue(new(0, 0), 0);
+            queue.Enqueue(new(0, _grid.Height - 1), 0);
 
             // Store visited tiles
             HashSet<IntegerCoordinate<int>> visited = [];
@@ -116,7 +120,7 @@ public class Day18 : ProblemSet
                     continue;
 
                 // Check if end reached
-                if (pos.X == _grid.Width - 1 && pos.Y == _grid.Height - 1)
+                if (pos.X == _grid.Width - 1 && pos.Y == 0)
                     return cost;
 
                 // Check neighbours
@@ -156,7 +160,7 @@ public class Day18 : ProblemSet
                 queue.Clear();
 
                 // Enqueue start pos
-                queue.Enqueue(new(0, 0), 0);
+                queue.Enqueue(new(0, _grid.Height - 1), 0);
 
                 // Clear visited tiles
                 visited.Clear();
@@ -170,7 +174,7 @@ public class Day18 : ProblemSet
                         continue;
 
                     // Check if end reached
-                    if (pos.X == _grid.Width - 1 && pos.Y == _grid.Height - 1)
+                    if (pos.X == _grid.Width - 1 && pos.Y == 0)
                     {
                         exitFound = true;
                         break;
@@ -190,7 +194,7 @@ public class Day18 : ProblemSet
 
                 // If exit not found anymore
                 if (!exitFound)
-                    return $"{_fallingBytes[i].X},{_fallingBytes[i].Y}";
+                    return $"{_fallingBytes[i].X},{_grid.Height - 1 - _fallingBytes[i].Y}";
             }
 
             // All the bytes has fallen but exit still found (should not happen)
