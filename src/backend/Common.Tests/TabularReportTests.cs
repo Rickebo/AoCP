@@ -164,6 +164,16 @@ public class TabularReportTests
     }
 
     [Test]
+    public void RenderLines_NoColumns_ReturnsEmptyArray()
+    {
+        var table = new TabularReport();
+
+        var lines = table.RenderLines();
+
+        Assert.That(lines, Is.Empty);
+    }
+
+    [Test]
     public void Render_JoinsLinesWithEnvironmentNewLine()
     {
         var table = new TabularReport();
@@ -216,5 +226,17 @@ public class TabularReportTests
         table.AddRow("B");
 
         Assert.Throws<ArgumentNullException>(() => table.RenderLines(headerSeparator: null!));
+    }
+
+    [Test]
+    public void SetCell_NullValue_StoresEmptyString()
+    {
+        var table = new TabularReport();
+        table.AddColumn("Only");
+        var rowIndex = table.AddRow("value");
+
+        table.SetCell(rowIndex, 0, null);
+
+        Assert.That(table.GetCell(rowIndex, 0), Is.EqualTo(string.Empty));
     }
 }

@@ -1,7 +1,7 @@
 namespace Common;
 
 /// <summary>
-/// Specifies how cells in a column should be aligned when rendered.
+/// Defines the supported horizontal alignments for tabular columns.
 /// </summary>
 public enum ColumnAlignment
 {
@@ -11,7 +11,7 @@ public enum ColumnAlignment
     Left,
 
     /// <summary>
-    /// Centers content within the column.
+    /// Centers content within the column width.
     /// </summary>
     Center,
 
@@ -22,38 +22,45 @@ public enum ColumnAlignment
 }
 
 /// <summary>
-/// Collects tabular data that can be mutated during problem execution and rendered as text once complete.
+/// Builds a text-based table with configurable columns, alignment, and rendering options.
 /// </summary>
 public sealed class TabularReport
 {
+    /// <summary>
+    /// Column metadata used while rendering.
+    /// </summary>
+    /// <param name="Header">Header text displayed for the column.</param>
+    /// <param name="Alignment">Alignment applied to all cells in the column.</param>
     private sealed record Column(string Header, ColumnAlignment Alignment);
 
     private readonly List<Column> _columns = [];
     private readonly List<string[]> _rows = [];
 
     /// <summary>
-    /// Gets the number of columns currently defined.
+    /// Gets the number of columns defined for the report.
     /// </summary>
     public int ColumnCount => _columns.Count;
 
     /// <summary>
-    /// Gets the number of rows currently stored.
+    /// Gets the number of rows currently stored in the report.
     /// </summary>
     public int RowCount => _rows.Count;
 
     /// <summary>
-    /// Gets the column headers in the order they were added.
+    /// Gets the header labels for the defined columns.
     /// </summary>
     public IReadOnlyList<string> Headers => _columns.Select(c => c.Header).ToArray();
 
     /// <summary>
-    /// Adds a column to the table and extends all existing rows with an empty cell.
+    /// Adds a new column to the report and expands existing rows with an empty cell.
     /// </summary>
-    /// <param name="header">Header text for the new column.</param>
-    /// <param name="alignment">Alignment to apply when rendering this column.</param>
-    /// <returns>The zero-based index of the added column.</returns>
+    /// <param name="header">The header text to display for the column.</param>
+    /// <param name="alignment">Alignment applied to all cells in the column.</param>
+    /// <returns>The zero-based index of the newly added column.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="header"/> is null or empty.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="alignment"/> is not defined.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="alignment"/> is not a defined <see cref="ColumnAlignment"/> value.
+    /// </exception>
     public int AddColumn(string header, ColumnAlignment alignment = ColumnAlignment.Left)
     {
         ArgumentException.ThrowIfNullOrEmpty(header);
@@ -76,13 +83,15 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Adds a row populated with the provided cells.
+    /// Adds a row of cells to the report using a parameter array of values.
     /// </summary>
-    /// <param name="cells">Cell values to place in the row. Extra cells beyond the column count are not allowed.</param>
+    /// <param name="cells">Cell values; null entries become empty strings.</param>
     /// <returns>The zero-based index of the added row.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="cells"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when more cells are supplied than there are columns.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when attempting to add a row before defining any columns.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when called before any columns are added.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of provided cells exceeds the defined column count.
+    /// </exception>
     public int AddRow(params object?[] cells)
     {
         ArgumentNullException.ThrowIfNull(cells);
@@ -90,13 +99,15 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Adds a row populated with the provided cells.
+    /// Adds a row of cells to the report from an enumerable sequence.
     /// </summary>
-    /// <param name="cells">Cell values to place in the row. Extra cells beyond the column count are not allowed.</param>
+    /// <param name="cells">Sequence of cell values; null entries become empty strings.</param>
     /// <returns>The zero-based index of the added row.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="cells"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when more cells are supplied than there are columns.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when attempting to add a row before defining any columns.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when called before any columns are added.</exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the number of provided cells exceeds the defined column count.
+    /// </exception>
     public int AddRow(IEnumerable<object?> cells)
     {
         ArgumentNullException.ThrowIfNull(cells);
@@ -117,12 +128,14 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Updates a specific cell with a new value.
+    /// Updates the value of a specific cell.
     /// </summary>
-    /// <param name="rowIndex">Zero-based row index.</param>
-    /// <param name="columnIndex">Zero-based column index.</param>
-    /// <param name="value">Value to assign to the cell.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rowIndex"/> or <paramref name="columnIndex"/> is out of range.</exception>
+    /// <param name="rowIndex">Zero-based index of the row to update.</param>
+    /// <param name="columnIndex">Zero-based index of the column to update.</param>
+    /// <param name="value">The new value; null is stored as an empty string.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="rowIndex"/> or <paramref name="columnIndex"/> is outside the valid range.
+    /// </exception>
     public void SetCell(int rowIndex, int columnIndex, object? value)
     {
         ValidateRowIndex(rowIndex);
@@ -132,12 +145,14 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Retrieves the value currently stored in a cell.
+    /// Retrieves the string value stored at the specified row and column.
     /// </summary>
-    /// <param name="rowIndex">Zero-based row index.</param>
-    /// <param name="columnIndex">Zero-based column index.</param>
-    /// <returns>The cell value; never null.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="rowIndex"/> or <paramref name="columnIndex"/> is out of range.</exception>
+    /// <param name="rowIndex">Zero-based index of the row.</param>
+    /// <param name="columnIndex">Zero-based index of the column.</param>
+    /// <returns>The cell contents as a string.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="rowIndex"/> or <paramref name="columnIndex"/> is outside the valid range.
+    /// </exception>
     public string GetCell(int rowIndex, int columnIndex)
     {
         ValidateRowIndex(rowIndex);
@@ -147,13 +162,20 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Renders the table into formatted text lines.
+    /// Renders the table as a collection of text lines.
     /// </summary>
-    /// <param name="includeHeaderSeparator">Whether to include a separator line beneath the header row.</param>
-    /// <param name="columnSeparator">Separator placed between columns.</param>
-    /// <param name="headerSeparator">Separator placed between header columns; ignored when <paramref name="includeHeaderSeparator"/> is false.</param>
-    /// <returns>An array of formatted lines suitable for reporting.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="columnSeparator"/> is null or when <paramref name="headerSeparator"/> is null while header separators are requested.</exception>
+    /// <param name="includeHeaderSeparator">
+    /// Whether to add a separator line between the headers and the data rows.
+    /// </param>
+    /// <param name="columnSeparator">String inserted between formatted columns.</param>
+    /// <param name="headerSeparator">
+    /// Separator string inserted between header underline segments when <paramref name="includeHeaderSeparator"/> is true.
+    /// </param>
+    /// <returns>An array of formatted lines; empty when no columns are defined.</returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="columnSeparator"/> is null or when <paramref name="headerSeparator"/> is null while
+    /// <paramref name="includeHeaderSeparator"/> is true.
+    /// </exception>
     public string[] RenderLines(
         bool includeHeaderSeparator = true,
         string columnSeparator = " | ",
@@ -183,19 +205,26 @@ public sealed class TabularReport
     }
 
     /// <summary>
-    /// Renders the table into a single formatted string joined with newline separators.
+    /// Renders the table as a single string joined by <see cref="Environment.NewLine"/>.
     /// </summary>
-    /// <param name="includeHeaderSeparator">Whether to include a separator line beneath the header row.</param>
-    /// <param name="columnSeparator">Separator placed between columns.</param>
-    /// <param name="headerSeparator">Separator placed between header columns; ignored when <paramref name="includeHeaderSeparator"/> is false.</param>
-    /// <returns>A formatted string representing the table.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="columnSeparator"/> is null or when <paramref name="headerSeparator"/> is null while header separators are requested.</exception>
+    /// <param name="includeHeaderSeparator">
+    /// Whether to add a separator line between the headers and the data rows.
+    /// </param>
+    /// <param name="columnSeparator">String inserted between formatted columns.</param>
+    /// <param name="headerSeparator">
+    /// Separator string inserted between header underline segments when <paramref name="includeHeaderSeparator"/> is true.
+    /// </param>
+    /// <returns>The formatted table, or an empty string when no columns are defined.</returns>
     public string Render(
         bool includeHeaderSeparator = true,
         string columnSeparator = " | ",
         string headerSeparator = "-+-") =>
         string.Join(Environment.NewLine, RenderLines(includeHeaderSeparator, columnSeparator, headerSeparator));
 
+    /// <summary>
+    /// Calculates the width required for each column based on headers and cell contents.
+    /// </summary>
+    /// <returns>An array containing the width for each column.</returns>
     private int[] CalculateWidths()
     {
         var widths = new int[_columns.Count];
@@ -209,6 +238,14 @@ public sealed class TabularReport
         return widths;
     }
 
+    /// <summary>
+    /// Formats a row of cells using the provided widths and alignment rules.
+    /// </summary>
+    /// <param name="cells">The cell contents to format.</param>
+    /// <param name="widths">Calculated widths for each column.</param>
+    /// <param name="alignments">Alignment for each column.</param>
+    /// <param name="columnSeparator">String inserted between formatted columns.</param>
+    /// <returns>The formatted row string.</returns>
     private static string FormatRow(
         IReadOnlyList<string> cells,
         IReadOnlyList<int> widths,
@@ -230,6 +267,12 @@ public sealed class TabularReport
         return string.Join(columnSeparator, formatted);
     }
 
+    /// <summary>
+    /// Centers a string within the specified width by padding with spaces.
+    /// </summary>
+    /// <param name="value">The value to center.</param>
+    /// <param name="width">Total width to pad to.</param>
+    /// <returns>The centered string.</returns>
     private static string PadCenter(string value, int width)
     {
         if (value.Length >= width)
@@ -241,12 +284,22 @@ public sealed class TabularReport
         return new string(' ', left) + value + new string(' ', right);
     }
 
+    /// <summary>
+    /// Validates that the provided row index references an existing row.
+    /// </summary>
+    /// <param name="rowIndex">Zero-based row index to validate.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the range of existing rows.</exception>
     private void ValidateRowIndex(int rowIndex)
     {
         if ((uint)rowIndex >= (uint)_rows.Count)
             throw new ArgumentOutOfRangeException(nameof(rowIndex));
     }
 
+    /// <summary>
+    /// Validates that the provided column index references an existing column.
+    /// </summary>
+    /// <param name="columnIndex">Zero-based column index to validate.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the range of defined columns.</exception>
     private void ValidateColumnIndex(int columnIndex)
     {
         if ((uint)columnIndex >= (uint)_columns.Count)
