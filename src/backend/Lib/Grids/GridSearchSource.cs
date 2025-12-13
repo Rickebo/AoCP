@@ -1,6 +1,5 @@
 using System.Numerics;
 using Lib.Geometry;
-using Lib.Grids;
 using Lib.Search;
 
 namespace Lib.Grids;

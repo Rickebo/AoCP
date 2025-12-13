@@ -29,7 +29,7 @@ public class Day01 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Send solution to frontend (Part 1)
-            reporter.ReportSolution(new DialUp(input, reporter, 1).PartOne());
+            reporter.ReportSolution(new Solver(input, reporter, 1).PartOne());
             return Task.CompletedTask;
         }
     }
@@ -43,17 +43,17 @@ public class Day01 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Send solution to frontend (Part 2)
-            reporter.ReportSolution(new DialUp(input, reporter, 2).PartTwo());
+            reporter.ReportSolution(new Solver(input, reporter, 2).PartTwo());
             return Task.CompletedTask;
         }
     }
 
-    public class DialUp
+    public class Solver
     {
         private readonly Reporter _reporter;
         private readonly List<(Rotation, int)> _rotations = [];
 
-        public DialUp(string input, Reporter reporter, int _)
+        public Solver(string input, Reporter reporter, int _)
         {
             // Save for printing
             _reporter = reporter;
@@ -83,7 +83,7 @@ public class Day01 : ProblemSet
             // Initial position
             int pos = 50;
 
-            // Count how many times the dial up points at zero after rotation
+            // Rotate and retrieve password
             int password = 0;
             foreach (var (dir, amount) in _rotations)
             {
@@ -91,7 +91,7 @@ public class Day01 : ProblemSet
                 pos += dir == Rotation.Clockwise ? amount : -amount;
                 pos = MathExtensions.Modulo(pos, 100);
 
-                // Pointing at zero after rotation
+                // Pointing at zero
                 if (pos == 0)
                     password++;
             }
@@ -104,21 +104,22 @@ public class Day01 : ProblemSet
             // Initial position
             int pos = 50;
 
-            // Count how many times the dial up points at zero during rotation
+            // Rotate and retrieve password
             int password = 0;
             foreach (var (dir, amount) in _rotations)
-            {
-                // Step like crazy man
-                for (int i = 0; i < amount; i++)
-                {
-                    // Take one step in direction and modulo any wrap arounds
-                    int step = dir == Rotation.Clockwise ? 1 : -1;
-                    pos = MathExtensions.Modulo(pos + step, 100);
+            { 
+                // Distance to zero
+                int distance = dir == Rotation.Clockwise ? 100 - pos : pos;
 
-                    // Pointing at zero during rotation
-                    if (pos == 0)
-                        password++;
-                }
+                // Zero crossings
+                if (distance == 0)
+                    password += amount / 100;
+                else if (amount >= distance)
+                    password += 1 + (amount - distance) / 100;
+
+                // Rotate
+                int step = dir == Rotation.Clockwise ? amount : -amount;
+                pos = MathExtensions.Modulo(pos + step, 100);
             }
 
             return password;
