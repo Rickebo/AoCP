@@ -175,7 +175,7 @@ export function useConnectionManager(
         ...current
       }
 
-      const queue = replacer[problemName] ?? []
+      const queue = update.clear ? [] : (replacer[problemName] ?? [])
       queue.push(update.rows)
       replacer[problemName] = queue
 

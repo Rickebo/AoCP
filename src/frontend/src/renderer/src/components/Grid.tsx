@@ -297,6 +297,7 @@ const Grid = forwardRef<GridRef, unknown>((_, ref) => {
     canvasRef.current
       ?.getContext('2d')
       ?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+    setData({}) // Reset stored grid cells so redraws don't resurrect cleared glyphs
   }
 
   const zoom = (delta: number): void => {
