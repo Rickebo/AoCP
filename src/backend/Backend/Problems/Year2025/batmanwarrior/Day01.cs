@@ -55,75 +55,88 @@ public class Day01 : ProblemSet
 
         public Solver(string input, Reporter reporter, int _)
         {
-            // Save for printing
             _reporter = reporter;
 
-            // Parse input
             foreach (var line in input.SplitLines())
             {
-                // Direction of rotation
-                var dir = line[0] switch
-                {
-                    'L' => Rotation.CounterClockwise,
-                    'R' => Rotation.Clockwise,
-                    _ => throw new ProblemException("Invalid input."),
-                };
+                var dir = RotationExtensions.Parse(line[0]);
 
-                // Amount
                 if (!int.TryParse(line[1..], out var amount))
                     throw new ProblemException("Invalid input.");
 
-                // Add to list
                 _rotations.Add((dir, amount));
             }
         }
 
         public int PartOne()
         {
-            // Initial position
-            int pos = 50;
+            var table = new TabularReport();
+            table.AddColumn("Rotation", ColumnAlignment.Center);
+            table.AddColumn("Direction", ColumnAlignment.Center);
+            table.AddColumn("Amount", ColumnAlignment.Center);
+            table.AddColumn("PrevPos", ColumnAlignment.Center);
+            table.AddColumn("NewPos", ColumnAlignment.Center);
+            table.AddColumn("Zero Hit", ColumnAlignment.Center);
 
-            // Rotate and retrieve password
-            int password = 0;
+            var pos = 50;
+            var password = 0;
+            var step = 1;
             foreach (var (dir, amount) in _rotations)
             {
-                // Step full amount and modulo any wrap arounds
+                // Rotate
+                int prevPos = pos;
                 pos += dir == Rotation.Clockwise ? amount : -amount;
                 pos = MathExtensions.Modulo(pos, 100);
 
                 // Pointing at zero
-                if (pos == 0)
-                    password++;
+                var zeroHit = pos == 0 ? 1 : 0;
+                password += zeroHit;
+
+                table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHit);
             }
+
+            _reporter.ReportLines(table.RenderLines());
 
             return password;
         }
 
         public int PartTwo()
         {
-            // Initial position
-            int pos = 50;
+            var table = new TabularReport();
+            table.AddColumn("Rotation", ColumnAlignment.Center);
+            table.AddColumn("Direction", ColumnAlignment.Center);
+            table.AddColumn("Amount", ColumnAlignment.Center);
+            table.AddColumn("PrevPos", ColumnAlignment.Center);
+            table.AddColumn("NewPos", ColumnAlignment.Center);
+            table.AddColumn("Zero Hits", ColumnAlignment.Center);
 
-            // Rotate and retrieve password
-            int password = 0;
+            var pos = 50;
+            var password = 0;
+            var step = 1;
             foreach (var (dir, amount) in _rotations)
-            { 
+            {
                 // Distance to zero
-                int distance = dir == Rotation.Clockwise ? 100 - pos : pos;
+                var distance = dir == Rotation.Clockwise ? 100 - pos : pos;
 
-                // Zero crossings
+                // Zero hits
+                var zeroHits = 0;
                 if (distance == 0)
-                    password += amount / 100;
+                    zeroHits = amount / 100;
                 else if (amount >= distance)
-                    password += 1 + (amount - distance) / 100;
+                    zeroHits = 1 + (amount - distance) / 100;
+                password += zeroHits;
 
                 // Rotate
-                int step = dir == Rotation.Clockwise ? amount : -amount;
-                pos = MathExtensions.Modulo(pos + step, 100);
+                int prevPos = pos;
+                pos += dir == Rotation.Clockwise ? amount : -amount;
+                pos = MathExtensions.Modulo(pos, 100);
+
+                table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHits);
             }
+
+            _reporter.ReportLines(table.RenderLines());
 
             return password;
         }
     }
 }
-
