@@ -60,6 +60,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef | null>>({})
   const mgr = useConnectionManager(props.year, props.source, props.author, props.set, grids)
+  const day = new Date(props.set.releaseTime).getDate()
   // Cooldown before showing spinner for problem being solved. To prevent it from flashing
   // too quickly when a solution is just a bit too efficient.
   const startCooldown = 10
@@ -160,13 +161,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             <a
               key="day"
               href="#"
-              onClick={() =>
-                navigate(
-                  `https://adventofcode.com/${props.year}/day/${new Date(props.set.releaseTime).getDate()}`
-                )
-              }
+              onClick={() => navigate(`https://adventofcode.com/${props.year}/day/${day}`)}
             >
-              {props.set.name}
+              Day {day} - {props.set.name}
             </a>
           ]}
           textStyle={{
@@ -181,7 +178,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           onRender={handleRenderAll}
           problemKey={problemKey}
           year={props.year}
-          day={new Date(props.set.releaseTime).getDate()}
+          day={day}
         />
       </div>
 
@@ -279,7 +276,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                       metadata={problem}
                       problemKey={problemKey}
                       year={props.year}
-                      day={new Date(props.set.releaseTime).getDate()}
+                      day={day}
                       partIndex={i}
                     />
                   </div>
@@ -324,7 +321,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
               <Tab.Pane eventKey={`chat-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
                 <ProblemDiscussion
                   year={props.year}
-                  day={new Date(props.set.releaseTime).getDate()}
+                  day={day}
                   partIndex={i}
                   problemKey={problemKey}
                   problem={problem}
