@@ -24,6 +24,8 @@
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
     "@react-hook/resize-observer": "^2.0.2",
+    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.13",
     "bootstrap": "^5.3.3",
     "classnames": "^2.5.1",
     "electron-updater": "^6.1.7",

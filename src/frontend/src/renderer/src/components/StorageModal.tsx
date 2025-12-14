@@ -304,7 +304,6 @@ const StorageModal: FC<StorageModalProps> = (props) => {
 
   const resetFilters = (): void => {
     setSearch('')
-    setTypeFilters([])
     setSort('key-asc')
     setStoredAfter('')
     setStoredBefore('')

@@ -7,6 +7,7 @@
     rgba(255, 255, 255, 0.01) 100%
   );
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  position: relative;
 }
 
 .problem-table {
@@ -16,15 +17,6 @@
 
 .problem-table > :not(caption) > * > * {
   border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-.problem-table-popover {
-  min-width: 22rem;
-}
-
-.problem-table-condition .form-select,
-.problem-table-condition .form-control {
-  min-width: 8rem;
 }
 
 .problem-table th,
@@ -37,10 +29,69 @@
   border-right: none;
 }
 
+.problem-table-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: 100%;
+}
+
+.problem-table-sort-btn {
+  padding: 0.2rem 0.25rem;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.problem-table-filter-input {
+  min-width: 9rem;
+  flex: 2 1 12rem;
+}
+
+.problem-table-filter-row {
+  flex-wrap: nowrap;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.problem-table-filter-row .form-select {
+  min-width: 8rem;
+  flex: 1 0 10rem;
+}
+
 .problem-table-filter-btn {
   padding: 0.2rem 0.25rem;
   line-height: 1.1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
+
+.problem-table-filter-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.problem-table-popover {
+  min-width: 28rem;
+  max-width: 32rem;
+}
+
+.problem-table-popover .popover-body {
+  max-height: 360px;
+  overflow: auto;
+}
+
+.problem-table-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--bs-body-bg);
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  font-size: 0.85rem;
 }
