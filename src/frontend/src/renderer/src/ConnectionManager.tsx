@@ -3,6 +3,7 @@ import {
   FinishedProblemUpdate,
   GridUpdate,
   ProblemUpdate,
+  TableUpdate,
   TextProblemUpdate
 } from './data/ProblemUpdate'
 import ProblemSocket from './services/ProblemSocket'
@@ -15,11 +16,17 @@ export interface ProblemFeedbackHandler {
   problemService: ProblemService
   solution: (problemName: string) => string | undefined
   log: (problemName: string) => string[] | undefined
+  table: (problemName: string) => TableData | undefined
   solve: (problem: ProblemMetadata, input: string) => Promise<void>
   solveAll: (input: string) => void
   getSolveData: (problemName: string | undefined) => SolveData | undefined
   elapsed: (problemName: string) => string | undefined
   solving: string[]
+}
+
+export interface TableData {
+  columns: TableUpdate['columns']
+  rows: string[][]
 }
 
 export interface SolveData {
@@ -38,6 +45,7 @@ export function useConnectionManager(
   const problemService = useProblemService()
   const [solutions, setSolutions] = useState<Record<string, string>>({})
   const [log, setLog] = useState<Record<string, string[] | undefined>>({})
+  const [tables, setTables] = useState<Record<string, TableData | undefined>>({})
   const [, setSocket] = useState<ProblemSocket | undefined>()
   const [gridQueue, setGridQueue] = useState<Record<string, GridData[]>>({})
   const [solveTimes, setSolveTimes] = useState<Record<string, SolveData>>({})
@@ -142,6 +150,7 @@ export function useConnectionManager(
   const handleStart = (): void => {
     setSolutions({})
     setLog({})
+    setTables({})
   }
 
   const handleLog = (update: TextProblemUpdate): void => {
@@ -175,7 +184,7 @@ export function useConnectionManager(
         ...current
       }
 
-      const queue = replacer[problemName] ?? []
+      const queue = update.clear ? [] : (replacer[problemName] ?? [])
       queue.push(update.rows)
       replacer[problemName] = queue
 
@@ -187,10 +196,28 @@ export function useConnectionManager(
       grids.current[update.id.problemName]?.setSize(update.width, update.height)
   }
 
+  const handleTable = (update: TableUpdate): void => {
+    const problemName = update.id.problemName
+    setTables((current) => {
+      const existing = current[problemName]
+      const nextRows =
+        (update.reset ?? true) ? update.rows : [...(existing?.rows ?? []), ...update.rows]
+
+      return {
+        ...current,
+        [problemName]: {
+          columns: update.columns,
+          rows: nextRows
+        }
+      }
+    })
+  }
+
   const handlers: Record<string, (update: ProblemUpdate) => void> = {
     text: (update: ProblemUpdate) => handleLog(update as TextProblemUpdate),
     finished: (update: ProblemUpdate) => handleFinished(update as FinishedProblemUpdate),
-    grid: (update: ProblemUpdate) => handleGrid(update as GridUpdate)
+    grid: (update: ProblemUpdate) => handleGrid(update as GridUpdate),
+    table: (update: ProblemUpdate) => handleTable(update as TableUpdate)
   }
 
   const handleMessage = useCallback((message: MessageEvent) => {
@@ -242,6 +269,7 @@ export function useConnectionManager(
     problemService: problemService,
     solution: (name: string): string | undefined => solutions[name],
     log: (name: string): string[] | undefined => log[name],
+    table: (name: string): TableData | undefined => tables[name],
     solve: solve,
     solveAll: solveAll,
     getSolveData: getSolveData,

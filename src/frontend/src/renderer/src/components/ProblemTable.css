@@ -1,0 +1,46 @@
+.problem-table-wrapper {
+  border-radius: 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+}
+
+.problem-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.problem-table > :not(caption) > * > * {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.problem-table-popover {
+  min-width: 22rem;
+}
+
+.problem-table-condition .form-select,
+.problem-table-condition .form-control {
+  min-width: 8rem;
+}
+
+.problem-table th,
+.problem-table td {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.problem-table th:last-child,
+.problem-table td:last-child {
+  border-right: none;
+}
+
+.problem-table-filter-btn {
+  padding: 0.2rem 0.25rem;
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

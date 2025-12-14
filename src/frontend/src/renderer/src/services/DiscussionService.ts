@@ -34,7 +34,12 @@ export class DiscussionService {
       return undefined
     }
 
-    const channel = await window.startDiscussionStream(messages, this.token, this.model, this.reasoning)
+    const channel = await window.startDiscussionStream(
+      messages,
+      this.token,
+      this.model,
+      this.reasoning
+    )
     if (channel == null) {
       handlers.onError?.('Failed to start discussion stream.')
       return undefined

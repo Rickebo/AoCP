@@ -52,6 +52,7 @@
         display: inline-block;
         margin: 0;
         padding: 0;
+        z-index: 0;
     }
 
     code:before {
@@ -65,6 +66,11 @@
         bottom: 0px;
         border: 1px solid #333340;
         background: #10101a;
+    }
+
+    pre {
+        padding-left: 2px;
+        overflow: auto;
     }
 
     pre.wrap {
@@ -700,7 +706,7 @@
 
 .problem {
     overflow-y: auto;
-    padding-top: 1.25rem;
+    padding-top: 1rem;
     padding-left: 1rem;
     padding-right: 1rem;
     width: 100%;

@@ -203,8 +203,8 @@ public class GlyphGridUpdateTests
         Assert.Multiple(() =>
         {
             Assert.That(update.Rows["0"]["0"].Glyph, Is.EqualTo("E"));
-            Assert.That(update.Rows["0"]["1"].Glyph, Is.EqualTo("7"));
-            Assert.That(update.Rows["1"]["1"].Glyph, Is.EqualTo("N"));
+            Assert.That(update.Rows["0"]["1"].Glyph, Is.EqualTo("J"));
+            Assert.That(update.Rows["1"]["1"].Glyph, Is.EqualTo("S"));
             Assert.That(update.Rows["0"]["0"].Fg, Is.EqualTo(Color.White.ToRgbaString()));
             Assert.That(update.Rows["0"]["1"].Bg, Is.EqualTo(Color.Black.ToRgbaString()));
             Assert.That(update.Rows["1"]["1"].Fg, Is.EqualTo(Color.White.ToRgbaString()));

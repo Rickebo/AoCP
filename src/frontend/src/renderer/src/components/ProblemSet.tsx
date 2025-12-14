@@ -10,6 +10,7 @@ import ProblemDescription from './ProblemDescription'
 import ProblemDiscussion from './ProblemDiscussion'
 import { BsCheck2Square, BsCopy, BsStopwatch } from 'react-icons/bs'
 import { RenderSettings } from '../services/GifService'
+import ProblemTable from './ProblemTable'
 
 export interface ProblemSetProps {
   year: number
@@ -59,6 +60,7 @@ const ProblemTitle: FC<ProblemTitleProps> = (props) => {
 const ProblemSet: FC<ProblemSetProps> = (props) => {
   const grids = useRef<Record<string, GridRef | null>>({})
   const mgr = useConnectionManager(props.year, props.source, props.author, props.set, grids)
+  const day = new Date(props.set.releaseTime).getDate()
   // Cooldown before showing spinner for problem being solved. To prevent it from flashing
   // too quickly when a solution is just a bit too efficient.
   const startCooldown = 10
@@ -159,13 +161,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             <a
               key="day"
               href="#"
-              onClick={() =>
-                navigate(
-                  `https://adventofcode.com/${props.year}/day/${new Date(props.set.releaseTime).getDate()}`
-                )
-              }
+              onClick={() => navigate(`https://adventofcode.com/${props.year}/day/${day}`)}
             >
-              {props.set.name}
+              Day {day} - {props.set.name}
             </a>
           ]}
           textStyle={{
@@ -180,7 +178,7 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           onRender={handleRenderAll}
           problemKey={problemKey}
           year={props.year}
-          day={new Date(props.set.releaseTime).getDate()}
+          day={day}
         />
       </div>
 
@@ -253,6 +251,9 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   <Nav.Link eventKey={`grid-${i}`}>Grid</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
+                  <Nav.Link eventKey={`table-${i}`}>Table</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
                   <Nav.Link eventKey={`log-${i}`}>Log</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -269,13 +270,17 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
           {props.set.problems.map((problem, i) => (
             <React.Fragment key={`problem-group-${i}`}>
               <Tab.Pane eventKey={`desc-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
-                <ProblemDescription
-                  metadata={problem}
-                  problemKey={problemKey}
-                  year={props.year}
-                  day={new Date(props.set.releaseTime).getDate()}
-                  partIndex={i}
-                />
+                <div className="h-100 w-100 p-3 overflow-auto">
+                  <div className="h-100 w-100 border rounded overflow-auto" style={{ background: '#0f0f23' }}>
+                    <ProblemDescription
+                      metadata={problem}
+                      problemKey={problemKey}
+                      year={props.year}
+                      day={day}
+                      partIndex={i}
+                    />
+                  </div>
+                </div>
               </Tab.Pane>
               <Tab.Pane eventKey={`grid-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
                 <div className="w-100 h-100 d-flex" style={{ minWidth: 0 }}>
@@ -288,15 +293,35 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
                   )}
                 </div>
               </Tab.Pane>
+              <Tab.Pane eventKey={`table-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
+                <div className="w-100 h-100 d-flex p-3" style={{ minWidth: 0 }}>
+                  <div
+                    className="w-100 h-100 d-flex border rounded p-3"
+                    style={{ minWidth: 0, background: '#0f141b' }}
+                  >
+                    {problem.name == null ? null : (
+                      <ProblemTable
+                        columns={mgr.table(problem.name)?.columns ?? []}
+                        rows={mgr.table(problem.name)?.rows ?? []}
+                      />
+                    )}
+                  </div>
+                </div>
+              </Tab.Pane>
               <Tab.Pane eventKey={`log-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
-                <div className="w-100 h-100 d-flex flex" style={{ minWidth: 0 }}>
-                  {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
+                <div className="w-100 h-100 d-flex flex p-3" style={{ minWidth: 0 }}>
+                  <div
+                    className="w-100 h-100 d-flex flex border rounded overflow-auto"
+                    style={{ minWidth: 0, background: '#0f141b' }}
+                  >
+                    {problem.name == null ? null : <ProblemLog content={mgr.log(problem.name)!} />}
+                  </div>
                 </div>
               </Tab.Pane>
               <Tab.Pane eventKey={`chat-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
                 <ProblemDiscussion
                   year={props.year}
-                  day={new Date(props.set.releaseTime).getDate()}
+                  day={day}
                   partIndex={i}
                   problemKey={problemKey}
                   problem={problem}

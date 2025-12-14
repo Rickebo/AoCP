@@ -1,7 +1,7 @@
 ﻿import { ProblemId } from '../services/ProblemService'
 
 export interface ProblemUpdate {
-  type: 'ongoing' | 'finished' | 'text'
+  type: 'ongoing' | 'finished' | 'text' | 'grid' | 'table'
   id: ProblemId
 }
 
@@ -26,4 +26,16 @@ export interface GridUpdate extends OngoingProblemUpdate {
   width: number
   height: number
   rows: Record<string, Record<string, string>>
+}
+
+export type TableColumnAlignment = 'left' | 'center' | 'right'
+
+export interface TableUpdate extends OngoingProblemUpdate {
+  type: 'table'
+  columns: {
+    header: string
+    alignment: TableColumnAlignment
+  }[]
+  rows: string[][]
+  reset?: boolean
 }

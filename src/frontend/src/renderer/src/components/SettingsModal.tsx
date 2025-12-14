@@ -23,7 +23,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
 
   const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
   const [isEnteredUrlValid, setIsEnteredUrlValid] = useState<boolean>(false)
-  const summarizationDisabled = !settings.state.retrieveDescription || !settings.state.summarizeWithAI
+  const summarizationDisabled =
+    !settings.state.retrieveDescription || !settings.state.summarizeWithAI
 
   useEffect(() => {
     setIsEnteredUrlValid(isValidUrl(enteredBackendUrl))
@@ -96,7 +97,7 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
               />
             </Form.Group>
 
-            <Accordion alwaysOpen defaultActiveKey={['ai-summary','ai-discussion','backend']}>
+            <Accordion alwaysOpen defaultActiveKey={['ai-summary', 'ai-discussion', 'backend']}>
               <Accordion.Item eventKey="ai">
                 <Accordion.Header>AI Summarization</Accordion.Header>
                 <Accordion.Body>
@@ -167,7 +168,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         }}
                       />
                       <Form.Text>
-                        The selected article HTML is appended after this text when requesting a summary.
+                        The selected article HTML is appended after this text when requesting a
+                        summary.
                       </Form.Text>
                     </Form.Group>
 
@@ -192,8 +194,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         <option value="high">High</option>
                       </Form.Select>
                       <Form.Text>
-                        Maps to OpenRouter <code>reasoning.effort</code>. Ignored if a reasoning token
-                        budget is set below.
+                        Maps to OpenRouter <code>reasoning.effort</code>. Ignored if a reasoning
+                        token budget is set below.
                       </Form.Text>
                     </Form.Group>
 
@@ -218,8 +220,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         }}
                       />
                       <Form.Text>
-                        Uses OpenRouter <code>reasoning.max_tokens</code>. If set to a positive number,
-                        it takes precedence over effort.
+                        Uses OpenRouter <code>reasoning.max_tokens</code>. If set to a positive
+                        number, it takes precedence over effort.
                       </Form.Text>
                     </Form.Group>
                   </Stack>
@@ -253,7 +255,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         onChange={(e) => {
                           const effort = e.currentTarget.value
                           settings.update((current) => {
-                            current.discussionReasoningEffort = effort.length > 0 ? effort : undefined
+                            current.discussionReasoningEffort =
+                              effort.length > 0 ? effort : undefined
                             settings.save(current)
                           })
                         }}
@@ -265,7 +268,9 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
                       </Form.Select>
-                      <Form.Text>Maps to OpenRouter <code>reasoning.effort</code>.</Form.Text>
+                      <Form.Text>
+                        Maps to OpenRouter <code>reasoning.effort</code>.
+                      </Form.Text>
                     </Form.Group>
 
                     <Form.Group>
@@ -288,7 +293,8 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                         }}
                       />
                       <Form.Text>
-                        Uses OpenRouter <code>reasoning.max_tokens</code>. If set, it overrides effort.
+                        Uses OpenRouter <code>reasoning.max_tokens</code>. If set, it overrides
+                        effort.
                       </Form.Text>
                     </Form.Group>
                   </Stack>
@@ -314,7 +320,11 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                             <div className="ms-auto" />
                             {url == backend.url ? null : (
                               <>
-                                <Button size="sm" className="me-2" onClick={() => backend.setUrl(url)}>
+                                <Button
+                                  size="sm"
+                                  className="me-2"
+                                  onClick={() => backend.setUrl(url)}
+                                >
                                   Activate
                                 </Button>
                                 <CloseButton onClick={() => backend.removeUrl(url)} />

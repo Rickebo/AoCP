@@ -43,7 +43,7 @@ public class Day18 : ProblemSet
 
         public override Task Solve(string input, Reporter reporter)
         {
-            reporter.ReportSolution(string.Join(",", Data.Parse(input).Part2(reporter)));
+            reporter.ReportSolution(string.Join(",", Data.Parse(input, reporter).Part2(reporter)));
 
             return Task.CompletedTask;
         }
@@ -62,17 +62,18 @@ public class Day18 : ProblemSet
         {
             var lines = input.SplitLines();
             var dim = lines.Length < 100 ? 7 : 71;
-            var grid = new IntGrid(int.MaxValue, dim, dim);
+            var grid = new IntGrid(dim, dim, int.MaxValue);
             var result = new List<IntegerCoordinate<int>>();
-            var index = 1;
+            var index = 0;
             var bytes = dim < 70 ? 12 : 1024;
 
-            var src = new IntegerCoordinate<int>(0, 0);
-            var dst = new IntegerCoordinate<int>(dim - 1, dim - 1);
+            var src = new IntegerCoordinate<int>(0, dim - 1); // Translated for top left origin
+            var dst = new IntegerCoordinate<int>(dim - 1, 0); // Translated for top left origin
 
             var builder = GlyphGridUpdate.Builder()
                 .WithHeight(dim)
                 .WithWidth(dim)
+                .WithClear()
                 .WithEntry(
                     entryBuilder => entryBuilder
                         .WithCoordinate(src)
@@ -92,11 +93,11 @@ public class Day18 : ProblemSet
                 if (xy.Length != 2)
                     throw new Exception("Expected two integer values per line.");
 
-                var pos = new IntegerCoordinate<int>(xy[0], xy[1]);
+                var pos = new IntegerCoordinate<int>(xy[0], dim - 1 - xy[1]); // Translated for top left origin
                 grid[pos] = index++;
                 result.Add(pos);
 
-                if (grid[pos] <= bytes)
+                if (grid[pos] < bytes)
                     builder = builder
                         .WithEntry(
                             entryBuilder => entryBuilder
@@ -110,7 +111,7 @@ public class Day18 : ProblemSet
 
             return new Data(
                 grid,
-                result.ToArray(),
+                [.. result],
                 src,
                 dst,
                 bytes,
@@ -160,12 +161,12 @@ public class Day18 : ProblemSet
                 if (prevPathSet != null && !prevPathSet.Contains(blocker))
                     continue;
 
-                var path = FindShortestPath(i).ToArray();
+                var path = FindShortestPath(i + 1).ToArray();
                 // If there still is a path, update the prev path and continue
                 if (path.Length != 0)
                 {
                     prevPath = path;
-                    prevPathSet = path.ToHashSet();
+                    prevPathSet = [.. path];
                     continue;
                 }
 
@@ -202,7 +203,7 @@ public class Day18 : ProblemSet
                             )
                     );
 
-                return $"{blocker.X},{blocker.Y}";
+                return $"{blocker.X},{Grid.Height - 1 - blocker.Y}";
             }
 
             throw new Exception("Path found for all amount of bytes.");
@@ -241,7 +242,7 @@ public class Day18 : ProblemSet
 
                 foreach (var neighbour in pos.Neighbours())
                 {
-                    if (visited.Contains(neighbour) || !Grid.Contains(neighbour) || Grid[neighbour] <= bytes)
+                    if (visited.Contains(neighbour) || !Grid.Contains(neighbour) || Grid[neighbour] < bytes)
                         continue;
 
                     var neighbourTravelCost = travelCost + 1;

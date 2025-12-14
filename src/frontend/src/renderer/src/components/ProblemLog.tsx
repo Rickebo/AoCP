@@ -8,25 +8,23 @@ const ProblemLog: FC<ProblemLogProps> = (props) => {
   const lastIndex = props.content?.length ?? 0 - 1
 
   return (
-    <div className="bg-body-tertiary p-2 px-3 rounded w-100 overflow-auto">
-      <pre
-        style={{
-          fontFamily: 'Source Code Pro',
-          fontWeight: 300
-        }}
-      >
-        <pre>
-          <code>
-            {props.content?.map((line, i) => (
-              <span key={i}>
-                {line}
-                {i == lastIndex ? null : <br />}
-              </span>
-            ))}
-          </code>
-        </pre>
-      </pre>
-    </div>
+    <pre
+      className="h-100 w-100 mb-0 p-3"
+      style={{
+        fontFamily: 'Source Code Pro',
+        fontWeight: 300,
+        whiteSpace: 'pre-wrap'
+      }}
+    >
+      <code>
+        {props.content?.map((line, i) => (
+          <span key={i}>
+            {line}
+            {i == lastIndex ? null : <br />}
+          </span>
+        ))}
+      </code>
+    </pre>
   )
 }
 

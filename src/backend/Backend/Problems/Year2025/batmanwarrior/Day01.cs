@@ -29,7 +29,7 @@ public class Day01 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Send solution to frontend (Part 1)
-            reporter.ReportSolution(new DialUp(input, reporter, 1).PartOne());
+            reporter.ReportSolution(new Solver(input, reporter, 1).PartOne());
             return Task.CompletedTask;
         }
     }
@@ -43,86 +43,100 @@ public class Day01 : ProblemSet
         public override Task Solve(string input, Reporter reporter)
         {
             // Send solution to frontend (Part 2)
-            reporter.ReportSolution(new DialUp(input, reporter, 2).PartTwo());
+            reporter.ReportSolution(new Solver(input, reporter, 2).PartTwo());
             return Task.CompletedTask;
         }
     }
 
-    public class DialUp
+    public class Solver
     {
         private readonly Reporter _reporter;
         private readonly List<(Rotation, int)> _rotations = [];
 
-        public DialUp(string input, Reporter reporter, int _)
+        public Solver(string input, Reporter reporter, int _)
         {
-            // Save for printing
             _reporter = reporter;
 
-            // Parse input
             foreach (var line in input.SplitLines())
             {
-                // Direction of rotation
-                var dir = line[0] switch
-                {
-                    'L' => Rotation.CounterClockwise,
-                    'R' => Rotation.Clockwise,
-                    _ => throw new ProblemException("Invalid input."),
-                };
+                var dir = RotationExtensions.Parse(line[0]);
 
-                // Amount
                 if (!int.TryParse(line[1..], out var amount))
                     throw new ProblemException("Invalid input.");
 
-                // Add to list
                 _rotations.Add((dir, amount));
             }
         }
 
         public int PartOne()
         {
-            // Initial position
-            int pos = 50;
+            var table = new TabularReport();
+            table.AddColumn("Rotation", ColumnAlignment.Center);
+            table.AddColumn("Direction", ColumnAlignment.Center);
+            table.AddColumn("Amount", ColumnAlignment.Center);
+            table.AddColumn("PrevPos", ColumnAlignment.Center);
+            table.AddColumn("NewPos", ColumnAlignment.Center);
+            table.AddColumn("Zero Hit", ColumnAlignment.Center);
 
-            // Count how many times the dial up points at zero after rotation
-            int password = 0;
+            var pos = 50;
+            var password = 0;
+            var step = 1;
             foreach (var (dir, amount) in _rotations)
             {
-                // Step full amount and modulo any wrap arounds
+                // Rotate
+                int prevPos = pos;
                 pos += dir == Rotation.Clockwise ? amount : -amount;
                 pos = MathExtensions.Modulo(pos, 100);
 
-                // Pointing at zero after rotation
-                if (pos == 0)
-                    password++;
+                // Pointing at zero
+                var zeroHit = pos == 0 ? 1 : 0;
+                password += zeroHit;
+
+                table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHit);
             }
+
+            _reporter.ReportTable(table);
 
             return password;
         }
 
         public int PartTwo()
         {
-            // Initial position
-            int pos = 50;
+            var table = new TabularReport();
+            table.AddColumn("Rotation", ColumnAlignment.Center);
+            table.AddColumn("Direction", ColumnAlignment.Center);
+            table.AddColumn("Amount", ColumnAlignment.Center);
+            table.AddColumn("PrevPos", ColumnAlignment.Center);
+            table.AddColumn("NewPos", ColumnAlignment.Center);
+            table.AddColumn("Zero Hits", ColumnAlignment.Center);
 
-            // Count how many times the dial up points at zero during rotation
-            int password = 0;
+            var pos = 50;
+            var password = 0;
+            var step = 1;
             foreach (var (dir, amount) in _rotations)
             {
-                // Step like crazy man
-                for (int i = 0; i < amount; i++)
-                {
-                    // Take one step in direction and modulo any wrap arounds
-                    int step = dir == Rotation.Clockwise ? 1 : -1;
-                    pos = MathExtensions.Modulo(pos + step, 100);
+                // Distance to zero
+                var distance = dir == Rotation.Clockwise ? 100 - pos : pos;
 
-                    // Pointing at zero during rotation
-                    if (pos == 0)
-                        password++;
-                }
+                // Zero hits
+                var zeroHits = 0;
+                if (distance == 0)
+                    zeroHits = amount / 100;
+                else if (amount >= distance)
+                    zeroHits = 1 + (amount - distance) / 100;
+                password += zeroHits;
+
+                // Rotate
+                int prevPos = pos;
+                pos += dir == Rotation.Clockwise ? amount : -amount;
+                pos = MathExtensions.Modulo(pos, 100);
+
+                table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHits);
             }
+
+            _reporter.ReportTable(table);
 
             return password;
         }
     }
 }
-

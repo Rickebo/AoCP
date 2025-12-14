@@ -318,8 +318,7 @@ async function chatWithOpenRouterStream(
   reasoning?: DiscussionReasoning
 ): Promise<string | undefined> {
   try {
-    const safeModel =
-      model != null && model.trim().length > 0 ? model.trim() : defaultSummaryModel
+    const safeModel = model != null && model.trim().length > 0 ? model.trim() : defaultSummaryModel
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
