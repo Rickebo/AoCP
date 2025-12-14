@@ -47,6 +47,30 @@ public class Reporter
     }
 
     /// <summary>
+    /// Reports a tabular payload that the client can render as a table.
+    /// </summary>
+    /// <param name="report">Tabular report to transmit.</param>
+    /// <param name="reset">Whether to clear any existing client table before applying this payload.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="report"/> is null.</exception>
+    public void ReportTable(TabularReport report, bool reset = true)
+    {
+        ArgumentNullException.ThrowIfNull(report);
+
+        var columns = report.Headers
+            .Zip(report.Alignments, (header, alignment) => new TableColumn(header, MapAlignment(alignment)))
+            .ToArray();
+
+        var rows = report.Rows.Select(row => row.ToArray()).ToArray();
+
+        Report(new TableUpdate
+        {
+            Columns = columns,
+            Rows = rows,
+            Reset = reset
+        });
+    }
+
+    /// <summary>
     /// Reports either a single block of text or a sequence of lines.
     /// </summary>
     /// <param name="text">Block of text to emit.</param>
@@ -85,14 +109,16 @@ public class Reporter
     /// <summary>
     /// Reports a solution string as a finished update.
     /// </summary>
-    /// <param name="solution">The computed solution.</param>
+    /// <param name="solution">
+    /// The computed solution; null is treated as an empty string.
+    /// </param>
     public void ReportSolution(string solution) =>
         Report(FinishedProblemUpdate.FromSolution(solution));
 
     /// <summary>
     /// Reports an error and optional partial solution as a finished update.
     /// </summary>
-    /// <param name="error">The error message.</param>
+    /// <param name="error">The error message; null is stored as an empty string.</param>
     /// <param name="partialSolution">An optional partial solution to display.</param>
     public void ReportError(string error, string? partialSolution = null) =>
         Report(FinishedProblemUpdate.FromError(error, partialSolution));
@@ -113,7 +139,7 @@ public class Reporter
     /// Reports a string grid update for a single coordinate.
     /// </summary>
     /// <param name="coordinate">Grid coordinate to update.</param>
-    /// <param name="text">Text to render at the coordinate.</param>
+    /// <param name="text">Text to render at the coordinate; null becomes an empty string.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="coordinate"/> is null.</exception>
     public void ReportStringGridUpdate(IStringCoordinate coordinate, string text)
     {
@@ -240,6 +266,13 @@ public class Reporter
         }
     );
 
+    private static string MapAlignment(ColumnAlignment alignment) => alignment switch
+    {
+        ColumnAlignment.Center => "center",
+        ColumnAlignment.Right => "right",
+        _ => "left"
+    };
+
     /// <summary>
     /// Reads all currently buffered updates without waiting for future items.
     /// </summary>
@@ -270,4 +303,3 @@ public class Reporter
         }
     }
 }
-

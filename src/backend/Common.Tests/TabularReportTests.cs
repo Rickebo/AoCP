@@ -34,6 +34,20 @@ public class TabularReportTests
     }
 
     [Test]
+    public void Alignments_ReturnsDefinedAlignmentsInOrder()
+    {
+        var table = new TabularReport();
+        table.AddColumn("Left", ColumnAlignment.Left);
+        table.AddColumn("Right", ColumnAlignment.Right);
+        table.AddColumn("Center", ColumnAlignment.Center);
+
+        Assert.That(
+            table.Alignments,
+            Is.EqualTo(new[] { ColumnAlignment.Left, ColumnAlignment.Right, ColumnAlignment.Center })
+        );
+    }
+
+    [Test]
     public void AddColumn_EmptyHeader_Throws()
     {
         var table = new TabularReport();
@@ -193,6 +207,27 @@ public class TabularReportTests
         table.AddRow("value");
 
         Assert.Throws<ArgumentOutOfRangeException>(() => table.GetCell(0, 5));
+    }
+
+    [Test]
+    public void Rows_ReturnsSnapshotIndependentOfTableState()
+    {
+        var table = new TabularReport();
+        table.AddColumn("Name");
+        table.AddColumn("Score", ColumnAlignment.Right);
+        var rowIndex = table.AddRow("Alice", 10);
+
+        var rows = table.Rows;
+        table.SetCell(rowIndex, 0, "Bob");
+        table.SetCell(rowIndex, 1, 20);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows[0], Is.EqualTo(new[] { "Alice", "10" }));
+            Assert.That(table.GetCell(rowIndex, 0), Is.EqualTo("Bob"));
+            Assert.That(table.GetCell(rowIndex, 1), Is.EqualTo("20"));
+            Assert.That(table.Rows, Is.Not.EqualTo(rows));
+        });
     }
 
     [Test]

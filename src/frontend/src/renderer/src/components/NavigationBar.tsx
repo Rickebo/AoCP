@@ -42,15 +42,12 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
     })
   }, [backend.url])
 
-  const collectionsBySource = collections.reduce(
-    (map, collection) => {
-      const bucket = map.get(collection.source) ?? []
-      bucket.push(collection)
-      map.set(collection.source, bucket)
-      return map
-    },
-    new Map<string, typeof collections>()
-  )
+  const collectionsBySource = collections.reduce((map, collection) => {
+    const bucket = map.get(collection.source) ?? []
+    bucket.push(collection)
+    map.set(collection.source, bucket)
+    return map
+  }, new Map<string, typeof collections>())
 
   const orderedSources = ['AoC', 'Codelight', ...collectionsBySource.keys()].filter(
     (value, index, self) => self.indexOf(value) === index

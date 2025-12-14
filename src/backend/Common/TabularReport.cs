@@ -49,7 +49,17 @@ public sealed class TabularReport
     /// <summary>
     /// Gets the header labels for the defined columns.
     /// </summary>
-    public IReadOnlyList<string> Headers => _columns.Select(c => c.Header).ToArray();
+    public IReadOnlyList<string> Headers => [.. _columns.Select(c => c.Header)];
+
+    /// <summary>
+    /// Gets the alignment values for the defined columns.
+    /// </summary>
+    public IReadOnlyList<ColumnAlignment> Alignments => [.. _columns.Select(c => c.Alignment)];
+
+    /// <summary>
+    /// Gets the rows currently stored in the report.
+    /// </summary>
+    public IReadOnlyList<IReadOnlyList<string>> Rows => [.. _rows.Select(r => (IReadOnlyList<string>)[.. r])];
 
     /// <summary>
     /// Adds a new column to the report and expands existing rows with an empty cell.
@@ -186,13 +196,13 @@ public sealed class TabularReport
             ArgumentNullException.ThrowIfNull(headerSeparator);
 
         if (_columns.Count == 0)
-            return Array.Empty<string>();
+            return [];
 
         var widths = CalculateWidths();
         var alignments = _columns.Select(c => c.Alignment).ToArray();
         var lines = new List<string>(_rows.Count + 2)
         {
-            FormatRow(_columns.Select(c => c.Header).ToArray(), widths, alignments, columnSeparator)
+            FormatRow([.. _columns.Select(c => c.Header)], widths, alignments, columnSeparator)
         };
 
         if (includeHeaderSeparator)
@@ -201,7 +211,7 @@ public sealed class TabularReport
         foreach (var row in _rows)
             lines.Add(FormatRow(row, widths, alignments, columnSeparator));
 
-        return lines.ToArray();
+        return [.. lines];
     }
 
     /// <summary>
@@ -247,13 +257,13 @@ public sealed class TabularReport
     /// <param name="columnSeparator">String inserted between formatted columns.</param>
     /// <returns>The formatted row string.</returns>
     private static string FormatRow(
-        IReadOnlyList<string> cells,
-        IReadOnlyList<int> widths,
-        IReadOnlyList<ColumnAlignment> alignments,
+        string[] cells,
+        int[] widths,
+        ColumnAlignment[] alignments,
         string columnSeparator)
     {
-        var formatted = new string[cells.Count];
-        for (var i = 0; i < cells.Count; i++)
+        var formatted = new string[cells.Length];
+        for (var i = 0; i < cells.Length; i++)
         {
             var cell = cells[i] ?? string.Empty;
             formatted[i] = alignments[i] switch

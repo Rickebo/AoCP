@@ -74,7 +74,9 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
 
   const cacheRawDescription = (raw: string): void => {
     try {
-      const parsed = (JSON.parse(localStorage.getItem(cacheKey) ?? '{}') as ProblemDescriptionData) ?? {
+      const parsed = (JSON.parse(
+        localStorage.getItem(cacheKey) ?? '{}'
+      ) as ProblemDescriptionData) ?? {
         raw: undefined,
         processed: undefined
       }
@@ -156,7 +158,7 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
     }
   }
 
-  useEffect(() => {
+  useEffect((): (() => void) => {
     const hasPersisted = persisted.state.system != null && persisted.state.messages.length > 0
     if (hasPersisted) {
       setSystemMessage(persisted.state.system)
@@ -318,7 +320,7 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
           const isUser = msg.role === 'user'
           const html = marked.parse(msg.content ?? '')
           const isAssistantPending =
-            msg.role === 'assistant' && ((msg.content ?? '').trim().length === 0)
+            msg.role === 'assistant' && (msg.content ?? '').trim().length === 0
 
           return (
             <div
@@ -347,10 +349,7 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
                 {isAssistantPending ? (
                   <div className="shimmer-text">Thinking…</div>
                 ) : (
-                  <div
-                    className="discussion-message"
-                    dangerouslySetInnerHTML={{ __html: html }}
-                  />
+                  <div className="discussion-message" dangerouslySetInnerHTML={{ __html: html }} />
                 )}
               </div>
             </div>

@@ -11,6 +11,7 @@ namespace Common.Updates;
 [JsonDerivedType(typeof(StartProblemUpdate))]
 [JsonDerivedType(typeof(GlyphGridUpdate))]
 [JsonDerivedType(typeof(StringGridUpdate))]
+[JsonDerivedType(typeof(TableUpdate))]
 public abstract class ProblemUpdate
 {
     /// <summary>
@@ -23,4 +24,3 @@ public abstract class ProblemUpdate
     /// </summary>
     public ProblemId Id { get; set; } = new();
 }
-

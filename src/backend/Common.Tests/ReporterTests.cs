@@ -82,6 +82,46 @@ public class ReporterTests
     }
 
     [Test]
+    public void ReportTable_MapsTabularReportToTableUpdate()
+    {
+        var reporter = new Reporter();
+        var tabular = new TabularReport();
+        tabular.AddColumn("Name", ColumnAlignment.Center);
+        tabular.AddColumn("Score", ColumnAlignment.Right);
+        tabular.AddRow("Alice", 10);
+        tabular.AddRow("Bob", 5);
+
+        reporter.ReportTable(tabular, reset: false);
+
+        var update = reporter.ReadAllCurrent().Single() as TableUpdate;
+        Assert.That(update, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(update!.Type, Is.EqualTo("table"));
+            Assert.That(update.Reset, Is.False);
+            Assert.That(update.Columns.Select(c => c.Header), Is.EqualTo(new[] { "Name", "Score" }));
+            Assert.That(update.Columns.Select(c => c.Alignment), Is.EqualTo(new[] { "center", "right" }));
+            Assert.That(update.Rows[0], Is.EqualTo(new[] { "Alice", "10" }));
+            Assert.That(update.Rows[1], Is.EqualTo(new[] { "Bob", "5" }));
+        });
+    }
+
+    [Test]
+    public void ReportTable_DefaultsResetToTrue()
+    {
+        var reporter = new Reporter();
+        var tabular = new TabularReport();
+        tabular.AddColumn("Only");
+        tabular.AddRow("Row");
+
+        reporter.ReportTable(tabular);
+
+        var update = reporter.ReadAllCurrent().Single() as TableUpdate;
+        Assert.That(update, Is.Not.Null);
+        Assert.That(update!.Reset, Is.True);
+    }
+
+    [Test]
     public void ReportStringGridUpdate_FromCoordinate_AddsEntry()
     {
         var reporter = new Reporter();

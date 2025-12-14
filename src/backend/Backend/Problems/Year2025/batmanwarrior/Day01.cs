@@ -95,7 +95,7 @@ public class Day01 : ProblemSet
                 table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHit);
             }
 
-            _reporter.ReportLines(table.RenderLines());
+            _reporter.ReportTable(table);
 
             return password;
         }
@@ -134,7 +134,7 @@ public class Day01 : ProblemSet
                 table.AddRow(step++, RotationExtensions.ToGlyph(dir), amount, prevPos, pos, zeroHits);
             }
 
-            _reporter.ReportLines(table.RenderLines());
+            _reporter.ReportTable(table);
 
             return password;
         }

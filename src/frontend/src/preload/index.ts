@@ -58,7 +58,13 @@ if (process.contextIsolated) {
         previousArticles: string[] = [],
         config?: SummaryConfig
       ): Promise<string | undefined> =>
-        ipcRenderer.invoke('get-processed-description', article, openRouterToken, previousArticles, config)
+        ipcRenderer.invoke(
+          'get-processed-description',
+          article,
+          openRouterToken,
+          previousArticles,
+          config
+        )
     )
     contextBridge.exposeInMainWorld(
       'startProcessedDescriptionStream',
@@ -102,11 +108,15 @@ if (process.contextIsolated) {
         openRouterToken: string,
         model?: string,
         reasoning?: DiscussionConfig
-      ) => ipcRenderer.invoke('start-discussion-stream', messages, openRouterToken, model, reasoning)
+      ) =>
+        ipcRenderer.invoke('start-discussion-stream', messages, openRouterToken, model, reasoning)
     )
     contextBridge.exposeInMainWorld(
       'subscribeDiscussionStream',
-      (channel: string, listener: (payload: ProcessedDescriptionStreamPayload) => void): (() => void) => {
+      (
+        channel: string,
+        listener: (payload: ProcessedDescriptionStreamPayload) => void
+      ): (() => void) => {
         const wrapped = (
           _event: Electron.IpcRendererEvent,
           data: ProcessedDescriptionStreamPayload
