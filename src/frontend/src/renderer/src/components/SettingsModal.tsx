@@ -11,6 +11,11 @@ import {
 } from 'react-bootstrap'
 import { useSettings } from '../context/SettingsContext'
 import { useBackend } from '../context/BackendContext'
+import { usePersistentState } from '../StateUtils'
+
+interface SettingsModalUiState {
+  accordionActiveKeys: string[]
+}
 
 export interface SettingsModalProps {
   show: boolean
@@ -23,6 +28,9 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
 
   const [enteredBackendUrl, setEnteredBackendUrl] = useState<string>('')
   const [isEnteredUrlValid, setIsEnteredUrlValid] = useState<boolean>(false)
+  const accordionUiState = usePersistentState<SettingsModalUiState>('settings_modal_ui', {
+    accordionActiveKeys: []
+  })
   const summarizationDisabled =
     !settings.state.retrieveDescription || !settings.state.summarizeWithAI
 
@@ -37,6 +45,11 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
     } catch {
       return false
     }
+  }
+
+  const handleAccordionSelect = (eventKey: string | string[] | null | undefined): void => {
+    const keys = Array.isArray(eventKey) ? eventKey : eventKey ? [eventKey] : []
+    accordionUiState.save({ accordionActiveKeys: keys })
   }
 
   return (
@@ -97,7 +110,11 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
               />
             </Form.Group>
 
-            <Accordion alwaysOpen defaultActiveKey={['ai-summary', 'ai-discussion', 'backend']}>
+            <Accordion
+              alwaysOpen
+              activeKey={accordionUiState.state.accordionActiveKeys}
+              onSelect={handleAccordionSelect}
+            >
               <Accordion.Item eventKey="ai">
                 <Accordion.Header>AI Summarization</Accordion.Header>
                 <Accordion.Body>
@@ -305,7 +322,7 @@ const SettingsModal: FC<SettingsModalProps> = (props) => {
                 <Accordion.Header>Backend</Accordion.Header>
                 <Accordion.Body>
                   <Form.Group>
-                    <Form.Label>Backend</Form.Label>
+                    <Form.Label>Endpoint</Form.Label>
                     <ListGroup>
                       {backend.urls.map((url) => (
                         <ListGroupItem key={url} className="pe-2">
