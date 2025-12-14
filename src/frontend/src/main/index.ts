@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import * as path from 'node:path'
 import * as fs from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
+import { HTMLElement, parse } from 'node-html-parser'
 
 type SummaryConfig = {
   model?: string
@@ -27,6 +28,9 @@ type SummaryRequest = {
 
 export type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string }
 export type DiscussionReasoning = { effort?: string; max_tokens?: number }
+
+const descriptionUnavailableText = 'Description unavailable.'
+const submittedAnswerCache = new Map<string, string[]>()
 
 function buildReasoningConfig(
   summaryConfig?: SummaryConfig
@@ -96,6 +100,43 @@ function buildSummaryRequest(
   }
 }
 
+function parseMainElement(html: string): HTMLElement | undefined {
+  try {
+    const root = parse(html)
+    return root.querySelector('main') ?? undefined
+  } catch (error) {
+    console.error('Failed to parse AoC HTML', error)
+    return undefined
+  }
+}
+
+function collectArticlesFromMain(mainElement: HTMLElement): HTMLElement[] {
+  return mainElement.querySelectorAll('article')
+}
+
+function extractSubmittedAnswers(mainElement: HTMLElement): string[] {
+  return mainElement
+    .querySelectorAll('p')
+    .map((paragraph) => {
+      const text = paragraph.text?.toLowerCase() ?? ''
+      if (!text.includes('your puzzle answer was')) return undefined
+
+      const answer = paragraph.querySelector('code')?.text?.trim()
+      return answer != null && answer.length > 0 ? answer : undefined
+    })
+    .filter((answer): answer is string => answer != null)
+}
+
+function clampIndex(index: number, length: number): number {
+  if (length === 0) return 0
+  if (!Number.isFinite(index)) return 0
+  return Math.min(Math.max(index, 0), length - 1)
+}
+
+function serializeArticles(articles: HTMLElement[]): string {
+  return articles.map((article) => article.toString()).join('')
+}
+
 async function fetchAocArticle(
   year: number,
   day: number,
@@ -110,58 +151,25 @@ async function fetchAocArticle(
 
   const html = await resp.text()
 
-  const firstArticleIndex = html.indexOf('<article')
-  if (firstArticleIndex === -1) {
-    return html
+  const mainElement = parseMainElement(html)
+  if (mainElement == null) {
+    return descriptionUnavailableText
+  }
+
+  const submittedAnswers = extractSubmittedAnswers(mainElement)
+  submittedAnswerCache.set(`${year}-${day}`, submittedAnswers)
+
+  const articles = collectArticlesFromMain(mainElement)
+  if (articles.length === 0) {
+    return descriptionUnavailableText
   }
 
   if (partIndex == null || partIndex < 0) {
-    const lastArticleEndIndex = html.lastIndexOf('</article>')
-    if (lastArticleEndIndex === -1) {
-      return html
-    }
-
-    return html.slice(firstArticleIndex, lastArticleEndIndex + '</article>'.length)
+    return serializeArticles(articles)
   }
 
-  const articles: string[] = []
-  let searchIndex = 0
-  let openIndex = html.indexOf('<article', searchIndex)
-
-  while (openIndex !== -1) {
-    const closeIndex = html.indexOf('</article>', openIndex)
-    if (closeIndex === -1) {
-      break
-    }
-
-    const articleHtml = html.slice(openIndex, closeIndex + '</article>'.length)
-    articles.push(articleHtml)
-    searchIndex = closeIndex + '</article>'.length
-    openIndex = html.indexOf('<article', searchIndex)
-  }
-
-  if (articles.length === 0) {
-    return html
-  }
-
-  const dayDescArticles = articles.filter((articleHtml) => {
-    const openingTagEnd = articleHtml.indexOf('>')
-    if (openingTagEnd === -1) {
-      return false
-    }
-
-    const openingTag = articleHtml.slice(0, openingTagEnd)
-    return (
-      openingTag.includes('day-desc') ||
-      openingTag.includes('class="day-desc"') ||
-      openingTag.includes("class='day-desc'")
-    )
-  })
-
-  const candidates = dayDescArticles.length > 0 ? dayDescArticles : articles
-  const clampedIndex = Math.min(Math.max(partIndex, 0), candidates.length - 1)
-
-  return candidates[clampedIndex]
+  const clampedIndex = clampIndex(partIndex, articles.length)
+  return articles[clampedIndex].toString()
 }
 
 async function summarizeDescriptionWithOpenRouter(

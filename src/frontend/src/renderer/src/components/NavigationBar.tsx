@@ -1,10 +1,11 @@
-﻿import { Container, Nav, Navbar, NavDropdown, Stack } from 'react-bootstrap'
+import { Container, Nav, Navbar, NavDropdown, Stack } from 'react-bootstrap'
 import { useMetadataService } from '../hooks'
 import { FC, useEffect, useState } from 'react'
 import { Metadata, ProblemSetMetadata } from '../data/metadata'
 import { useBackend } from '../context/BackendContext'
-import { BsGear } from 'react-icons/bs'
+import { BsGear, BsHddStack } from 'react-icons/bs'
 import SettingsModal from './SettingsModal'
+import StorageModal from './StorageModal'
 import './NavigationBar.css'
 
 export interface NavigationBarProps {
@@ -21,6 +22,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   const metadataService = useMetadataService()
   const [authorShown, setAuthorShown] = useState<boolean>(false)
   const [showSettings, setShowSettings] = useState<boolean>(false)
+  const [showStorageInspector, setShowStorageInspector] = useState<boolean>(false)
 
   const authorSet = new Set<string>()
   const collections = loaded ? metadata.collections : []
@@ -60,6 +62,7 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
   return (
     <Navbar>
       <Container fluid>
+        <StorageModal show={showStorageInspector} hide={() => setShowStorageInspector(false)} />
         <SettingsModal show={showSettings} hide={() => setShowSettings(false)} />
         <Navbar.Brand>AoCP</Navbar.Brand>
         <Navbar.Toggle />
@@ -124,9 +127,18 @@ const NavigationBar: FC<NavigationBarProps> = (props) => {
             </NavDropdown>
           </Nav>
           <div className="ms-auto" />
-          <Nav.Link onClick={() => setShowSettings(true)} className="me-2 hover-btn">
-            <BsGear />
-          </Nav.Link>
+          <Stack direction="horizontal" gap={2} className="align-items-center">
+            <Nav.Link
+              onClick={() => setShowStorageInspector(true)}
+              className="hover-btn"
+              title="View stored data and cache"
+            >
+              <BsHddStack />
+            </Nav.Link>
+            <Nav.Link onClick={() => setShowSettings(true)} className="hover-btn" title="Settings">
+              <BsGear />
+            </Nav.Link>
+          </Stack>
         </Navbar.Collapse>
       </Container>
     </Navbar>

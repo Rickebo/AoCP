@@ -271,7 +271,10 @@ const ProblemSet: FC<ProblemSetProps> = (props) => {
             <React.Fragment key={`problem-group-${i}`}>
               <Tab.Pane eventKey={`desc-${i}`} style={{ flexGrow: '1', minWidth: 0 }}>
                 <div className="h-100 w-100 p-3 overflow-auto">
-                  <div className="h-100 w-100 border rounded overflow-auto" style={{ background: '#0f0f23' }}>
+                  <div
+                    className="h-100 w-100 border rounded overflow-auto"
+                    style={{ background: '#0f0f23' }}
+                  >
                     <ProblemDescription
                       metadata={problem}
                       problemKey={problemKey}
