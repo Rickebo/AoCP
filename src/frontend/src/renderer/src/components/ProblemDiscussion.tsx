@@ -22,6 +22,7 @@ export interface ProblemDiscussionProps {
 const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
   const aocService = useAocService()
   const settings = useSettings()
+  const DESCRIPTION_UNAVAILABLE = 'Description unavailable.'
   const [systemMessage, setSystemMessage] = useState<ChatMessage | undefined>(undefined)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState<string>('')
@@ -97,10 +98,17 @@ const ProblemDiscussion: FC<ProblemDiscussionProps> = (props) => {
     try {
       let description = loadCachedDescription() ?? props.problem.description
 
+      if (description === DESCRIPTION_UNAVAILABLE) {
+        description = undefined
+      }
+
       if (settings.state.retrieveDescription) {
         try {
           description = await aocService.getRawDescription(props.year, props.day, props.partIndex)
           cacheRawDescription(description)
+          if (description === DESCRIPTION_UNAVAILABLE) {
+            description = undefined
+          }
         } catch (error) {
           console.warn('Failed to download problem description, falling back to metadata', error)
         }

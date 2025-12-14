@@ -15,6 +15,8 @@ export interface ProblemDescriptionProps {
   partIndex: number
 }
 
+const DESCRIPTION_UNAVAILABLE = 'Description unavailable.'
+
 const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   const aocService = useAocService()
   const settings = useSettings()
@@ -32,7 +34,9 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   })
 
   const descriptionData = descriptionCache.state
-  const hasRaw = descriptionData?.raw != null
+  const hasFetchedRaw = descriptionData?.raw != null
+  const isUnavailable = descriptionData?.raw === DESCRIPTION_UNAVAILABLE
+  const hasRaw = hasFetchedRaw && !isUnavailable
   const hasProcessed = descriptionData?.processed != null
 
   const summaryEnabled = settings.state.summarizeWithAI && hasRaw
@@ -71,13 +75,17 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
     for (let i = 0; i < props.partIndex; i++) {
       const cachedRaw = getCachedDescriptionForPart(i)?.raw
       if (cachedRaw != null && cachedRaw.length > 0) {
-        articles.push(cachedRaw)
+        if (cachedRaw !== DESCRIPTION_UNAVAILABLE) {
+          articles.push(cachedRaw)
+        }
         continue
       }
 
       try {
         const raw = await aocService.getRawDescription(props.year, props.day, i)
-        articles.push(raw)
+        if (raw !== DESCRIPTION_UNAVAILABLE) {
+          articles.push(raw)
+        }
         cacheRawDescriptionForPart(i, raw)
       } catch (error) {
         console.error(`Failed to fetch previous part ${i + 1} description`, error)
@@ -131,7 +139,7 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
 
     const current = descriptionCache.state
     const raw = rawOverride ?? current.raw
-    if (raw == null || raw.length === 0) {
+    if (raw == null || raw.length === 0 || raw === DESCRIPTION_UNAVAILABLE) {
       return
     }
 
@@ -182,10 +190,10 @@ const ProblemDescription: FC<ProblemDescriptionProps> = (props) => {
   }
 
   useEffect(() => {
-    if (settings.state.retrieveDescription && !hasRaw) {
+    if (settings.state.retrieveDescription && !hasFetchedRaw) {
       void downloadRawDescription()
     }
-  }, [hasRaw, settings.state.retrieveDescription])
+  }, [hasFetchedRaw, settings.state.retrieveDescription])
 
   useEffect(() => {
     if (
